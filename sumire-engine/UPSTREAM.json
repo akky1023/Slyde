@@ -1,0 +1,34 @@
+{
+  "sumireRevision": "fb8319890089be32f284e5e7fc2b438f783b6d28",
+  "converterRevision": "d5bcefcf613b238966242a2aac3771ef9a18e12d",
+  "files": [
+    "Extenstions.kt",
+    "Other.kt",
+    "bitset/Extensions.kt",
+    "bitset/SuccinctBitVector.kt",
+    "connection_id/ConnectionIdBuilder.kt",
+    "connection_id/Extensions.kt",
+    "dictionary/TokenArray.kt",
+    "engine/ConversionResult.kt",
+    "engine/KanaKanjiEngine.kt",
+    "graph/GraphBuilder.kt",
+    "graph/Node.kt",
+    "louds/LOUDS.kt",
+    "mozc/ConnectionMatrix.kt",
+    "ngram/NgramModel.kt",
+    "ngram/SystemNgramBinary.kt",
+    "ngram/SystemNgramDictionary.kt",
+    "path_algorithm/FindPath.kt",
+    "dictionary/models/Dictionary.kt",
+    "dictionary/models/TokenEntry.kt",
+    "dictionary/models/TokenEntryConverted.kt",
+    "louds/with_term_id/LOUDSWithTermId.kt"
+  ],
+  "assets": {
+    "connectionId.dat.zip": "f68938f2c3f48ad4176bb8feec874e2ae6a924343ccc0feec8ae858c92ffd6df",
+    "pos_table.dat": "2aa09e7f5318cb7be2f7d88c4a4473987a480bbecce3269685f7696797ed9f48",
+    "tango.dat.zip": "2e709161d5b219534d7039a93f32875b1cc2d31517abb4e99685c6b95ed9514e",
+    "token.dat.zip": "bacf1846404cd26a5c0d66210013906b7e039c45a2fe389194857c069ae958c6",
+    "yomi.dat.zip": "ca7e139fffec9b2a386b1b01a47492c80e5dfd40febec927c58faa2fcc7f2392"
+  }
+}

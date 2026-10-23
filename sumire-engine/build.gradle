@@ -1,0 +1,20 @@
+plugins { id 'org.jetbrains.kotlin.jvm' }
+kotlin { jvmToolchain(17) }
+dependencies { testImplementation 'junit:junit:4.13.2'; testImplementation project(':input-core') }
+
+tasks.register('prepareTestDictionary') {
+    def target = layout.buildDirectory.dir('test-dictionary')
+    outputs.dir(target)
+    inputs.dir('../prototype/src/main/assets/sumire')
+    doLast {
+        copy { from('../prototype/src/main/assets/sumire') { include '*.dat' }; into target }
+        fileTree('../prototype/src/main/assets/sumire').matching { include '*.zip' }.each { archive ->
+            copy { from zipTree(archive); into target }
+        }
+    }
+}
+test {
+    dependsOn 'prepareTestDictionary'
+    systemProperty 'sumire.dictionary', layout.buildDirectory.dir('test-dictionary').get().asFile.absolutePath
+    maxHeapSize = '1536m'
+}

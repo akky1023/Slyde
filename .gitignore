@@ -1,0 +1,26 @@
+.gradle/
+.kotlin/
+.tools/
+**/build/
+**/.cxx/
+**/.externalNativeBuild/
+local.properties
+captures/
+dist/
+__pycache__/
+*.py[cod]
+
+# IDE and local settings
+.idea/
+*.iml
+.vscode/
+.env
+.env.*
+!.env.example
+
+# Signing credentials
+*.jks
+*.keystore
+*.p12
+*.pfx
+password.clixml

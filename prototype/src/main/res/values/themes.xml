@@ -1,0 +1,41 @@
+<resources>
+    <style name="Theme.Glide.Settings" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/settings_primary</item>
+        <item name="colorOnPrimary">@color/settings_on_primary</item>
+        <item name="colorPrimaryContainer">@color/settings_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/settings_on_primary_container</item>
+        <item name="colorSecondary">@color/settings_secondary</item>
+        <item name="colorOnSecondary">@color/settings_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/settings_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/settings_on_secondary_container</item>
+        <item name="colorTertiary">@color/settings_tertiary</item>
+        <item name="colorOnTertiary">@color/settings_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/settings_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/settings_on_tertiary_container</item>
+        <item name="colorError">@color/settings_error</item>
+        <item name="colorOnError">@color/settings_on_error</item>
+        <item name="colorErrorContainer">@color/settings_error_container</item>
+        <item name="colorOnErrorContainer">@color/settings_on_error_container</item>
+        <item name="android:colorBackground">@color/settings_background</item>
+        <item name="colorOnBackground">@color/settings_on_background</item>
+        <item name="colorSurface">@color/settings_surface</item>
+        <item name="colorOnSurface">@color/settings_on_surface</item>
+        <item name="colorSurfaceVariant">@color/settings_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/settings_on_surface_variant</item>
+        <item name="colorOutline">@color/settings_outline</item>
+        <item name="colorOutlineVariant">@color/settings_outline_variant</item>
+        <item name="colorSurfaceInverse">@color/settings_inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/settings_inverse_on_surface</item>
+        <item name="colorPrimaryInverse">@color/settings_inverse_primary</item>
+        <item name="colorSurfaceDim">@color/settings_surface_dim</item>
+        <item name="colorSurfaceBright">@color/settings_surface_bright</item>
+        <item name="colorSurfaceContainerLowest">@color/settings_surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/settings_surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/settings_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/settings_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/settings_surface_container_highest</item>
+        <item name="android:textColorPrimary">@color/settings_on_surface</item>
+        <item name="android:textColorSecondary">@color/settings_on_surface_variant</item>
+        <item name="android:fontFamily">sans</item>
+    </style>
+</resources>

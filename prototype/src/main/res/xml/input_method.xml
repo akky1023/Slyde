@@ -1,0 +1,7 @@
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="net.neomenia.glideprototype.SettingsActivity"
+    android:supportsSwitchingToNextInputMethod="true">
+    <subtype android:label="@string/app_name" android:imeSubtypeLocale="ja_JP"
+        android:languageTag="ja-JP" android:imeSubtypeMode="keyboard"
+        android:isAsciiCapable="true" />
+</input-method>

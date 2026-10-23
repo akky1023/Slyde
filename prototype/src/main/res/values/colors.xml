@@ -1,0 +1,39 @@
+<!-- Material Color Utilities, seed: alphabet key blue #68B5FF. -->
+<resources>
+    <color name="settings_primary">#0062A0</color>
+    <color name="settings_on_primary">#FFFFFF</color>
+    <color name="settings_primary_container">#D0E4FF</color>
+    <color name="settings_on_primary_container">#001D34</color>
+    <color name="settings_secondary">#526070</color>
+    <color name="settings_on_secondary">#FFFFFF</color>
+    <color name="settings_secondary_container">#D6E4F7</color>
+    <color name="settings_on_secondary_container">#0F1D2A</color>
+    <color name="settings_tertiary">#6A5779</color>
+    <color name="settings_on_tertiary">#FFFFFF</color>
+    <color name="settings_tertiary_container">#F1DBFF</color>
+    <color name="settings_on_tertiary_container">#241532</color>
+    <color name="settings_error">#BA1A1A</color>
+    <color name="settings_on_error">#FFFFFF</color>
+    <color name="settings_error_container">#FFDAD6</color>
+    <color name="settings_on_error_container">#410002</color>
+    <color name="settings_background">#FCFCFF</color>
+    <color name="settings_on_background">#004A7A</color>
+    <color name="settings_surface">#FCFCFF</color>
+    <color name="settings_on_surface">#004A7A</color>
+    <color name="settings_surface_variant">#DEE3EB</color>
+    <color name="settings_on_surface_variant">#42474E</color>
+    <color name="settings_outline">#73777F</color>
+    <color name="settings_outline_variant">#C2C7CF</color>
+    <color name="settings_shadow">#000000</color>
+    <color name="settings_scrim">#000000</color>
+    <color name="settings_inverse_surface">#2F3033</color>
+    <color name="settings_inverse_on_surface">#F1F0F4</color>
+    <color name="settings_inverse_primary">#9BCBFF</color>
+    <color name="settings_surface_dim">#DADADD</color>
+    <color name="settings_surface_bright">#F9F9FC</color>
+    <color name="settings_surface_container_lowest">#FFFFFF</color>
+    <color name="settings_surface_container_low">#F4F3F7</color>
+    <color name="settings_surface_container">#EEEDF1</color>
+    <color name="settings_surface_container_high">#E8E8EB</color>
+    <color name="settings_surface_container_highest">#E2E2E6</color>
+</resources>

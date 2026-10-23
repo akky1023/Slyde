@@ -1,0 +1,18 @@
+[Inconsolata]
+Copyright 2006 The Inconsolata Project Authors https://github.com/googlefonts/Inconsolata
+
+[BIZ UDGothic]
+Copyright 2022 The BIZ UDGothic Project Authors https://github.com/googlefonts/morisawa-biz-ud-gothic
+
+[Nerd Fonts]
+Copyright (c) 2014, Ryan L McIntyre https://ryanlmcintyre.com
+
+[Bizin Gothic]
+Copyright 2022 Yuko Otawara
+
+
+This Font Software is licensed under the SIL Open Font License,
+Version 1.1. This license is available with a FAQ
+at: http://scripts.sil.org/OFL
+
+http://scripts.sil.org/OFL

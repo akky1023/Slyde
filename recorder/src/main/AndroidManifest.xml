@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <application android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:label="アルテ入力記録" android:icon="@drawable/ic_recorder"
+        android:allowBackup="false" android:dataExtractionRules="@xml/data_extraction_rules" android:supportsRtl="true">
+        <!-- Portrait keeps the coordinate reference fixed for this phone recording tool. -->
+        <activity android:name=".RecorderActivity" android:exported="true"
+            android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize|stateVisible"
+            tools:ignore="LockedOrientationActivity,DiscouragedApi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

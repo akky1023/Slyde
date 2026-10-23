@@ -1,0 +1,14 @@
+{
+  "sumireRepository": "https://github.com/KazumaProject/JapaneseKeyboard",
+  "sumireRevision": "fb8319890089be32f284e5e7fc2b438f783b6d28",
+  "bridgeSource": "zenz/src/main/cpp/zenz_bridge.cpp",
+  "bridgeChanges": ["Windows smoke test logging via stdio; Android logging is unchanged"],
+  "llamaRepository": "https://github.com/azooKey/llama.cpp",
+  "llamaRevision": "88b97a47dc7f5892e2d5a6856fbe9cfe237f9e5c",
+  "modelRepository": "Miwa-Keita/zenz-v3.2-xsmall-gguf",
+  "modelRevision": "4f5423f0fad41a73b1242eb96fe5c12ae4fdca83",
+  "modelFile": "ggml-model-Q5_K_M.gguf",
+  "modelBytes": 20970304,
+  "modelSha256": "00c64b3d318045a708d0cad5434faccab10f5481a49e6362864551fd0995fa58",
+  "modelLicense": "Apache-2.0"
+}
