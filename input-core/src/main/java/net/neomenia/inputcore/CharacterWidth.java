@@ -33,6 +33,7 @@ public final class CharacterWidth {
     private static String foldWidth(String text){
         StringBuilder result=new StringBuilder(),halfKana=new StringBuilder();
         for(int cp:text.codePoints().toArray()){
+            if(cp==0xfe0e)continue;
             if(cp>=0xff61&&cp<=0xff9f){halfKana.appendCodePoint(cp);continue;}
             result.append(Normalizer.normalize(halfKana,Normalizer.Form.NFKC));halfKana.setLength(0);
             result.appendCodePoint(cp==0x3000?0x20:cp>=0xff01&&cp<=0xff5e?cp-0xfee0:cp);
@@ -57,6 +58,7 @@ public final class CharacterWidth {
         return "";
     }
     private static String badge(String text,boolean paired){
+        text=text.replace("\ufe0e","");
         String script=scriptBadge(text);
         boolean single=text.codePointCount(0,text.length())==1;
         if(!paired&&(!single||!script.isEmpty()))return !script.isEmpty()&&text.codePoints().anyMatch(cp->cp>=0xff61&&cp<=0xff9f)?"[半]"+script:script;

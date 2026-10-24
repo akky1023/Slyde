@@ -19,6 +19,20 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
 public class SettingsActivityTest {
+    @Test public void symbolCategorySwitchesPersistAndNavigateBackToInput() throws Exception {
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().commit();
+            View root=activity.getWindow().getDecorView();click(root,"入力");click(root,"総合記号ボード");
+            assertEquals(net.neomenia.inputcore.SymbolCatalog.load().size()+1,count(root,MaterialSwitch.class));
+            for(String name:new String[]{"括弧","数学","囲み日本語","囲みハングル","組み文字","特殊記号","履歴を表示","顔・感情"})assertTrue(name,((MaterialSwitch)find(root,name)).isChecked());
+            assertNull(find(root,"よく使う記号"));
+            ((MaterialSwitch)find(root,"括弧")).setChecked(false);((MaterialSwitch)find(root,"履歴を表示")).setChecked(false);
+            assertFalse(SymbolCategoryPreferences.enabled(InputPreferences.get(activity),"括弧"));
+            capture(root,"symbol-category-settings");
+            activity.onBackPressed();assertNotNull(find(root,"記号入力ボード1"));click(root,"総合記号ボード");
+            assertFalse(((MaterialSwitch)find(root,"括弧")).isChecked());assertFalse(((MaterialSwitch)find(root,"履歴を表示")).isChecked());
+        }
+    }
     private static View find(View view,String text){
         if(view instanceof TextView label&&text.contentEquals(label.getText()))return view;
         if(view instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++){View result=find(group.getChildAt(i),text);if(result!=null)return result;}
@@ -95,7 +109,7 @@ public class SettingsActivityTest {
     private static void capture(View view,String name){
         capture(view,name,360,800);
     }
-    private static void capture(View view,String name,int width,int height){
+    static void capture(View view,String name,int width,int height){
         String output=System.getProperty("glide.screenshotDir");if(output==null)return;
         // Floating Robolectric windows do not always attach the scroll-indicator helper.
         clearScrollIndicators(view);

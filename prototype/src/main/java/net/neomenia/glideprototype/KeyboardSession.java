@@ -177,7 +177,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private void showSymbols(){
         try{
             if(symbolPicker==null){symbolPicker=new SymbolPickerView(this,getPreferences(0),this,this::hideSymbols);keyboardArea.addView(symbolPicker,new FrameLayout.LayoutParams(-1,-1));}
-            symbolPicker.setPrivateMode(privateField);applyImeFont();
+            symbolPicker.reloadCategories();symbolPicker.setPrivateMode(privateField);applyImeFont();
             symbolPicker.getLayoutParams().height=-1;symbolPicker.requestLayout();
             candidates.setVisibility(View.GONE);applyDockHeight(symbolBoardHeight());keyboardArea.requestLayout();keyboard.setVisibility(View.GONE);symbolPicker.setVisibility(View.VISIBLE);preview("記号","カテゴリを選んで入力");
         }catch(IOException e){Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();}

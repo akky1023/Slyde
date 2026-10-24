@@ -67,7 +67,7 @@ public final class GlideKeyboardView extends View {
     public void showNumbers(){cancelTouches();page=1;invalidate();}
     public void showLetters(){cancelTouches();page=0;invalidate();}
     @Override protected void onMeasure(int width,int height){setMeasuredDimension(MeasureSpec.getSize(width),MeasureSpec.getMode(height)==MeasureSpec.EXACTLY?MeasureSpec.getSize(height):Math.round(rowDp*4*density()));}
-    private void text(Canvas canvas,String value,float x,float y,float size,int color){paint.setColor(color);paint.setTextSize(size*density());paint.setTextAlign(Paint.Align.CENTER);canvas.drawText(value,x,y-(paint.ascent()+paint.descent())/2,paint);}
+    private void text(Canvas canvas,String value,float x,float y,float size,int color){paint.setColor(color);paint.setTextSize(size*density());paint.setTextAlign(Paint.Align.CENTER);ImeFonts.drawText(getContext(),canvas,value,x,y-(paint.ascent()+paint.descent())/2,paint);}
     private void icon(Canvas canvas,Drawable drawable,float x,float y,int color){
         float sideWidth=x<left()?left():getWidth()-right();
         float half=Math.min(13*density(),Math.min(sideWidth,rh())*.3f);drawable.setTint(color);
