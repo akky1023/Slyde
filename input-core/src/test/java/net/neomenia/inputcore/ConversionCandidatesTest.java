@@ -7,11 +7,37 @@ import static org.junit.Assert.*;
 public class ConversionCandidatesTest {
     @Test public void bundledMozcProvidesSymbolsAndEmojiByReading() throws Exception {
         ConversionCandidates source=new ConversionCandidates();
-        for(String[] entry:new String[][]{{"やじるし","→"},{"ほし","★"},{"かっこ","【】"},{"はーと","♥"},{"むげん","∞"},{"おんぷ","♪"},{"えん","￥"},{"ねこ","🐱"}})
+        for(String[] entry:new String[][]{{"やじるし","→"},{"ほし","★"},{"かっこ","【】"},{"はーと","♥\ufe0e"},{"むげん","∞"},{"おんぷ","♪"},{"えん","￥"},{"ねこ","🐱"}})
             assertTrue(Arrays.toString(entry),source.symbols(entry[0]).contains(entry[1]));
         assertEquals(source.symbols("やじるし"),source.symbols("ヤジルシ"));
         assertEquals(source.symbols("はーと"),source.symbols("ﾊｰﾄ"));
         assertTrue(source.symbols("きごう").size()>100);
+    }
+
+    @Test public void translatedNamesAndConventionalReadingsReachFormerBoardSymbols() throws Exception {
+        ConversionCandidates source=new ConversionCandidates();
+        for(String[] entry:new String[][]{{"れいわ","㋿"},{"へいせい","㍻"},{"まるにじゅういち","㉑"},{"まるごじゅう","㊿"},{"てんじいちにさん","⠇"},{"こくばんふとじおおもじえぬ","ℕ"},{"にほんこっき","🇯🇵"},{"ひらきかっこ","（"},{"のっといこーる","≠"},{"まいくろあんぺあ","㎂"}})
+            assertTrue(Arrays.toString(entry),source.symbols(entry[0]).contains(entry[1]));
+        assertEquals(List.of("（）","()","「」","『』","【】"),source.symbols("かっこ").subList(0,5));
+        assertTrue(source.symbols("はーと").contains("♥\ufe0e"));
+        assertFalse(source.symbols("はーと").contains("♥"));
+    }
+
+    @Test public void everyFormerBoardEntryHasAnExactJapaneseReading() throws Exception {
+        ConversionCandidates source=new ConversionCandidates();
+        Set<String> covered=new HashSet<>();
+        SymbolPresentation presentation=SymbolPresentation.load();
+        try(var reader=new java.io.BufferedReader(new java.io.InputStreamReader(getClass().getResourceAsStream("/conversion/unicode-symbols.tsv"),java.nio.charset.StandardCharsets.UTF_8))){
+            reader.readLine();String line;
+            while((line=reader.readLine())!=null){
+                String[] fields=line.split("\t",-1);assertEquals(6,fields.length);
+                String reading=fields[2].split(" ")[0];assertTrue(reading,reading.matches("[ぁ-ゖー]+"));
+                assertTrue(fields[3],source.symbols(reading).contains(presentation.apply(fields[1],fields[0].equals("EMOJI"))));
+                assertFalse(fields[3],fields[3].contains("<"));
+                covered.add(fields[1]);
+            }
+        }
+        for(var category:SymbolCatalog.load())for(var entry:category.entries())assertTrue(category.name()+" "+entry.value(),covered.contains(entry.value()));
     }
 
     @Test public void moreThanTwelveCandidatesKeepRankingAndExposeSymbolsEarly() throws Exception {

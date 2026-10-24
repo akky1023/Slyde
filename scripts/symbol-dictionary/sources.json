@@ -1,0 +1,29 @@
+{
+  "cldrRevision": "e1d37acce5dae468c414172be53b666d58d45be8",
+  "sources": {
+    "annotations-ja.xml": {
+      "url": "https://raw.githubusercontent.com/unicode-org/cldr/e1d37acce5dae468c414172be53b666d58d45be8/common/annotations/ja.xml",
+      "sha256": "ba0fc62bf90b7ab33b47593825aee3745cfabdcee3d6d322cef89100c409ca1e"
+    },
+    "annotations-en.xml": {
+      "url": "https://raw.githubusercontent.com/unicode-org/cldr/e1d37acce5dae468c414172be53b666d58d45be8/common/annotations/en.xml",
+      "sha256": "7d491f1782480d50ee953d3943e8a65eacaa4394b41af9e9f89c9be418256ade"
+    },
+    "annotationsDerived-ja.xml": {
+      "url": "https://raw.githubusercontent.com/unicode-org/cldr/e1d37acce5dae468c414172be53b666d58d45be8/common/annotationsDerived/ja.xml",
+      "sha256": "7349579fd7bd3f09a2a62d06ba2a270b88df78d58f834cc87e9fd373f89c4ae1"
+    },
+    "annotationsDerived-en.xml": {
+      "url": "https://raw.githubusercontent.com/unicode-org/cldr/e1d37acce5dae468c414172be53b666d58d45be8/common/annotationsDerived/en.xml",
+      "sha256": "461d1578079c5ebc947e506df6b5a55c93f006160e8dff3f05dcf917ce081604"
+    },
+    "UnicodeData.txt": {
+      "url": "https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt",
+      "sha256": "ff58e5823bd095166564a006e47d111130813dcf8bf234ef79fa51a870edb48f"
+    },
+    "cldr-LICENSE.txt": {
+      "url": "https://raw.githubusercontent.com/unicode-org/cldr/e1d37acce5dae468c414172be53b666d58d45be8/LICENSE",
+      "sha256": "743308f92225393665b0722b73418b4d4061fd2163e8e9c38b3368904acf19d6"
+    }
+  }
+}

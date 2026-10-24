@@ -7,13 +7,14 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 
-/** Ranked sentence conversion plus exact-reading Mozc symbols and emoji. */
+/** Ranked sentence conversion plus exact-reading Unicode and Mozc symbols and emoji. */
 public final class ConversionCandidates {
     public static final int MAX_CANDIDATES=256;
     private final Map<String,List<String>> symbols;
 
     public ConversionCandidates() throws IOException {
         Map<String,LinkedHashSet<String>> entries=new LinkedHashMap<>();
+        load(entries,"unicode-symbols.tsv");
         load(entries,"symbol.tsv");
         load(entries,"emoji_data.tsv");
         Map<String,List<String>> result=new HashMap<>();
@@ -24,15 +25,17 @@ public final class ConversionCandidates {
     private static void load(Map<String,LinkedHashSet<String>> entries,String name) throws IOException {
         InputStream source=ConversionCandidates.class.getResourceAsStream("/conversion/"+name);
         if(source==null)throw new FileNotFoundException(name);
+        SymbolPresentation presentation=SymbolPresentation.load();
         try(BufferedReader reader=new BufferedReader(new InputStreamReader(source,StandardCharsets.UTF_8))){
             String line;
             while((line=reader.readLine())!=null){
                 if(line.startsWith("#")||line.startsWith("POS\t")||line.isBlank())continue;
                 String[] fields=line.split("\t",-1);
-                if(fields.length<3)throw new IOException("Invalid Mozc entry: "+name);
+                if(fields.length<3)throw new IOException("Invalid symbol entry: "+name);
                 if(fields[1].isEmpty())continue; // Upstream has comment-only placeholder rows.
+                String value=presentation.apply(fields[1],fields[0].equals("EMOJI")||name.equals("emoji_data.tsv"));
                 for(String reading:fields[2].trim().split("\\s+")){
-                    if(!reading.isEmpty())entries.computeIfAbsent(normalize(reading),key->new LinkedHashSet<>()).add(fields[1]);
+                    if(!reading.isEmpty())entries.computeIfAbsent(normalize(reading),key->new LinkedHashSet<>()).add(value);
                 }
             }
         }

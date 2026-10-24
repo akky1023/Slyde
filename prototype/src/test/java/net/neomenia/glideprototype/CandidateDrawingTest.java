@@ -15,6 +15,22 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class CandidateDrawingTest {
+    @Test public void convertedSymbolsCommitTheirCompletePresentationAndEmojiSequences() throws Exception {
+        android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
+        var dictionary=new net.neomenia.inputcore.ConversionCandidates();
+        for(String[] sample:new String[][]{{"はーと","♥\ufe0e"},{"にほんこっき","🇯🇵"},{"まるにじゅういち","㉑"},{"れいわ","㋿"}}){
+            String[] selected={null};CandidateBarView bar=new CandidateBarView(context,value->selected[0]=value,value->{},()->{});
+            // The IME lays out its empty candidate strip before the async dictionary result arrives.
+            bar.measure(View.MeasureSpec.makeMeasureSpec(360,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));bar.layout(0,0,360,bar.getMeasuredHeight());
+            List<String> candidates=dictionary.convert(sample[0],(reading,count)->List.of(reading),()->false);
+            bar.setTypeface(ImeFonts.load(context,1));bar.setCandidates(candidates);
+            bar.measure(View.MeasureSpec.makeMeasureSpec(360,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));bar.layout(0,0,360,bar.getMeasuredHeight());
+            ViewGroup cells=flow(bar);assertNotNull(cells);int index=candidates.indexOf(sample[1]);assertTrue(sample[0],index>=0);
+            android.text.Layout text=((android.widget.TextView)cells.getChildAt(index)).getLayout();assertNotNull(text);assertEquals(sample[0],0,text.getEllipsisCount(0));
+            cells.getChildAt(index).performClick();assertEquals(sample[1],selected[0]);
+            SettingsActivityTest.capture(bar,"conversion-symbol-"+sample[1].codePointAt(0),360,bar.getMeasuredHeight());
+        }
+    }
     @Test public void expandedListKeepsAll256CandidatesSelectable(){
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         java.util.ArrayList<String> values=new java.util.ArrayList<>();for(int i=0;i<256;i++)values.add("記号"+i);

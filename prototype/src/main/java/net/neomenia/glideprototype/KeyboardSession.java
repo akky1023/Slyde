@@ -23,7 +23,6 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private int candidateRequest=0;
     private GlideKeyboardView keyboard;
     private FrameLayout keyboardArea;
-    private SymbolPickerView symbolPicker;
     private JapaneseTypography typography;
     private ZenzRuntime zenz;
     private String zenzState="準備中";
@@ -71,13 +70,12 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private void settingsMenu(){
         ImeSettingsMenu.show(this,candidates.settingsAnchor(),this::editLayout,()->startActivity(new Intent(this,SettingsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
     }
-    private void editLayout(){commit();if(symbolPicker!=null&&symbolPicker.getVisibility()==View.VISIBLE)hideSymbols();keyboard.cancelTouches();dock.edit();}
+    private void editLayout(){commit();keyboard.cancelTouches();dock.edit();}
     private SharedPreferences getPreferences(int mode){return InputPreferences.get(this);}
     void start(InputConnection input,EditorInfo info){
         generation++;clearCandidates();composing.setLength(0);connection=input;editorInfo=info;
         privateField=net.neomenia.inputcore.EditorPolicy.isPassword(info.inputType);
-        if(symbolPicker!=null)symbolPicker.setPrivateMode(privateField);
-        reloadSettings();if(symbolPicker!=null)hideSymbols();
+        reloadSettings();
         keyboard.resetMode(net.neomenia.inputcore.EditorPolicy.prefersLatin(info.inputType));
         if(net.neomenia.inputcore.EditorPolicy.prefersNumbers(info.inputType))keyboard.showNumbers();
     }
@@ -122,9 +120,9 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         typography=new JapaneseTypography(getPreferences(0).getBoolean("commaStyle",false),getPreferences(0).getBoolean("periodStyle",false),getPreferences(0).getBoolean("openParenStyle",false),getPreferences(0).getBoolean("closeParenStyle",false));keyboard.setTypography(typography);
     }
     private void applyImeFont(){
-        android.graphics.Typeface font=ImeFonts.load(this,Math.max(0,Math.min(2,getPreferences(0).getInt("imeFont",0))));keyboard.setTypeface(font);candidates.setTypeface(font);candidates.setTextSp(getPreferences(0).getInt("candidateTextSp",18));if(symbolPicker!=null)symbolPicker.setTypeface(font);
+        android.graphics.Typeface font=ImeFonts.load(this,Math.max(0,Math.min(2,getPreferences(0).getInt("imeFont",0))));keyboard.setTypeface(font);candidates.setTypeface(font);candidates.setTextSp(getPreferences(0).getInt("candidateTextSp",18));
         boolean badges=getPreferences(0).getBoolean("showCharacterBadges",true),ai=getPreferences(0).getBoolean("showAiBadges",true);
-        candidates.setAnnotationVisibility(badges,ai);if(symbolPicker!=null)symbolPicker.setAnnotationVisibility(badges);
+        candidates.setAnnotationVisibility(badges,ai);
     }
     private void warmupZenz(){
         zenz.warmup(error->{if(destroyed||!getPreferences(0).getBoolean("zenzEnabled",true))return;zenzState=error==null?"有効":"利用不可："+error;status.setText(inputStatus());});
@@ -133,7 +131,6 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     void commit(){generation++;if(connection==null){composing.setLength(0);clearCandidates();return;}if(composing.length()>0){connection.commitText(reading(),1);composing.setLength(0);}connection.finishComposingText();clearCandidates();}
     private int candidateRows(){return Math.max(1,Math.min(3,getPreferences(0).getInt("candidateRows",1)));}
     private int candidateHeight(){return candidateRows()*candidates.rowHeight();}
-    private int symbolBoardHeight(){return dockHeight>0?dockHeight:dp(232)+candidateHeight();}
     private void invalidateCandidates(){
         if(zenz!=null)zenz.cancel();
         if(dictionaryTask!=null){dictionaryTask.cancel(false);dictionaryTask=null;}
@@ -161,7 +158,6 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(connection==null)return;
         switch(action){
             case "commit" -> commit();
-            case "symbols" -> {commit();showSymbols();}
             case "delete" -> {
                 generation++;invalidateCandidates();
                 if(composing.length()>0){String visible=typography.format(Romanizer.convert(composing.toString(),false));int end=Character.offsetByCodePoints(visible,visible.length(),-1);composing.setLength(0);composing.append(visible,0,end);connection.setComposingText(composing.toString(),1);}
@@ -174,17 +170,6 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         }
     }
     @Override public void preview(String path,String result){route.setText(path.isEmpty()?"子音から母音へなぞって入力":path+"   →   "+result);}
-    private void showSymbols(){
-        try{
-            if(symbolPicker==null){symbolPicker=new SymbolPickerView(this,getPreferences(0),this,this::hideSymbols);keyboardArea.addView(symbolPicker,new FrameLayout.LayoutParams(-1,-1));}
-            symbolPicker.reloadCategories();symbolPicker.setPrivateMode(privateField);applyImeFont();
-            symbolPicker.getLayoutParams().height=-1;symbolPicker.requestLayout();
-            candidates.setVisibility(View.GONE);applyDockHeight(symbolBoardHeight());keyboardArea.requestLayout();keyboard.setVisibility(View.GONE);symbolPicker.setVisibility(View.VISIBLE);preview("記号","カテゴリを選んで入力");
-        }catch(IOException e){Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();}
-    }
-    private void hideSymbols(){
-        symbolPicker.setVisibility(View.GONE);candidates.setVisibility(View.VISIBLE);applyDockHeight(symbolBoardHeight());keyboardArea.requestLayout();keyboard.setVisibility(View.VISIBLE);preview("戻る","元のキーボード");
-    }
     private void convert(){
         convert(false);
     }

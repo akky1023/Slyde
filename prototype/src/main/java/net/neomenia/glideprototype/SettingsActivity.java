@@ -2,8 +2,10 @@ package net.neomenia.glideprototype;
 
 import android.content.*;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.InputType;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import android.provider.Settings;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
@@ -12,8 +14,6 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.slider.Slider;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import java.io.*;
 import java.util.function.IntConsumer;
 
@@ -24,8 +24,7 @@ public final class SettingsActivity extends AppCompatActivity {
     private String page="";
     private TextView inputStatus;
     private SharedPreferences preferences;
-    private String parentPage(){return page.startsWith("board")||page.equals("総合記号ボード")?"入力":"";}
-    private final androidx.activity.OnBackPressedCallback navigationBack=new androidx.activity.OnBackPressedCallback(false){@Override public void handleOnBackPressed(){show(parentPage());}};
+    private final androidx.activity.OnBackPressedCallback navigationBack=new androidx.activity.OnBackPressedCallback(false){@Override public void handleOnBackPressed(){show(page.startsWith("board")?"入力":"");}};
     private int dp(int value){return SettingsUi.dp(this,value);}
     @Override public void onCreate(Bundle saved){
         super.onCreate(saved);preferences=InputPreferences.get(this);
@@ -35,7 +34,7 @@ public final class SettingsActivity extends AppCompatActivity {
             getWindow().setDecorFitsSystemWindows(false);
             root.setOnApplyWindowInsetsListener((view,insets)->{android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.ime());root.setPadding(bars.left,bars.top,bars.right,bars.bottom);return insets;});
         }
-        toolbar=new MaterialToolbar(this);toolbar.setNavigationIconTint(com.google.android.material.color.MaterialColors.getColor(this,com.google.android.material.R.attr.colorOnSurface,0));root.addView(toolbar,new LinearLayout.LayoutParams(-1,dp(64)));toolbar.setNavigationOnClickListener(view->show(parentPage()));
+        toolbar=new MaterialToolbar(this);toolbar.setNavigationIconTint(com.google.android.material.color.MaterialColors.getColor(this,com.google.android.material.R.attr.colorOnSurface,0));root.addView(toolbar,new LinearLayout.LayoutParams(-1,dp(64)));toolbar.setNavigationOnClickListener(view->show(page.startsWith("board")?"入力":""));
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
         body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setPadding(dp(20),dp(8),dp(20),dp(24));scroll.addView(body);
         show(saved==null?getIntent().getStringExtra("page"):saved.getString("page",""));
@@ -47,7 +46,7 @@ public final class SettingsActivity extends AppCompatActivity {
         navigationBack.setEnabled(!page.isEmpty());
         toolbar.setTitle(page.isEmpty()?"キーボード設定":page.startsWith("board")?"記号入力ボード"+(page.endsWith("0")?"1":"2"):page);
         toolbar.setNavigationIcon(page.isEmpty()?null:getDrawable(R.drawable.ic_back));
-        if(page.isEmpty())home();else switch(page){case "入力"->input();case "変換"->conversion();case "表示"->display();case "このアプリについて"->about();case "board0"->symbolBoard(0);case "board1"->symbolBoard(1);case "総合記号ボード"->symbolCategories();default->show("");}
+        if(page.isEmpty())home();else switch(page){case "入力"->input();case "変換"->conversion();case "表示"->display();case "このアプリについて"->about();case "board0"->symbolBoard(0);case "board1"->symbolBoard(1);default->show("");}
     }
     private void heading(String value){TextView text=SettingsUi.text(this,value,20);text.setPadding(0,dp(16),0,dp(8));body.addView(text);}
     private void description(String value){TextView text=SettingsUi.text(this,value,14);text.setPadding(0,dp(4),0,dp(12));body.addView(text);}
@@ -79,20 +78,7 @@ public final class SettingsActivity extends AppCompatActivity {
         description("無効時は途中のE・Iを無視し、KEU・KIUはどちらもKUになります。母音だけの入力や個別タップには影響しません。");
         heading("句読点・括弧");toggle("「、」を「，」にする","commaStyle",false);toggle("「。」を「．」にする","periodStyle",false);toggle("「（」を「(」にする","openParenStyle",false);toggle("「）」を「)」にする","closeParenStyle",false);
         heading("記号入力ボード");link("記号入力ボード1",()->show("board0"));link("記号入力ボード2",()->show("board1"));
-        link("総合記号ボード",()->show("総合記号ボード"));
-    }
-    private void symbolCategories(){
-        description("表示するカテゴリを選びます。変更は自動保存され、総合記号ボードを開くと反映されます。履歴は記号・絵文字共通の設定です。");
-        try{
-            var categories=net.neomenia.inputcore.SymbolCatalog.load();
-            heading("履歴");toggle("履歴を表示",SymbolCategoryPreferences.key(SymbolCategoryPreferences.HISTORY),true);
-            heading("記号");boolean emojiHeading=false;
-            for(var category:categories){
-                boolean emoji=category.name().startsWith("絵文字：");
-                if(emoji&&!emojiHeading){heading("絵文字");emojiHeading=true;}
-                toggle(category.name().replace("絵文字：",""),SymbolCategoryPreferences.key(category.name()),true);
-            }
-        }catch(IOException error){description(error.getMessage());}
+        heading("記号・絵文字");description("「やじるし」「かっこ」「れいわ」などの読みから変換できます。");
     }
     private void conversion(){heading("変換候補");slider("候補欄の行数",1,3,preferences.getInt("candidateRows",1),"行",value->preferences.edit().putInt("candidateRows",value).apply());toggle("zenzのオフラインAI変換を有効にする","zenzEnabled",true);}
     private void display(){
@@ -110,9 +96,9 @@ public final class SettingsActivity extends AppCompatActivity {
         description("12キーをなぞって入力する日本語キーボードです。辞書・AI変換は端末内で動作します。");link("ライセンス",this::licenses);
     }
     private void licenses(){
-        StringBuilder text=new StringBuilder("Sumire / kotlin-kana-kanji-converter\n基本辞書と変換処理を使用しています。\n\nMozc\n読み付きの記号・絵文字辞書を使用しています。\n\nMaterial Components for Android / AndroidX\nApache License 2.0\n\n");
+        StringBuilder text=new StringBuilder("Sumire / kotlin-kana-kanji-converter\n基本辞書と変換処理を使用しています。\n\nMozc\n読み付きの記号・絵文字辞書を使用しています。\n\nUnicode / CLDR\n記号名・日本語注釈をもとに日本語の読みと訳語を追加しています。\n\nMaterial Components for Android / AndroidX\nApache License 2.0\n\n");
         try{
-            for(String name:new String[]{"sumire-MIT.txt","sumire-converter-MIT.txt","mozc.txt","ipadic.txt","data.txt","unicode.txt","NotoSansJP-OFL.txt","BizinGothicDiscord-OFL.txt","NotoSymbols-OFL.txt","NotoSansJP-Notices.txt","BizinGothicDiscord-Regular-Notices.txt","zenz-bridge-MIT.txt","llama-MIT.txt","zenz-model-Apache-2.0.txt"})try(InputStream in=getAssets().open("licenses/"+name)){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] buffer=new byte[4096];int count;while((count=in.read(buffer))!=-1)out.write(buffer,0,count);text.append(out.toString("UTF-8")).append("\n\n");}
+            for(String name:new String[]{"sumire-MIT.txt","sumire-converter-MIT.txt","mozc.txt","ipadic.txt","data.txt","unicode.txt","cldr.txt","NotoSansJP-OFL.txt","BizinGothicDiscord-OFL.txt","NotoSymbols-OFL.txt","NotoSansJP-Notices.txt","BizinGothicDiscord-Regular-Notices.txt","zenz-bridge-MIT.txt","llama-MIT.txt","zenz-model-Apache-2.0.txt"})try(InputStream in=getAssets().open("licenses/"+name)){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] buffer=new byte[4096];int count;while((count=in.read(buffer))!=-1)out.write(buffer,0,count);text.append(out.toString("UTF-8")).append("\n\n");}
             ScrollView scroll=new ScrollView(this);TextView content=SettingsUi.text(this,text.toString(),12);content.setTextIsSelectable(true);content.setPadding(dp(20),dp(8),dp(20),dp(8));scroll.addView(content);
             new MaterialAlertDialogBuilder(this).setTitle("ライセンス").setView(scroll).setPositiveButton("閉じる",null).show();
         }catch(IOException error){Toast.makeText(this,error.getMessage(),Toast.LENGTH_LONG).show();}

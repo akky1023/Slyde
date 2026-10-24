@@ -90,7 +90,7 @@ public final class GlideKeyboardView extends View {
                 }
             }
         }
-        String[] ls={"","","記号","あa"};
+        String[] ls={"","",page==1?(japanese?"あ":"ABC"):"123","あa"};
         for(int row=0;row<4;row++){
             int sideColor=page==0&&!japanese?Color.rgb(104,181,255):Color.rgb(192,218,222);
             if(row==0&&page==0&&!japanese){
@@ -198,7 +198,7 @@ public final class GlideKeyboardView extends View {
         switch(startRow){
             case 0 -> {if(page==0&&!japanese){shift.tap();listener.preview(shift.locked()?"CapsLock":shift.upper()?"Shift":"英字",shift.locked()?"大文字を固定":shift.upper()?"次の英字入力を大文字に":"小文字入力");}}
             case 1 -> listener.action("left");
-            case 2 -> {cancelTouches();listener.action("symbols");}
+            case 2 -> {cancelTouches();listener.action("commit");page=page==1?0:1;listener.preview(page==1?"数字":"文字",page==1?"数字キーボード":"文字キーボード");}
             case 3 -> {listener.action("commit");if(page!=0)page=0;else japanese=!japanese;listener.preview(japanese?"日本語":"英字", "キー配列は同じです");}
         }
     }

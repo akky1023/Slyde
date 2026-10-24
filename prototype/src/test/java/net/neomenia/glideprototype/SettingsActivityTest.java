@@ -19,20 +19,6 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
 public class SettingsActivityTest {
-    @Test public void symbolCategorySwitchesPersistAndNavigateBackToInput() throws Exception {
-        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
-            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().commit();
-            View root=activity.getWindow().getDecorView();click(root,"入力");click(root,"総合記号ボード");
-            assertEquals(net.neomenia.inputcore.SymbolCatalog.load().size()+1,count(root,MaterialSwitch.class));
-            for(String name:new String[]{"括弧","数学","囲み日本語","囲みハングル","組み文字","特殊記号","履歴を表示","顔・感情"})assertTrue(name,((MaterialSwitch)find(root,name)).isChecked());
-            assertNull(find(root,"よく使う記号"));
-            ((MaterialSwitch)find(root,"括弧")).setChecked(false);((MaterialSwitch)find(root,"履歴を表示")).setChecked(false);
-            assertFalse(SymbolCategoryPreferences.enabled(InputPreferences.get(activity),"括弧"));
-            capture(root,"symbol-category-settings");
-            activity.onBackPressed();assertNotNull(find(root,"記号入力ボード1"));click(root,"総合記号ボード");
-            assertFalse(((MaterialSwitch)find(root,"括弧")).isChecked());assertFalse(((MaterialSwitch)find(root,"履歴を表示")).isChecked());
-        }
-    }
     private static View find(View view,String text){
         if(view instanceof TextView label&&text.contentEquals(label.getText()))return view;
         if(view instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++){View result=find(group.getChildAt(i),text);if(result!=null)return result;}
@@ -47,9 +33,10 @@ public class SettingsActivityTest {
             for(String removed:new String[]{"入力を練習する","入力と句読点","変換候補とAI","表示とフォント","大きさ・位置","記号入力ボード"})assertNull(removed,find(root,removed));
             assertEquals(0,count(root,GlideKeyboardView.class));assertEquals(0,count(root,TextInputEditText.class));
             capture(root,"settings-home");
-            click(root,"入力");assertNotNull(find(root,"記号入力ボード1"));assertNotNull(find(root,"記号入力ボード2"));assertNull(find(root,"大きさ・位置"));
-            click(root,"記号入力ボード1");assertEquals(12,count(root,TextInputEditText.class));click(root,"保存");assertEquals(0,count(root,TextInputEditText.class));
-            activity.onBackPressed();click(root,"表示");assertNotNull(find(root,"大きさ・位置"));assertNull(find(root,"記号入力ボード1"));capture(root,"settings-display");
+            click(root,"入力");assertNotNull(find(root,"記号入力ボード1"));assertNotNull(find(root,"記号入力ボード2"));assertNull(find(root,"総合記号ボード"));assertEquals(0,count(root,TextInputEditText.class));
+            assertNotNull(find(root,"記号・絵文字"));capture(root,"settings-conversion-only-input");
+            click(root,"記号入力ボード1");assertEquals(12,count(root,TextInputEditText.class));click(root,"保存");
+            activity.onBackPressed();click(root,"表示");assertNotNull(find(root,"大きさ・位置"));capture(root,"settings-display");
             activity.onBackPressed();click(root,"このアプリについて");assertNotNull(find(root,"ライセンス"));
         }
     }
