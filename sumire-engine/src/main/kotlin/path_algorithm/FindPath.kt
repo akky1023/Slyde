@@ -79,6 +79,8 @@ class FindPath(
         n: Int,
         input: String? = null,
         cancelled: BooleanSupplier = BooleanSupplier { false },
+        maxExpandedStates: Int = Int.MAX_VALUE,
+        maxSearchNanos: Long = Long.MAX_VALUE,
     ): MutableList<String> {
         if (n <= 0) return mutableListOf()
         // Word/connection costs may be negative. Prefix-only uniform-cost search can
@@ -102,9 +104,14 @@ class FindPath(
         }
         val resultFinal = mutableListOf<CandidatePath>()
         val candidateIndices = HashMap<String, Int>()
+        val started=System.nanoTime()
+        var expandedStates=0
 
         while (queue.isNotEmpty()) {
             if(cancelled.asBoolean)return mutableListOf()
+            // Extra alternatives must not stall typing. Always retain the cheapest full path.
+            if(resultFinal.isNotEmpty() && (expandedStates>=maxExpandedStates || System.nanoTime()-started>=maxSearchNanos))break
+            expandedStates++
             val state = queue.poll()
             if (state.node.tango == "BOS") {
                 val value = state.path.joinToString(separator = "") { it.tango }

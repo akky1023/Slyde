@@ -15,6 +15,17 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class CandidateDrawingTest {
+    @Test public void expandedListKeepsAll256CandidatesSelectable(){
+        android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
+        java.util.ArrayList<String> values=new java.util.ArrayList<>();for(int i=0;i<256;i++)values.add("記号"+i);
+        String[] selected={null};
+        CandidateBarView bar=new CandidateBarView(context,value->selected[0]=value,value->{},()->{});
+        bar.setCandidates(values);bar.setKeyboardHeight(240);bar.setExpanded(true);
+        bar.measure(View.MeasureSpec.makeMeasureSpec(360,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));bar.layout(0,0,360,bar.getMeasuredHeight());
+        ViewGroup cells=flow(bar);assertNotNull(cells);assertEquals(256,cells.getChildCount());
+        assertTrue(cells.getHeight()>bar.getHeight());
+        cells.getChildAt(255).performClick();assertEquals("記号255",selected[0]);
+    }
     private static ViewGroup flow(View view){
         if(view instanceof ViewGroup group){
             if(group.getChildCount()>0&&group.getChildAt(0) instanceof WidthLabelView)return group;

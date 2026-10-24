@@ -6,6 +6,11 @@ import org.junit.Test
 import java.util.Random
 
 class FindPathRankingTest {
+    @Test fun extraCandidateBudgetAlwaysPreservesTheCheapestFullPath(){
+        val g=graph(2,listOf(node("誤候補",0,2,5),node("正",0,1,20),node("解",1,1,-100)))
+        assertEquals(listOf("正解"),FindPath().backwardAStar(g,2,ConnectionMatrix(1,shortArrayOf(0)),64,
+            maxExpandedStates=0,maxSearchNanos=0))
+    }
     private fun node(text:String,start:Int,len:Int,cost:Int,l:Int=0,r:Int=0)=Node(l.toShort(),r.toShort(),cost,cost,tango=text,len=len.toShort(),sPos=start,wcost=cost)
     private fun graph(length:Int,nodes:List<Node>)=List(length+2){mutableListOf<MutableList<Node>>()}.also { g->
         g[0].add(mutableListOf(node("BOS",0,0,0)));g[length+1].add(mutableListOf(node("EOS",length,0,0)))

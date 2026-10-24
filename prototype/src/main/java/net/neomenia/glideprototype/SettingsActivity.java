@@ -95,7 +95,7 @@ public final class SettingsActivity extends AppCompatActivity {
         description("12キーをなぞって入力する日本語キーボードです。辞書・AI変換は端末内で動作します。");link("ライセンス",this::licenses);
     }
     private void licenses(){
-        StringBuilder text=new StringBuilder("Sumire / kotlin-kana-kanji-converter\n基本辞書と変換処理を使用しています。\n\nMaterial Components for Android / AndroidX\nApache License 2.0\n\n");
+        StringBuilder text=new StringBuilder("Sumire / kotlin-kana-kanji-converter\n基本辞書と変換処理を使用しています。\n\nMozc\n読み付きの記号・絵文字辞書を使用しています。\n\nMaterial Components for Android / AndroidX\nApache License 2.0\n\n");
         try{
             for(String name:new String[]{"sumire-MIT.txt","sumire-converter-MIT.txt","mozc.txt","ipadic.txt","data.txt","unicode.txt","NotoSansJP-OFL.txt","BizinGothicDiscord-OFL.txt","NotoSansJP-Notices.txt","BizinGothicDiscord-Regular-Notices.txt","zenz-bridge-MIT.txt","llama-MIT.txt","zenz-model-Apache-2.0.txt"})try(InputStream in=getAssets().open("licenses/"+name)){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] buffer=new byte[4096];int count;while((count=in.read(buffer))!=-1)out.write(buffer,0,count);text.append(out.toString("UTF-8")).append("\n\n");}
             ScrollView scroll=new ScrollView(this);TextView content=SettingsUi.text(this,text.toString(),12);content.setTextIsSelectable(true);content.setPadding(dp(20),dp(8),dp(20),dp(8));scroll.addView(content);

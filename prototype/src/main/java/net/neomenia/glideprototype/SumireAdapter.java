@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.zip.ZipInputStream;
 import java.util.function.BooleanSupplier;
 import net.neomenia.inputcore.CandidateCache;
-import net.neomenia.inputcore.ConversionPlan;
+import net.neomenia.inputcore.ConversionCandidates;
 
 /** Source engine by Sumire's author plus pinned system assets from Android Sumire. */
 final class SumireAdapter {
@@ -17,6 +17,7 @@ final class SumireAdapter {
     }
     private final KanaKanjiEngine engine=new KanaKanjiEngine();
     private final CandidateCache cache=new CandidateCache(128);
+    private final ConversionCandidates conversion=new ConversionCandidates();
     SumireAdapter(Context context) throws IOException {
         File dir=new File(context.getFilesDir(),"sumire-fb831989-d5bcefcf");
         if(!dir.isDirectory()&&!dir.mkdirs())throw new IOException("辞書保存先を作成できません");
@@ -41,7 +42,7 @@ final class SumireAdapter {
     synchronized List<String> candidates(String reading,BooleanSupplier cancelled){
         if(reading.isEmpty()||cancelled.getAsBoolean())return List.of();
         List<String> cached=cache.get(reading);if(cached!=null)return cached;
-        List<String> values=ConversionPlan.convert(reading,128,12,(part,count)->engine.nBestPath(part,count,cancelled),cancelled);
+        List<String> values=conversion.convert(reading,(part,count)->engine.candidates(part,count,cancelled),cancelled);
         if(!cancelled.getAsBoolean())cache.put(reading,values);return values;
     }
 }

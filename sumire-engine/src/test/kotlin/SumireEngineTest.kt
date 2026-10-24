@@ -3,6 +3,21 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SumireEngineTest {
+    @Test fun expandedCandidatesIncludeWholeReadingWordsAndMozcSymbols() {
+        val engine=KanaKanjiEngine();engine.buildEngineFromResourceDirectory(System.getProperty("sumire.dictionary"),1)
+        val source=net.neomenia.inputcore.ConversionCandidates()
+        val active=java.util.function.BooleanSupplier{false}
+        for(reading in listOf("こうしょう","かんしょう","きごう","やじるし","ほし","かっこ","ねこ")) {
+            val ranked=engine.nBestPath(reading,12)
+            val expanded=source.convert(reading,{part,count->engine.candidates(part,count,active)},active)
+            assertEquals(reading,ranked.first(),expanded.first())
+            assertTrue(reading,expanded.containsAll(ranked))
+            assertTrue(reading,expanded.containsAll(source.symbols(reading).take(192)))
+            assertTrue("$reading: ${expanded.size}",expanded.size>12)
+        }
+        assertTrue(engine.candidates("こうしょう",1,active).size>12)
+        assertTrue(engine.candidates("にほん",64,java.util.function.BooleanSupplier{true}).isEmpty())
+    }
     @Test fun generatedCandidatesMustCoverTheWholeReading() {
         val engine=KanaKanjiEngine();engine.buildEngineFromResourceDirectory(System.getProperty("sumire.dictionary"),1)
         val reading="あしたのかいぎでつかうしりょうをかくにんしてめーるでおくってください"

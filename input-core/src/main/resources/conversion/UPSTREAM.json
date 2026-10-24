@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/google/mozc",
+  "revision": "c4b2aef7c65e61be394bacadaec200eb5b97f91c",
+  "sources": [
+    "src/data/symbol/symbol.tsv",
+    "src/data/emoji/emoji_data.tsv",
+    "LICENSE"
+  ],
+  "files": {
+    "symbol.tsv": "bc68b032a195f203dccba6f95667424199ba9b185fee2be64eeaa959253c097a",
+    "mozc-LICENSE.txt": "44cdd923b91ea9199293abecc2762c70c87dbf1e581c027a94c416368d1a648c",
+    "emoji_data.tsv": "cd469564e1cc4e5ec4dc4035cde38568e86da4528849ca7374c96bf628160572"
+  }
+}

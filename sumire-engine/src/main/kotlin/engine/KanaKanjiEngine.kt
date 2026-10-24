@@ -66,6 +66,19 @@ class KanaKanjiEngine(
         } catch (_: CancellationException) { emptyList() }
     }
 
+    /** Include every whole-reading dictionary word even when sentence paths fill the N-best list. */
+    fun candidates(input: String,n: Int,cancelled: BooleanSupplier): List<String> {
+        if(input.isEmpty()||cancelled.asBoolean)return emptyList()
+        return try {
+            val graph=graphBuilder.constructGraph(input,yomiTrie,tangoTrie,tokenArray,cancelled)
+            val ranked=findPath.backwardAStar(graph,input.length,connectionMatrix,n,input,cancelled,4096,40_000_000L)
+            if(cancelled.asBoolean)return emptyList()
+            val exact=graph[input.length].flatten().filter { it.sPos==0 && it.len.toInt()==input.length }
+                .sortedBy { it.wcost }.map { it.tango }
+            (ranked+exact).distinct()
+        } catch (_: CancellationException) { emptyList() }
+    }
+
     /** Check that generated text covers the supplied reading, without omitted/added words. */
     fun matchesReading(input: String,value: String,cancelled: BooleanSupplier): Boolean {
         if(cancelled.asBoolean)return false
