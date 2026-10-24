@@ -4,8 +4,8 @@ import android.content.SharedPreferences;
 
 final class SymbolBoards {
     private static final String[][] DEFAULTS={
-        {"@","#","/","!","?","_","(",")",":","-",",","."},
-        {"'","\"","\\","+","*","=","[","]",";","<",">","%"}
+        {"*","/","~",",",".",":","+","<",">","","-","="},
+        {"'","\"","`","{","}","\\","[","]",";","¥","#",""}
     };
     static String[] defaults(int board){return DEFAULTS[board].clone();}
     static String[] load(SharedPreferences prefs,int board){
