@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 public class CandidateDrawingTest {
     @Test public void aiAnnotationDoesNotResetTextLayoutOrScroll(){
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
-        CandidateBarView bar=new CandidateBarView(context,value->{},value->{},()->{});
+        CandidateBarView bar=new CandidateBarView(context,value->{},value->{});
         List<String> values=List.of("今日の予定","明日の予定","来週の予定","来月の予定");
         bar.setCandidates(values);layoutBar(bar);
         ViewGroup cells=flow(bar);android.widget.HorizontalScrollView scroll=(android.widget.HorizontalScrollView)cells.getParent();
@@ -30,7 +30,7 @@ public class CandidateDrawingTest {
     }
     @Test public void newAiCandidatePreservesScrollAndUnchangedText(){
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
-        CandidateBarView bar=new CandidateBarView(context,value->{},value->{},()->{});
+        CandidateBarView bar=new CandidateBarView(context,value->{},value->{});
         bar.setCandidates(List.of("今日の予定","明日の予定","来週の予定","来月の予定"));layoutBar(bar);
         ViewGroup cells=flow(bar);android.widget.HorizontalScrollView scroll=(android.widget.HorizontalScrollView)cells.getParent();
         scroll.scrollTo(60,0);int scrollX=scroll.getScrollX();assertTrue(scrollX>0);
@@ -48,7 +48,7 @@ public class CandidateDrawingTest {
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         var dictionary=new net.neomenia.inputcore.ConversionCandidates();
         for(String[] sample:new String[][]{{"はーと","♥\ufe0e"},{"にほんこっき","🇯🇵"},{"まるにじゅういち","㉑"},{"れいわ","㋿"}}){
-            String[] selected={null};CandidateBarView bar=new CandidateBarView(context,value->selected[0]=value,value->{},()->{});
+            String[] selected={null};CandidateBarView bar=new CandidateBarView(context,value->selected[0]=value,value->{});
             // The IME lays out its empty candidate strip before the async dictionary result arrives.
             bar.measure(View.MeasureSpec.makeMeasureSpec(360,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));bar.layout(0,0,360,bar.getMeasuredHeight());
             List<String> candidates=dictionary.convert(sample[0],(reading,count)->List.of(reading),()->false);
@@ -64,7 +64,7 @@ public class CandidateDrawingTest {
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         java.util.ArrayList<String> values=new java.util.ArrayList<>();for(int i=0;i<256;i++)values.add("記号"+i);
         String[] selected={null};
-        CandidateBarView bar=new CandidateBarView(context,value->selected[0]=value,value->{},()->{});
+        CandidateBarView bar=new CandidateBarView(context,value->selected[0]=value,value->{});
         bar.setCandidates(values);bar.setKeyboardHeight(240);bar.setExpanded(true);
         bar.measure(View.MeasureSpec.makeMeasureSpec(360,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));bar.layout(0,0,360,bar.getMeasuredHeight());
         ViewGroup cells=flow(bar);assertNotNull(cells);assertEquals(256,cells.getChildCount());
@@ -80,7 +80,7 @@ public class CandidateDrawingTest {
     @Test public void onlyInternalCandidateBoundariesAreDrawnInCompactAndWrappedRows(){
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         for(int rows:new int[]{1,3}){
-            CandidateBarView bar=new CandidateBarView(context,value->{},value->{},()->{});bar.setRows(rows);bar.setCandidates(List.of("あ","い","う","え"));
+            CandidateBarView bar=new CandidateBarView(context,value->{},value->{});bar.setRows(rows);bar.setCandidates(List.of("あ","い","う","え"));
             bar.measure(View.MeasureSpec.makeMeasureSpec(220,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));bar.layout(0,0,220,bar.getMeasuredHeight());
             ViewGroup cells=flow(bar);assertNotNull(cells);Bitmap bitmap=Bitmap.createBitmap(cells.getWidth(),cells.getHeight(),Bitmap.Config.ARGB_8888);
             try{

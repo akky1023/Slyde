@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 final class CandidateBarView extends LinearLayout {
     private final FrameLayout strip;
     private final ImageButton expandButton;
-    private final ImageButton settingsButton;
     private final Consumer<String> select;
     private final Consumer<Boolean> expand;
     private final Flow flow;
@@ -33,7 +32,7 @@ final class CandidateBarView extends LinearLayout {
     private int textSp=18;
     private boolean showBadges=true,showAi=true;
 
-    CandidateBarView(Context context,Consumer<String> select,Consumer<Boolean> expand,Runnable settings){
+    CandidateBarView(Context context,Consumer<String> select,Consumer<Boolean> expand){
         super(context);this.select=select;this.expand=expand;setOrientation(HORIZONTAL);setBackgroundColor(Color.rgb(28,40,51));
         setContentDescription("変換候補");
         strip=new FrameLayout(context);addView(strip,new LayoutParams(0,-1,1));
@@ -41,12 +40,9 @@ final class CandidateBarView extends LinearLayout {
         expandButton.setVisibility(INVISIBLE);
         FrameLayout controls=new FrameLayout(context);addView(controls,new LayoutParams(dp(44),-1));
         controls.addView(expandButton,new FrameLayout.LayoutParams(dp(44),-1,Gravity.TOP));
-        settingsButton=UiIcons.button(context,R.drawable.ic_settings,"キーボード設定",settings);
-        controls.addView(settingsButton,new FrameLayout.LayoutParams(dp(44),-1,Gravity.BOTTOM));
         flow=new Flow(context);
         setRows(1);setCandidates(List.of());
     }
-    View settingsAnchor(){return settingsButton;}
     void setAnnotationVisibility(boolean characters,boolean ai){showBadges=characters;showAi=ai;populate(flow);}
     void setKeyboardHeight(int height){if(keyboardHeight==height)return;keyboardHeight=height;requestLayout();}
     void setTypeface(Typeface value){if(typeface==value)return;typeface=value;populate(flow);requestLayout();}
@@ -86,7 +82,6 @@ final class CandidateBarView extends LinearLayout {
         }
         aiCandidate=ai;
         choices=new ArrayList<>(values);populate(flow);expandButton.setVisibility(choices.isEmpty()?INVISIBLE:VISIBLE);
-        settingsButton.setVisibility(choices.isEmpty()?VISIBLE:GONE);
         if(choices.isEmpty())setExpanded(false);
         if(resetScroll&&strip.getChildCount()>0)strip.getChildAt(0).scrollTo(0,0);
     }
@@ -109,7 +104,7 @@ final class CandidateBarView extends LinearLayout {
     private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
     @Override protected void onMeasure(int widthSpec,int heightSpec){
         int controlHeight=rowHeight();
-        for(ImageButton button:new ImageButton[]{expandButton,settingsButton}){
+        for(ImageButton button:new ImageButton[]{expandButton}){
             button.getLayoutParams().height=controlHeight;
             int padding=Math.min(dp(12),Math.max(0,(controlHeight-dp(20))/2));button.setPadding(dp(12),padding,dp(12),padding);
         }

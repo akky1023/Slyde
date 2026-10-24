@@ -48,7 +48,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     KeyboardSession(Context context,TextView routeLabel,TextView statusLabel){
         super(context);this.route=routeLabel==null?new TextView(this):routeLabel;this.status=statusLabel==null?new TextView(this):statusLabel;
         view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setBackgroundColor(Color.rgb(21,30,39));
-        candidates=new CandidateBarView(this,this::chooseCandidate,this::setCandidateExpanded,this::settingsMenu);view.addView(candidates,new LinearLayout.LayoutParams(-1,candidateHeight()));renderCandidates();
+        candidates=new CandidateBarView(this,this::chooseCandidate,this::setCandidateExpanded);view.addView(candidates,new LinearLayout.LayoutParams(-1,candidateHeight()));renderCandidates();
         keyboardArea=new FrameLayout(this);view.addView(keyboardArea);
         keyboard=new GlideKeyboardView(this,this);keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));keyboardArea.addView(keyboard);
         keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",true),getPreferences(0).getBoolean("enableIu",true));
@@ -70,7 +70,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     }
     boolean cancelLayoutEdit(){if(!dock.isEditing())return false;dock.cancelEdit();return true;}
     private void settingsMenu(){
-        ImeSettingsMenu.show(this,candidates.settingsAnchor(),this::editLayout,()->startActivity(new Intent(this,SettingsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        ImeSettingsMenu.show(this,keyboard,this::editLayout,()->startActivity(new Intent(this,SettingsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
     }
     private void editLayout(){commit();keyboard.cancelTouches();dock.edit();}
     private SharedPreferences getPreferences(int mode){return InputPreferences.get(this);}
@@ -159,6 +159,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         candidateExpanded=expanded;keyboardArea.setVisibility(expanded?View.GONE:View.VISIBLE);
     }
     @Override public void action(String action){
+        if(action.equals("settings")){settingsMenu();return;}
         if(connection==null)return;
         switch(action){
             case "commit" -> commit();

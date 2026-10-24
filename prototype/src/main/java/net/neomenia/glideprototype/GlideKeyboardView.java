@@ -19,7 +19,7 @@ public final class GlideKeyboardView extends View {
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final OrderedTouches<Stroke> touches=new OrderedTouches<>();
     private final Handler handler=new Handler(Looper.getMainLooper());
-    private final Drawable cursorLeftIcon;
+    private final Drawable cursorLeftIcon,settingsIcon;
     private final Drawable[] rightIcons;
     private final Drawable shiftIcon,shiftOnIcon,capsIcon;
     private final ShiftState shift=new ShiftState();
@@ -46,6 +46,7 @@ public final class GlideKeyboardView extends View {
     }
 
     public GlideKeyboardView(Context context,Listener listener){super(context);this.listener=listener;
+        settingsIcon=UiIcons.drawable(context,R.drawable.ic_settings);
         cursorLeftIcon=UiIcons.drawable(context,R.drawable.ic_cursor_left);
         rightIcons=new Drawable[]{UiIcons.drawable(context,R.drawable.ic_delete),UiIcons.drawable(context,R.drawable.ic_cursor_right),UiIcons.drawable(context,R.drawable.ic_space),UiIcons.drawable(context,R.drawable.ic_enter)};
         shiftIcon=UiIcons.drawable(context,R.drawable.ic_shift);shiftOnIcon=UiIcons.drawable(context,R.drawable.ic_shift_on);capsIcon=UiIcons.drawable(context,R.drawable.ic_caps_lock_on);
@@ -96,6 +97,7 @@ public final class GlideKeyboardView extends View {
             if(row==0&&page==0&&!japanese){
                 icon(canvas,shift.locked()?capsIcon:shift.upper()?shiftOnIcon:shiftIcon,left()/2,(row+.5f)*rh(),sideColor);
             }
+            else if(row==0)icon(canvas,settingsIcon,left()/2,(row+.5f)*rh(),sideColor);
             else if(row==1)icon(canvas,cursorLeftIcon,left()/2,(row+.5f)*rh(),sideColor);
             else{
                 float size=row==3?22:16;paint.setTextSize(size*density());float width=paint.measureText(ls[row]);
@@ -196,7 +198,7 @@ public final class GlideKeyboardView extends View {
     private void sideAction(int startSide,int startRow){
         if(startSide==1){listener.action(new String[]{"delete","right","space","enter"}[startRow]);return;}
         switch(startRow){
-            case 0 -> {if(page==0&&!japanese){shift.tap();listener.preview(shift.locked()?"CapsLock":shift.upper()?"Shift":"英字",shift.locked()?"大文字を固定":shift.upper()?"次の英字入力を大文字に":"小文字入力");}}
+            case 0 -> {if(page==0&&!japanese){shift.tap();listener.preview(shift.locked()?"CapsLock":shift.upper()?"Shift":"英字",shift.locked()?"大文字を固定":shift.upper()?"次の英字入力を大文字に":"小文字入力");}else listener.action("settings");}
             case 1 -> listener.action("left");
             case 2 -> {cancelTouches();listener.action("commit");page=page==1?0:1;listener.preview(page==1?"数字":"文字",page==1?"数字キーボード":"文字キーボード");}
             case 3 -> {listener.action("commit");if(page!=0)page=0;else japanese=!japanese;listener.preview(japanese?"日本語":"英字", "キー配列は同じです");}

@@ -80,9 +80,7 @@ final class DockChecks {
             WindowInsets consumed=new WindowInsets.Builder().setInsets(WindowInsets.Type.navigationBars(),android.graphics.Insets.NONE).build();
             dock.dispatchApplyWindowInsets(consumed);layout(dock,width,height);check(dock.getHeight()==savedHeight,"navigation insets must not affect manually configured gap");
         }
-        CandidateBarView bar=new CandidateBarView(context,value->{},value->{},()->{});bar.setRows(3);layout(bar,width,height);
-        check(bar.settingsAnchor().getVisibility()==View.VISIBLE,"empty candidates must show settings");check(bar.settingsAnchor().getBottom()==bar.getHeight(),"settings must sit at bottom right");
-        bar.setCandidates(List.of("候補"));check(bar.settingsAnchor().getVisibility()==View.GONE,"nonempty candidates must hide settings");bar.setCandidates(List.of());check(bar.settingsAnchor().getVisibility()==View.VISIBLE,"clearing candidates must restore settings");
+        CandidateBarView bar=new CandidateBarView(context,value->{},value->{});bar.setRows(3);layout(bar,width,height);
         bar.setCandidates(List.of("日本語の変換候補","文字サイズ"));bar.setTextSp(12);layout(bar,width,height);int smallHeight=bar.getHeight();
         checkCandidateText(bar,12*context.getResources().getDisplayMetrics().scaledDensity);
         bar.setTextSp(18);layout(bar,width,height);int mediumHeight=bar.getHeight();
@@ -94,7 +92,6 @@ final class DockChecks {
         check(bar.getHeight()==compactHeight+Math.round(232*d),"expanded candidates must preserve configured row height");checkCandidateText(bar,30*context.getResources().getDisplayMetrics().scaledDensity);
         bar.setTextSp(12);layout(bar,width,height);check(bar.getHeight()==smallHeight+Math.round(232*d),"expanded candidates must shrink with smaller text");checkCandidateText(bar,12*context.getResources().getDisplayMetrics().scaledDensity);
         bar.setExpanded(false);bar.setCandidates(List.of());bar.setRows(1);layout(bar,width,height);
-        check(bar.settingsAnchor().getHeight()==bar.rowHeight(),"settings control must fit the smaller candidate row");
         int[] fontHeights=new int[31];
         for(int font=0;font<ImeFonts.NAMES.length;font++)for(int size:new int[]{12,18,30}){
             bar.setTypeface(ImeFonts.load(context,font));bar.setTextSp(size);

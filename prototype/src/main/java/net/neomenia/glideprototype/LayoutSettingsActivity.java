@@ -18,7 +18,7 @@ public final class LayoutSettingsActivity extends AppCompatActivity {
         android.content.SharedPreferences preferences=InputPreferences.get(this);
         android.content.Context keyboardContext=new ContextThemeWrapper(this,android.R.style.Theme_Material_Light_NoActionBar);
         LinearLayout preview=new LinearLayout(keyboardContext);preview.setOrientation(LinearLayout.VERTICAL);
-        CandidateBarView candidates=new CandidateBarView(keyboardContext,value->{},value->{},()->{});
+        CandidateBarView candidates=new CandidateBarView(keyboardContext,value->{},value->{});
         candidates.setTypeface(ImeFonts.load(this,preferences.getInt("imeFont",0)));candidates.setTextSp(preferences.getInt("candidateTextSp",18));candidates.setRows(preferences.getInt("candidateRows",1));
         int candidateHeight=Math.max(1,Math.min(3,preferences.getInt("candidateRows",1)))*candidates.rowHeight();preview.addView(candidates,new LinearLayout.LayoutParams(-1,candidateHeight));
         GlideKeyboardView keyboard=new GlideKeyboardView(keyboardContext,new GlideKeyboardView.Listener(){public void text(String text,boolean japanese){}public void action(String action){}public void preview(String route,String value){}});
