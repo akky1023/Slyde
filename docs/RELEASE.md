@@ -1,10 +1,17 @@
 # 正式版のビルドと配布
 
 - アプリ名: Glide 日本語入力
-- バージョン: 1.1.10（versionCode 29）
+- バージョン: 1.1.11（versionCode 30）
 - アプリID: `net.neomenia.japaneseinput.glide`
-- 配布APK: `dist/Glide-1.1.10.apk`
+- 配布APK: `dist/Glide-1.1.11.apk`
 - Android 8.0以降、arm64-v8a／x86_64、ネットワーク権限なし
+
+1.1.11はdevelopの記号辞書・変換候補・表示の改善を正式版に反映します。総合記号ボードを読み付き記号辞書に置き換え、無変換操作、変換候補のちらつき抑制、設定ボタンの配置・デザイン変更、記号1・2の初期設定変更を含みます。
+
+2026-10-25にdevelopの`e2efda3`までをmainへfast-forwardでマージしました。ユニットテスト187件成功（input-core: 104件、sumire-engine: 20件、prototype: 63件）、releaseビルド・lint成功（prototype: 0 errors／27 warnings、zenz: 指摘なし）。正式版ID・versionCode 30・既存APKと同じ署名・debuggableフラグなし・16KB ZIP alignmentを検証しました。接続端末がないため、今回の正式版の実機検証は未実施です。
+
+- 1.1.11 APKサイズ: 52,555,176 bytes（約52.6MB）
+- 1.1.11 APK SHA-256: `5e32483e484cb6e7773a7e67af562c2e31d5529d9bd73239b9a64bea7918d00b`
 
 1.1.10はLINEで「改行で送信」がOFFでもEnterで送信される不具合を修正します。アプリが `IME_FLAG_NO_ENTER_ACTION` を指定した場合は、独自の送信アクションがあっても改行を優先します。改行・送信の切り替えを含む回帰テスト7件を追加しました。ユーザーによるテスト版でのLINE実機確認は完了しています。
 
