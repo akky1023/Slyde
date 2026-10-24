@@ -46,7 +46,7 @@ public final class GlideKeyboardView extends View {
     }
 
     public GlideKeyboardView(Context context,Listener listener){super(context);this.listener=listener;
-        settingsIcon=UiIcons.drawable(context,R.drawable.ic_settings);
+        settingsIcon=UiIcons.drawable(context,R.drawable.ic_more);
         cursorLeftIcon=UiIcons.drawable(context,R.drawable.ic_cursor_left);
         rightIcons=new Drawable[]{UiIcons.drawable(context,R.drawable.ic_delete),UiIcons.drawable(context,R.drawable.ic_cursor_right),UiIcons.drawable(context,R.drawable.ic_space),UiIcons.drawable(context,R.drawable.ic_enter)};
         shiftIcon=UiIcons.drawable(context,R.drawable.ic_shift);shiftOnIcon=UiIcons.drawable(context,R.drawable.ic_shift_on);capsIcon=UiIcons.drawable(context,R.drawable.ic_caps_lock_on);
@@ -129,9 +129,10 @@ public final class GlideKeyboardView extends View {
             Stroke stroke=touches.get(event.getPointerId(index));if(stroke==null)continue;
             for(int h=0;h<event.getHistorySize();h++)add(stroke,event.getHistoricalX(index,h),event.getHistoricalY(index,h));
             add(stroke,event.getX(index),event.getY(index));
-            if(Math.hypot(stroke.x-stroke.downX,stroke.y-stroke.downY)>20*density()&&stroke.repeat!=null)handler.removeCallbacks(stroke.repeat);
+            if(Math.hypot(stroke.x-stroke.downX,stroke.y-stroke.downY)>(isSettings(stroke)?ViewConfiguration.get(getContext()).getScaledTouchSlop():20*density())&&stroke.repeat!=null)handler.removeCallbacks(stroke.repeat);
         }
     }
+    private boolean isSettings(Stroke stroke){return stroke.startSide==-1&&stroke.startRow==0&&(page!=0||japanese);}
     private String caseText(String s){return shift.upper()?s.toUpperCase(Locale.ROOT):s;}
     @Override public boolean onTouchEvent(MotionEvent event){
         int action=event.getActionMasked(),index=event.getActionIndex();
@@ -149,6 +150,14 @@ public final class GlideKeyboardView extends View {
                     stroke.repeat=new Runnable(){public void run(){
                         if(touches.get(stroke.pointerId)==stroke&&touches.isFirst(stroke)&&touches.active().size()==1){listener.action("delete");stroke.repeating=true;handler.postDelayed(this,65);}
                     }};handler.postDelayed(stroke.repeat,380);
+                }
+                if(touches.active().size()==1&&isSettings(stroke)){
+                    stroke.repeat=()->{
+                        if(touches.get(stroke.pointerId)==stroke&&touches.active().size()==1){
+                            cancelTouches();performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);listener.action("settings");
+                        }
+                    };
+                    handler.postDelayed(stroke.repeat,ViewConfiguration.getLongPressTimeout());
                 }
                 updatePreview(stroke);
             }
@@ -171,6 +180,7 @@ public final class GlideKeyboardView extends View {
         return true;
     }
     private void emit(Stroke stroke){
+        if(isSettings(stroke))return;
         if(stroke.startSide!=0){
             float dx=stroke.x-stroke.downX,dy=stroke.y-stroke.downY;
             if(isJapanese()&&stroke.startSide==1&&stroke.startRow==2&&dy< -20*density()&&-dy>Math.abs(dx)){listener.text("　",false);listener.preview("空白 ↑","全角空白");}
@@ -198,7 +208,7 @@ public final class GlideKeyboardView extends View {
     private void sideAction(int startSide,int startRow){
         if(startSide==1){listener.action(new String[]{"delete","right","space","enter"}[startRow]);return;}
         switch(startRow){
-            case 0 -> {if(page==0&&!japanese){shift.tap();listener.preview(shift.locked()?"CapsLock":shift.upper()?"Shift":"英字",shift.locked()?"大文字を固定":shift.upper()?"次の英字入力を大文字に":"小文字入力");}else listener.action("settings");}
+            case 0 -> {if(page==0&&!japanese){shift.tap();listener.preview(shift.locked()?"CapsLock":shift.upper()?"Shift":"英字",shift.locked()?"大文字を固定":shift.upper()?"次の英字入力を大文字に":"小文字入力");}}
             case 1 -> listener.action("left");
             case 2 -> {cancelTouches();listener.action("commit");page=page==1?0:1;listener.preview(page==1?"数字":"文字",page==1?"数字キーボード":"文字キーボード");}
             case 3 -> {listener.action("commit");if(page!=0)page=0;else japanese=!japanese;listener.preview(japanese?"日本語":"英字", "キー配列は同じです");}

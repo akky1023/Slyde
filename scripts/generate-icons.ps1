@@ -5,6 +5,7 @@ $svgDirectory=Join-Path $projectRoot 'prototype/artwork/icons'
 $drawableDirectory=Join-Path $projectRoot 'prototype/src/main/res/drawable'
 New-Item -ItemType Directory -Force $svgDirectory | Out-Null
 $icons=[ordered]@{
+    more='M4 10A2 2 0 1 0 4 14A2 2 0 1 0 4 10 M12 10A2 2 0 1 0 12 14A2 2 0 1 0 12 10 M20 10A2 2 0 1 0 20 14A2 2 0 1 0 20 10'
     expand='M6 9L12 15L18 9'
     collapse='M6 15L12 9L18 15'
     settings='M8.250 5.505L9.933 4.791L9.921 2.219L14.079 2.219L14.067 4.791L15.750 5.505L15.750 5.505L17.210 6.605L19.431 5.309L21.511 8.910L19.277 10.186L19.500 12.000L19.500 12.000L19.277 13.814L21.511 15.090L19.431 18.691L17.210 17.395L15.750 18.495L15.750 18.495L14.067 19.209L14.079 21.781L9.921 21.781L9.933 19.209L8.250 18.495L8.250 18.495L6.790 17.395L4.569 18.691L2.489 15.090L4.723 13.814L4.500 12.000L4.500 12.000L4.723 10.186L2.489 8.910L4.569 5.309L6.790 6.605L8.250 5.505Z M15.2 12A3.2 3.2 0 1 0 8.8 12A3.2 3.2 0 1 0 15.2 12'
@@ -41,7 +42,7 @@ foreach($name in $icons.Keys){
     $pathData=$icons[$name]
     $svg='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="'+$pathData+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
     $vector='<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:pathData="'+$pathData+'" android:fillColor="@android:color/transparent" android:strokeColor="#FFFFFF" android:strokeWidth="1.8" android:strokeLineCap="round" android:strokeLineJoin="round"/></vector>'
-    if($name -in @('shift_on','caps_lock_on')){
+    if($name -in @('shift_on','caps_lock_on','more')){
         $svg='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="'+$pathData+'" fill="currentColor"/></svg>'
         $vector='<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:pathData="'+$pathData+'" android:fillColor="#FFFFFF"/></vector>'
     }

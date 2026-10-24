@@ -106,11 +106,14 @@ public class SettingsActivityTest {
     }
     @Test public void settingsMenuOffersInPlaceAdjustmentAndSeparateSettings(){
         try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup().visible()){
-            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();View anchor=find(root,"表示");int[] invoked={0,0};
-            androidx.appcompat.widget.PopupMenu menu=ImeSettingsMenu.show(activity,anchor,()->invoked[0]++,()->invoked[1]++);
-            assertEquals("大きさ・位置",menu.getMenu().getItem(0).getTitle());assertEquals("その他の設定",menu.getMenu().getItem(1).getTitle());
-            menu.getMenu().performIdentifierAction(1,0);assertEquals(1,invoked[0]);assertEquals(0,invoked[1]);
-            menu.getMenu().performIdentifierAction(2,0);assertEquals(1,invoked[1]);menu.dismiss();
+            SettingsActivity activity=controller.get();int[] invoked={0,0,0};
+            ImeSettingsMenu menu=new ImeSettingsMenu(activity,()->invoked[0]++,()->invoked[1]++,()->invoked[2]++);
+            activity.setContentView(menu);capture(menu,"ime-settings-menu",360,280);
+            assertEquals(2,menu.getChildCount());assertEquals("戻る",menu.getChildAt(0).getContentDescription());
+            assertEquals(0,menu.getChildAt(0).getLeft());assertEquals(0,menu.getChildAt(0).getTop());
+            find(menu,"キーボードの大きさ/位置変更").performClick();assertEquals(1,invoked[1]);assertEquals(0,invoked[2]);
+            find(menu,"その他の設定").performClick();assertEquals(1,invoked[2]);
+            menu.getChildAt(0).performClick();assertEquals(1,invoked[0]);
         }
     }
     @Test public void themeUsesBlueAndReadableMaterialColorRoles(){

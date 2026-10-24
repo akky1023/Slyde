@@ -23,6 +23,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private int candidateRequest=0;
     private GlideKeyboardView keyboard;
     private FrameLayout keyboardArea;
+    private ImeSettingsMenu settings;
+    private boolean settingsShowing;
     private JapaneseTypography typography;
     private ZenzRuntime zenz;
     private String zenzState="準備中";
@@ -55,6 +57,10 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         loadTypography();applyImeFont();
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
         dock=new KeyboardDockView(this,view,getPreferences(0),candidateHeight(),this::applyDockHeight,keyboard::setSideWidths);
+        settings=new ImeSettingsMenu(this,this::closeSettings,()->{closeSettings();editLayout();},()->{
+            closeSettings();startActivity(new Intent(this,SettingsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        });
+        settings.setVisibility(View.GONE);view.addView(settings,new LinearLayout.LayoutParams(-1,0));
         zenz=ZenzRuntime.get(this);if(getPreferences(0).getBoolean("zenzEnabled",true))warmupZenz();
         worker.execute(()->{
             try {SumireAdapter loaded=SumireAdapter.get(this);engine=loaded;main.post(()->{if(!destroyed){status.setText(inputStatus());scheduleCandidates();}});}
@@ -63,19 +69,27 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     }
     View view(){return dock;}
     private void applyDockHeight(int height){
+        if(settings!=null)settings.getLayoutParams().height=height;
         dockHeight=height;int keys=Math.max(dp(96),height-candidateHeight());
         candidates.setKeyboardHeight(keys);
         int area=candidates.getVisibility()==View.GONE?height:keys;
         if(keyboardArea.getLayoutParams().height!=area){keyboardArea.getLayoutParams().height=area;}
     }
-    boolean cancelLayoutEdit(){if(!dock.isEditing())return false;dock.cancelEdit();return true;}
+    boolean cancelLayoutEdit(){if(settingsShowing){closeSettings();return true;}if(!dock.isEditing())return false;dock.cancelEdit();return true;}
     private void settingsMenu(){
-        ImeSettingsMenu.show(this,keyboard,this::editLayout,()->startActivity(new Intent(this,SettingsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        generation++;invalidateCandidates();keyboard.cancelTouches();settingsShowing=true;
+        candidates.setVisibility(View.GONE);keyboardArea.setVisibility(View.GONE);
+        settings.getLayoutParams().height=dockHeight>0?dockHeight:view.getHeight();settings.setVisibility(View.VISIBLE);
+    }
+    private void closeSettings(){
+        if(!settingsShowing)return;settingsShowing=false;settings.setVisibility(View.GONE);
+        candidates.setVisibility(View.VISIBLE);keyboardArea.setVisibility(View.VISIBLE);
+        if(dockHeight>0)applyDockHeight(dockHeight);view.requestLayout();scheduleCandidates();
     }
     private void editLayout(){commit();keyboard.cancelTouches();dock.edit();}
     private SharedPreferences getPreferences(int mode){return InputPreferences.get(this);}
     void start(InputConnection input,EditorInfo info){
-        conversionHistory.start(info);
+        closeSettings();conversionHistory.start(info);
         generation++;clearCandidates();composing.setLength(0);connection=input;editorInfo=info;
         privateField=net.neomenia.inputcore.EditorPolicy.isPassword(info.inputType);
         reloadSettings();
@@ -90,7 +104,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
     }
     void finish(){
-        dock.cancelEdit();keyboard.cancelTouches();commit();
+        closeSettings();dock.cancelEdit();keyboard.cancelTouches();commit();
         if(connection!=null)connection.finishComposingText();connection=null;
     }
     void selectionChanged(int start,int end,int composingEnd){
@@ -156,7 +170,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private void setCandidateExpanded(boolean expanded){
         candidates.setExpanded(expanded);
         if(!expanded&&!candidateExpanded)return;
-        candidateExpanded=expanded;keyboardArea.setVisibility(expanded?View.GONE:View.VISIBLE);
+        candidateExpanded=expanded;keyboardArea.setVisibility(expanded||settingsShowing?View.GONE:View.VISIBLE);
     }
     @Override public void action(String action){
         if(action.equals("settings")){settingsMenu();return;}
@@ -179,7 +193,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         convert(false);
     }
     private void convert(boolean automatic){
-        if(connection==null||privateField||composing.length()==0)return;
+        if(settingsShowing||connection==null||privateField||composing.length()==0)return;
         invalidateCandidates();
         String input=reading();SumireAdapter loaded=engine;
         final int request=++generation;candidateRequest=0;if(!automatic)status.setText("変換中…");
