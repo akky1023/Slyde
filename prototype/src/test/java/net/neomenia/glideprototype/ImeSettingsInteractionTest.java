@@ -35,10 +35,10 @@ public class ImeSettingsInteractionTest {
         keyboard.onTouchEvent(event);event.recycle();
     }
     private void hold(){shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(ViewConfiguration.getLongPressTimeout()+1));}
-    @Test public void shortTapDoesNothingAndLongPressOpensOnce(){
+    @Test public void shortTapRequestsAlphabetAndLongPressOpensSettingsOnlyOnce(){
         GlideKeyboardView keyboard=keyboard();
         touch(keyboard,MotionEvent.ACTION_DOWN,30,30);touch(keyboard,MotionEvent.ACTION_UP,30,30);hold();
-        assertTrue(events.isEmpty());
+        assertEquals(List.of("alphabet"),events);events.clear();
         touch(keyboard,MotionEvent.ACTION_DOWN,30,30);hold();assertEquals(List.of("settings"),events);
         hold();touch(keyboard,MotionEvent.ACTION_UP,30,30);assertEquals(List.of("settings"),events);
     }
@@ -57,6 +57,17 @@ public class ImeSettingsInteractionTest {
         assertTrue(events.isEmpty());
         touch(keyboard,MotionEvent.ACTION_DOWN,100,30);touch(keyboard,MotionEvent.ACTION_UP,100,30);
         assertEquals(List.of("text:A"),events);
+    }
+    @Test public void modeToggleUsesBothFormerBottomSidebarRows(){
+        GlideKeyboardView keyboard=keyboard();
+        // Both halves of the enlarged button switch modes, rather than requesting alphabet conversion.
+        touch(keyboard,MotionEvent.ACTION_DOWN,30,125);touch(keyboard,MotionEvent.ACTION_UP,30,125);
+        assertFalse(keyboard.isJapanese());assertEquals(List.of("commit"),events);events.clear();
+        touch(keyboard,MotionEvent.ACTION_DOWN,30,235);touch(keyboard,MotionEvent.ACTION_UP,30,235);
+        assertTrue(keyboard.isJapanese());assertEquals(List.of("commit"),events);events.clear();
+        keyboard.showNumbers();
+        touch(keyboard,MotionEvent.ACTION_DOWN,30,150);touch(keyboard,MotionEvent.ACTION_UP,30,150);
+        assertTrue(keyboard.isJapanese());assertEquals(List.of("commit"),events);
     }
     private <T> T find(View view,Class<T> type){
         if(type.isInstance(view))return type.cast(view);

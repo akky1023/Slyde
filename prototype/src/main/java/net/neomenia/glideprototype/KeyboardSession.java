@@ -8,6 +8,7 @@ import android.view.*;
 import android.view.inputmethod.*;
 import android.widget.*;
 import net.neomenia.inputcore.Romanizer;
+import net.neomenia.inputcore.JapaneseComposition;
 import net.neomenia.inputcore.JapaneseTypography;
 import net.neomenia.inputcore.ZenzCandidates;
 import net.neomenia.inputcore.CandidateResults;
@@ -32,7 +33,9 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private EditorInfo editorInfo;
     private boolean privateField;
     private final ConversionHistory conversionHistory=new ConversionHistory();
-    private final StringBuilder composing=new StringBuilder();
+    private final JapaneseComposition composing=new JapaneseComposition();
+    private int alphabetCase=-1;
+    private String alphabetSource="";
     private final ExecutorService worker=Executors.newSingleThreadExecutor(task->new Thread(()->{android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);task.run();},"dictionary"));
     private Future<?> dictionaryTask;
     private CandidateDisplayGate candidateDisplay;
@@ -90,7 +93,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private SharedPreferences getPreferences(int mode){return InputPreferences.get(this);}
     void start(InputConnection input,EditorInfo info){
         closeSettings();conversionHistory.start(info);
-        generation++;clearCandidates();composing.setLength(0);connection=input;editorInfo=info;
+        generation++;clearCandidates();clearComposition();connection=input;editorInfo=info;
         privateField=net.neomenia.inputcore.EditorPolicy.isPassword(info.inputType);
         reloadSettings();
         keyboard.resetMode(net.neomenia.inputcore.EditorPolicy.prefersLatin(info.inputType));
@@ -109,7 +112,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     }
     void selectionChanged(int start,int end,int composingEnd){
         if(composing.length()>0&&(start!=composingEnd||end!=composingEnd)){
-            composing.setLength(0);generation++;clearCandidates();if(connection!=null)connection.finishComposingText();
+            clearComposition();generation++;clearCandidates();if(connection!=null)connection.finishComposingText();
         }
     }
     private void sendKey(int code){connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,code));connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,code));}
@@ -128,11 +131,30 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     void destroy(){dock.cancelEdit();keyboard.cancelTouches();conversionHistory.clear();destroyed=true;generation++;if(zenz!=null)zenz.cancel();worker.shutdownNow();main.removeCallbacksAndMessages(null);connection=null;}
     @Override public void text(String raw,boolean japanese){
         if(connection==null)return;
+        if(alphabetCase>=0)commit();
         generation++;invalidateCandidates();
-        if(japanese&&!privateField){String visible=Romanizer.append(composing.toString(),raw);composing.setLength(0);composing.append(visible);connection.setComposingText(typography.format(visible),1);scheduleCandidates();}
+        if(japanese&&!privateField){composing.append(raw);connection.setComposingText(typography.format(composing.toString()),1);scheduleCandidates();}
         else{commit();connection.commitText(raw,1);}
     }
-    private String reading(){return typography.format(Romanizer.convert(composing.toString(),true));}
+    private void clearComposition(){composing.clear();alphabetCase=-1;alphabetSource="";}
+    private String reading(){
+        if(alphabetCase>=0){
+            String lower=alphabetSource.toLowerCase(Locale.ROOT);
+            if(alphabetCase==2)return lower.toUpperCase(Locale.ROOT);
+            if(alphabetCase==1&&!lower.isEmpty()){
+                for(int i=0;i<lower.length();i++)if(Character.isLetter(lower.charAt(i)))
+                    return lower.substring(0,i)+lower.substring(i,i+1).toUpperCase(Locale.ROOT)+lower.substring(i+1);
+            }
+            return lower;
+        }
+        return typography.format(Romanizer.convert(composing.toString(),true));
+    }
+    private void alphabet(){
+        if(!keyboard.isJapanese()||privateField||composing.length()==0)return;
+        if(alphabetCase<0)alphabetSource=composing.alphabet();
+        alphabetCase=(alphabetCase+1)%3;generation++;clearCandidates();
+        connection.setComposingText(reading(),1);
+    }
     private void loadTypography(){
         typography=new JapaneseTypography(getPreferences(0).getBoolean("commaStyle",false),getPreferences(0).getBoolean("periodStyle",false),getPreferences(0).getBoolean("openParenStyle",false),getPreferences(0).getBoolean("closeParenStyle",false));keyboard.setTypography(typography);
     }
@@ -145,7 +167,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         zenz.warmup(error->{if(destroyed||!getPreferences(0).getBoolean("zenzEnabled",true))return;zenzState=error==null?"有効":"利用不可："+error;status.setText(inputStatus());});
     }
     private String inputStatus(){return "Sumire基本辞書 · "+(getPreferences(0).getBoolean("zenzEnabled",true)?"zenz "+zenzState+" · ":"")+"オフライン変換";}
-    void commit(){generation++;if(connection==null){composing.setLength(0);clearCandidates();return;}if(composing.length()>0){String value=reading();if(connection.commitText(value,1))conversionHistory.record(value);composing.setLength(0);}connection.finishComposingText();clearCandidates();}
+    void commit(){generation++;if(connection==null){clearComposition();clearCandidates();return;}if(composing.length()>0){String value=reading();if(connection.commitText(value,1))conversionHistory.record(value);clearComposition();}connection.finishComposingText();clearCandidates();}
     private int candidateRows(){return Math.max(1,Math.min(3,getPreferences(0).getInt("candidateRows",1)));}
     private int candidateHeight(){return candidateRows()*candidates.rowHeight();}
     private void invalidateCandidates(){
@@ -158,14 +180,14 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         invalidateCandidates();if(candidates!=null)candidates.setCandidates(List.of());
     }
     private void scheduleCandidates(){
-        main.removeCallbacks(autoCandidates);if(!destroyed&&composing.length()>0)main.post(autoCandidates);
+        main.removeCallbacks(autoCandidates);if(!destroyed&&alphabetCase<0&&composing.length()>0)main.post(autoCandidates);
     }
     private void renderCandidates(){
         candidates.setRows(candidateRows());candidates.getLayoutParams().height=candidateHeight();candidates.requestLayout();
         if(dock!=null){dock.setCandidateHeight(candidateHeight());if(dockHeight>0)applyDockHeight(dockHeight);}
     }
     private void chooseCandidate(String choice){
-        if(connection==null||candidateRequest!=generation)return;generation++;if(connection.commitText(choice,1))conversionHistory.record(choice);composing.setLength(0);clearCandidates();status.setText(inputStatus());
+        if(connection==null||candidateRequest!=generation)return;generation++;if(connection.commitText(choice,1))conversionHistory.record(choice);clearComposition();clearCandidates();status.setText(inputStatus());
     }
     private void setCandidateExpanded(boolean expanded){
         candidates.setExpanded(expanded);
@@ -177,13 +199,20 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(connection==null)return;
         switch(action){
             case "commit" -> commit();
+            case "alphabet" -> alphabet();
             case "delete" -> {
                 generation++;invalidateCandidates();
-                if(composing.length()>0){String visible=typography.format(Romanizer.convert(composing.toString(),false));int end=Character.offsetByCodePoints(visible,visible.length(),-1);composing.setLength(0);composing.append(visible,0,end);connection.setComposingText(composing.toString(),1);}
+                if(composing.length()>0){
+                    if(alphabetCase>=0){
+                        alphabetSource=alphabetSource.substring(0,alphabetSource.offsetByCodePoints(alphabetSource.length(),-1));
+                        if(alphabetSource.isEmpty())clearComposition();
+                        connection.setComposingText(alphabetCase>=0?reading():"",1);
+                    }else{composing.delete();connection.setComposingText(typography.format(composing.toString()),1);}
+                }
                 else if(connection.getSelectedText(0)!=null)connection.commitText("",1);else if(!connection.deleteSurroundingTextInCodePoints(1,0))sendKey(KeyEvent.KEYCODE_DEL);
                 if(composing.length()>0)scheduleCandidates();else clearCandidates();
             }
-            case "space" -> {if(keyboard.isJapanese()&&composing.length()>0)convert();else{commit();connection.commitText(" ",1);}}
+            case "space" -> {if(keyboard.isJapanese()&&alphabetCase<0&&composing.length()>0)convert();else{commit();connection.commitText(" ",1);}}
             case "enter" -> {if(composing.length()>0)commit();else enter(connection,editorInfo);}
             case "left","right" -> {commit();sendKey(action.equals("left")?KeyEvent.KEYCODE_DPAD_LEFT:KeyEvent.KEYCODE_DPAD_RIGHT);}
         }
@@ -193,7 +222,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         convert(false);
     }
     private void convert(boolean automatic){
-        if(settingsShowing||connection==null||privateField||composing.length()==0)return;
+        if(settingsShowing||alphabetCase>=0||connection==null||privateField||composing.length()==0)return;
         invalidateCandidates();
         String input=reading();SumireAdapter loaded=engine;
         final int request=++generation;candidateRequest=0;if(!automatic)status.setText("変換中…");

@@ -91,7 +91,6 @@ public final class GlideKeyboardView extends View {
                 }
             }
         }
-        String[] ls={"","",page==1?(japanese?"あ":"ABC"):"123","あa"};
         for(int row=0;row<4;row++){
             int sideColor=page==0&&!japanese?Color.rgb(104,181,255):Color.rgb(192,218,222);
             if(row==0&&page==0&&!japanese){
@@ -99,10 +98,10 @@ public final class GlideKeyboardView extends View {
             }
             else if(row==0)icon(canvas,settingsIcon,left()/2,(row+.5f)*rh(),sideColor);
             else if(row==1)icon(canvas,cursorLeftIcon,left()/2,(row+.5f)*rh(),sideColor);
-            else{
-                float size=row==3?22:16;paint.setTextSize(size*density());float width=paint.measureText(ls[row]);
+            else if(row==2){
+                float size=22;paint.setTextSize(size*density());float width=paint.measureText("あa");
                 if(width>0)size*=Math.min(1,Math.max(1,left()-4*density())/width);
-                text(canvas,ls[row],left()/2,(row+.5f)*rh(),size,sideColor);
+                text(canvas,"あa",left()/2,3*rh(),size,sideColor);
             }
             icon(canvas,rightIcons[row],(right()+getWidth())/2,(row+.5f)*rh(),sideColor);
             if(row==2&&isJapanese())text(canvas,"全角",(right()+getWidth())/2,(row+.15f)*rh(),9,sideColor);
@@ -141,7 +140,7 @@ public final class GlideKeyboardView extends View {
             if(action==MotionEvent.ACTION_DOWN){cancelTouches();getParent().requestDisallowInterceptTouchEvent(true);}
             samplePointers(event);
             float x=event.getX(index),y=event.getY(index);
-            Stroke stroke=new Stroke(event.getPointerId(index),x<left()?-1:x>=right()?1:0,Math.min(3,Math.max(0,(int)(y/rh()))),x,y);
+            Stroke stroke=new Stroke(event.getPointerId(index),x<left()?-1:x>=right()?1:0,(x<left()&&y>=2*rh())?3:Math.min(3,Math.max(0,(int)(y/rh()))),x,y);
             // Once a second finger joins, deletion is committed in the same press order as text.
             for(Stroke held:touches.active())if(held.repeat!=null)handler.removeCallbacks(held.repeat);
             if(touches.start(stroke.pointerId,stroke)){
@@ -180,7 +179,14 @@ public final class GlideKeyboardView extends View {
         return true;
     }
     private void emit(Stroke stroke){
-        if(isSettings(stroke))return;
+        if(isSettings(stroke)){
+            if(isJapanese()&&Math.hypot(stroke.x-stroke.downX,stroke.y-stroke.downY)<=ViewConfiguration.get(getContext()).getScaledTouchSlop())listener.action("alphabet");
+            return;
+        }
+        if(stroke.startSide==-1&&stroke.startRow==3){
+            if(Math.hypot(stroke.x-stroke.downX,stroke.y-stroke.downY)<.5f*cw())sideAction(-1,3);
+            return;
+        }
         if(stroke.startSide!=0){
             float dx=stroke.x-stroke.downX,dy=stroke.y-stroke.downY;
             if(isJapanese()&&stroke.startSide==1&&stroke.startRow==2&&dy< -20*density()&&-dy>Math.abs(dx)){listener.text("　",false);listener.preview("空白 ↑","全角空白");}
@@ -210,7 +216,6 @@ public final class GlideKeyboardView extends View {
         switch(startRow){
             case 0 -> {if(page==0&&!japanese){shift.tap();listener.preview(shift.locked()?"CapsLock":shift.upper()?"Shift":"英字",shift.locked()?"大文字を固定":shift.upper()?"次の英字入力を大文字に":"小文字入力");}}
             case 1 -> listener.action("left");
-            case 2 -> {cancelTouches();listener.action("commit");page=page==1?0:1;listener.preview(page==1?"数字":"文字",page==1?"数字キーボード":"文字キーボード");}
             case 3 -> {listener.action("commit");if(page!=0)page=0;else japanese=!japanese;listener.preview(japanese?"日本語":"英字", "キー配列は同じです");}
         }
     }

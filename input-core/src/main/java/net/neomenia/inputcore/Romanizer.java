@@ -42,6 +42,24 @@ public final class Romanizer {
     public static boolean isSyllable(String raw){return TABLE.containsKey(raw);}
     /** Freeze kana already shown to the user while retaining pending roman consonants. */
     public static String append(String composing,String raw){return convert(composing+raw,false);}
+    /** Fallback spelling when deleting part of a multi-kana glide, such as kya -> ki. */
+    static String romanSpelling(String kana){
+        StringBuilder raw=new StringBuilder();
+        for(int offset=0;offset<kana.length();){
+            String match=null,spelling=null;
+            for(var entry:TABLE.entrySet()){
+                String value=entry.getValue(),key=entry.getKey();
+                if(!kana.startsWith(value,offset))continue;
+                if(match==null||value.length()>match.length()||(value.length()==match.length()&&
+                        (key.length()<spelling.length()||(key.length()==spelling.length()&&key.compareTo(spelling)<0)))){
+                    match=value;spelling=key;
+                }
+            }
+            if(match!=null){raw.append(spelling);offset+=match.length();}
+            else{int cp=kana.codePointAt(offset);raw.append(cp=='ん'?"nn":cp=='ー'?"-":new String(Character.toChars(cp)));offset+=Character.charCount(cp);}
+        }
+        return raw.toString();
+    }
     public static String convert(String raw, boolean finish) {
         String text=raw.toLowerCase(Locale.ROOT); StringBuilder out=new StringBuilder();
         for(int i=0;i<text.length();) {
