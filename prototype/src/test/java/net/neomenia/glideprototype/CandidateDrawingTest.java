@@ -15,6 +15,18 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class CandidateDrawingTest {
+    @Test public void flickBracketsKeepBothWidthsUnderEveryTypographySetting() throws Exception {
+        var dictionary=new net.neomenia.inputcore.ConversionCandidates();
+        for(boolean open:new boolean[]{false,true})for(boolean close:new boolean[]{false,true}){
+            var style=new net.neomenia.inputcore.JapaneseTypography(false,false,open,close);
+            for(String raw:List.of(net.neomenia.inputcore.KeyLayout.variant("e",3),net.neomenia.inputcore.KeyLayout.variant("o",3),"（）")){
+                String input=style.format(raw);
+                List<String> found=dictionary.convert(input,(part,count)->List.of(part),()->false);
+                List<String> displayed=KeyboardSession.formatChoices(found,input,style);
+                for(String value:raw.equals("（")?List.of("(","（","[","［","{","｛"):raw.equals("）")?List.of(")","）","]","］","}","｝"):List.of("()","（）","[]","［］","{}","｛｝"))assertTrue(input+" -> "+value,displayed.contains(value));
+            }
+        }
+    }
     @Test public void aiAnnotationDoesNotResetTextLayoutOrScroll(){
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         CandidateBarView bar=new CandidateBarView(context,value->{},value->{});
@@ -44,10 +56,10 @@ public class CandidateDrawingTest {
         bar.measure(View.MeasureSpec.makeMeasureSpec(220,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));
         bar.layout(0,0,220,bar.getMeasuredHeight());
     }
-    @Test public void convertedSymbolsCommitTheirCompletePresentationAndEmojiSequences() throws Exception {
+    @Test public void convertedSymbolsCommitPlainCharactersAndCompleteEmojiSequences() throws Exception {
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         var dictionary=new net.neomenia.inputcore.ConversionCandidates();
-        for(String[] sample:new String[][]{{"はーと","♥\ufe0e"},{"にほんこっき","🇯🇵"},{"まるにじゅういち","㉑"},{"れいわ","㋿"}}){
+        for(String[] sample:new String[][]{{"いげた","#"},{"いげた","＃"},{"なんばー","#"},{"なんばー","＃"},{"しゃーぷ","#"},{"はーと","♥"},{"にほんこっき","🇯🇵"},{"まるにじゅういち","㉑"},{"れいわ","㋿"}}){
             String[] selected={null};CandidateBarView bar=new CandidateBarView(context,value->selected[0]=value,value->{});
             // The IME lays out its empty candidate strip before the async dictionary result arrives.
             bar.measure(View.MeasureSpec.makeMeasureSpec(360,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));bar.layout(0,0,360,bar.getMeasuredHeight());

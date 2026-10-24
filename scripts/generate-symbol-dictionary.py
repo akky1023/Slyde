@@ -116,6 +116,9 @@ def main():
     overrides={"🇨🇶":"サーク島の旗","仝":"同上記号"}
     blocked={"記号","文字","顔","人","手","動物","自然","上","下","右","左","白","黒","赤","青","緑","色","絵文字","数字"}
     for category,value,original,description in catalog:
+        # Omit skin/hair variants and standalone components; keep the neutral base entries.
+        if any(0x1f3fb<=ord(c)<=0x1f3ff or 0x1f9b0<=ord(c)<=0x1f9b3 for c in original):continue
+        value=original.replace("\ufe0f","").replace("\ufe0e","")
         key=original.replace("\ufe0f","").replace("\ufe0e","");emoji=category.startswith("絵文字：")
         english=en.get(key) if emoji else records.get(ord(key),["",ud.name(key,"")])[1]
         if not english:english=re.sub(r"^.*? E[0-9.]+ ","",description)
@@ -141,5 +144,16 @@ def main():
         stream.write("POS\tCHAR\tReading (space separated)\tJapanese name\tUnicode English name\tSource\n")
         for row in output:stream.write("\t".join(row)+"\n")
     print("Generated",len(output),"symbols;",dict(stats),"bytes",OUTPUT.stat().st_size)
+    # Only explicit Unicode width mappings: no compatibility folding of enclosed text or units.
+    # Exclude halfwidth kana/Hangul letters; punctuation, Latin letters and digits remain paired.
+    pairs=[]
+    for cp,fields in sorted(records.items()):
+        decomposition=fields[5].split()
+        if len(decomposition)!=2 or decomposition[0] not in ("<wide>","<narrow>") or 0xff66<=cp<=0xffdc:continue
+        other=int(decomposition[1],16)
+        wide,narrow=(cp,other) if decomposition[0]=="<wide>" else (other,cp)
+        pairs.append(f"{wide:04X}\t{narrow:04X}")
+    (OUTPUT.parent/"width-variants.tsv").write_text("# Unicode 16.0 explicit wide/narrow pairs; hexadecimal code points\n"+"\n".join(pairs)+"\n",encoding="utf-8")
+    print("Generated",len(pairs),"width pairs")
 
 if __name__=="__main__":main()

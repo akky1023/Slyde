@@ -3,6 +3,54 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SumireEngineTest {
+    @Test fun auditPresentationSelectorsInBundledDictionaryAndSymbolCandidates() {
+        val engine=KanaKanjiEngine();engine.buildEngineFromResourceDirectory(System.getProperty("sumire.dictionary"),1)
+        val trieField=KanaKanjiEngine::class.java.getDeclaredField("tangoTrie").apply { isAccessible=true }
+        val tokenField=KanaKanjiEngine::class.java.getDeclaredField("tokenArray").apply { isAccessible=true }
+        val trie=trieField.get(engine) as com.kazumaproject.Louds.LOUDS
+        val tokens=tokenField.get(engine) as com.kazumaproject.dictionary.TokenArray
+        val nodesField=tokens.javaClass.getDeclaredField("nodeIdList").apply { isAccessible=true }
+        @Suppress("UNCHECKED_CAST") val nodes=nodesField.get(tokens) as List<Int>
+        val affected=if(trie.labels.any { it=='\ufe0e'||it=='\ufe0f' })
+            nodes.asSequence().filter { it>=0 }.distinct().map { trie.getLetter(it) }.filter { '\ufe0e' in it||'\ufe0f' in it }.toList()
+            else emptyList()
+        val report=java.io.File("../.tools/symbol-presentation-audit.tsv")
+        report.writeText("# Base dictionary outputs with VS15/VS16: ${affected.size}\n"+affected.joinToString("\n") { value -> value+"\t"+value.codePoints().toArray().joinToString(" ") { "U+%04X".format(it) } }+"\n")
+        val source=net.neomenia.inputcore.ConversionCandidates()
+        for(reading in listOf("あすたりすく","あすたー","すたー","しゃーぷ","いげた","なんばー","はっしゅ","こめ","ほし","はーと","おんぷ","でんわ","はさみ","えんぴつ","たいよう","くも","かさ","ゆきだるま","ちぇっく")){
+            val result=source.convert(reading,{part,count->engine.candidates(part,count,{false})},{false})
+            report.appendText("$reading\t${result.take(20)}\n")
+            assertTrue("$reading: $result",result.none { '\ufe0e' in it||'\ufe0f' in it })
+        }
+        val readings=linkedSetOf<String>()
+        for(file in listOf("unicode-symbols.tsv","symbol.tsv","emoji_data.tsv")){
+            javaClass.getResourceAsStream("/conversion/$file")!!.bufferedReader().useLines { lines ->
+                lines.filter { it.isNotBlank()&&!it.startsWith("#")&&!it.startsWith("POS\t") }.forEach { line ->
+                    readings.addAll(line.split('\t')[2].trim().split(Regex("\\s+")).filter { it.isNotEmpty() })
+                }
+            }
+        }
+        for(reading in readings)assertTrue(reading,source.symbols(reading).none { '\ufe0e' in it||'\ufe0f' in it })
+        report.appendText("# Audited symbol/emoji reading keys: ${readings.size}; selector-bearing candidates: 0\n")
+    }
+    @Test fun symbolReadingsInsideSentencesDoNotOverrideWords() {
+        val engine=KanaKanjiEngine();engine.buildEngineFromResourceDirectory(System.getProperty("sumire.dictionary"),1)
+        val source=net.neomenia.inputcore.ConversionCandidates()
+        for(reading in listOf("かっこいい","このかっこをなおす","かっこをつける","はーとのかたち","ほしがみえる")) {
+            val result=source.convert(reading,{part,count->engine.candidates(part,count,{false})},{false})
+            assertTrue(reading,result.isNotEmpty())
+            assertFalse("$reading: ${result.take(8)}",result.take(8).any { value -> value.codePoints().anyMatch { cp ->
+                Character.getType(cp) in listOf(Character.START_PUNCTUATION.toInt(),Character.END_PUNCTUATION.toInt(),Character.OTHER_SYMBOL.toInt(),Character.MATH_SYMBOL.toInt())
+            } })
+        }
+        for(reading in listOf("かっこ。","このかっこ。","はーと。","ほし。")){
+            val result=source.convert(reading,{part,count->engine.candidates(part,count,{false})},{false})
+            assertFalse("$reading: ${result.first()}",result.first().contains("（）"))
+            assertTrue(result.first().endsWith("。"))
+        }
+        assertTrue(source.convert("かっこ",{part,count->engine.candidates(part,count,{false})},{false}).contains("()"))
+        assertTrue(source.convert("かっこ",{part,count->engine.candidates(part,count,{false})},{false}).contains("（）"))
+    }
     @Test fun expandedCandidatesIncludeWholeReadingWordsAndMozcSymbols() {
         val engine=KanaKanjiEngine();engine.buildEngineFromResourceDirectory(System.getProperty("sumire.dictionary"),1)
         val source=net.neomenia.inputcore.ConversionCandidates()

@@ -266,8 +266,10 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             });
         });
     }
-    private static List<String> formatChoices(List<String> values,String input,JapaneseTypography style){
-        LinkedHashSet<String> choices=new LinkedHashSet<>();for(String value:values)choices.add(style.format(value));choices.add(input);choices.add(toKatakana(input));return new ArrayList<>(choices);
+    static List<String> formatChoices(List<String> values,String input,JapaneseTypography style){
+        LinkedHashSet<String> choices=new LinkedHashSet<>();
+        for(String value:values)choices.add(value.codePoints().anyMatch(Character::isLetterOrDigit)?style.format(value):value);
+        choices.add(input);choices.add(toKatakana(input));return new ArrayList<>(choices);
     }
     private static String toKatakana(String input){StringBuilder out=new StringBuilder();for(char c:input.toCharArray())out.append(c>='ぁ'&&c<='ゖ'?(char)(c+0x60):c);return out.toString();}
 }

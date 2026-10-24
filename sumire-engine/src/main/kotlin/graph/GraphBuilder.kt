@@ -65,21 +65,29 @@ class GraphBuilder {
                 val listToken = tokenArray.getListDictionaryByYomiTermId(termId)
                 val tangoList = listToken.map {
                     if(cancelled.asBoolean)throw CancellationException()
+                    val value=when(it.nodeId){
+                        -2 -> yomiStr
+                        -1 -> yomiStr.hiraToKata()
+                        else -> tangoTrie.getLetter(it.nodeId)
+                    }
+                    // Symbol readings are useful alone, but must not beat words inside a sentence.
+                    val embeddedSymbol=(i!=0||yomiStr.length!=str.length)&&
+                        yomiStr.codePoints().allMatch { cp ->
+                            val script=Character.UnicodeScript.of(cp)
+                            script==Character.UnicodeScript.HIRAGANA||script==Character.UnicodeScript.KATAKANA||cp==0x30fc
+                        }&&value.isNotBlank()&&value.codePoints().noneMatch(Character::isLetterOrDigit)
+                    val cost=it.wordCost.toInt()+if(embeddedSymbol)24000 else 0
                     Node(
                         l = tokenArray.leftIds[it.posTableIndex.toInt()],
                         r = tokenArray.rightIds[it.posTableIndex.toInt()],
-                        score = it.wordCost.toInt(),
-                        f = it.wordCost.toInt(),
-                        g = it.wordCost.toInt(),
-                        tango = when (it.nodeId) {
-                            -2 -> yomiStr
-                            -1 -> yomiStr.hiraToKata()
-                            else -> tangoTrie.getLetter(it.nodeId)
-                        },
+                        score = cost,
+                        f = cost,
+                        g = cost,
+                        tango = value,
                         len = yomiStr.length.toShort(),
                         sPos = i,
                         key = yomiStr,
-                        wcost = it.wordCost.toInt(),
+                        wcost = cost,
                         totalCost = Int.MAX_VALUE,
                     )
                 }
