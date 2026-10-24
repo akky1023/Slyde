@@ -15,6 +15,35 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class CandidateDrawingTest {
+    @Test public void aiAnnotationDoesNotResetTextLayoutOrScroll(){
+        android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
+        CandidateBarView bar=new CandidateBarView(context,value->{},value->{},()->{});
+        List<String> values=List.of("今日の予定","明日の予定","来週の予定","来月の予定");
+        bar.setCandidates(values);layoutBar(bar);
+        ViewGroup cells=flow(bar);android.widget.HorizontalScrollView scroll=(android.widget.HorizontalScrollView)cells.getParent();
+        scroll.scrollTo(60,0);int scrollX=scroll.getScrollX();assertTrue(scrollX>0);
+        android.widget.TextView first=(android.widget.TextView)cells.getChildAt(0);
+        android.text.Layout original=first.getLayout();CharSequence text=first.getText();
+        bar.setCandidates(values,"来週の予定",false);layoutBar(bar);
+        assertSame(text,first.getText());assertSame(original,first.getLayout());assertEquals(scrollX,scroll.getScrollX());
+        assertTrue(cells.getChildAt(2).getContentDescription().toString().contains("AI候補"));
+    }
+    @Test public void newAiCandidatePreservesScrollAndUnchangedText(){
+        android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
+        CandidateBarView bar=new CandidateBarView(context,value->{},value->{},()->{});
+        bar.setCandidates(List.of("今日の予定","明日の予定","来週の予定","来月の予定"));layoutBar(bar);
+        ViewGroup cells=flow(bar);android.widget.HorizontalScrollView scroll=(android.widget.HorizontalScrollView)cells.getParent();
+        scroll.scrollTo(60,0);int scrollX=scroll.getScrollX();assertTrue(scrollX>0);
+        android.widget.TextView first=(android.widget.TextView)cells.getChildAt(0);CharSequence text=first.getText();
+        bar.setCandidates(List.of("今日の予定","今日の予報","明日の予定","来週の予定","来月の予定"),"今日の予報",false);layoutBar(bar);
+        assertSame(text,first.getText());assertEquals(scrollX,scroll.getScrollX());
+        bar.setCandidates(List.of("次の読み","次の候補","別の候補","さらに候補"),null,true);layoutBar(bar);
+        assertEquals(0,scroll.getScrollX());
+    }
+    private static void layoutBar(CandidateBarView bar){
+        bar.measure(View.MeasureSpec.makeMeasureSpec(220,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.AT_MOST));
+        bar.layout(0,0,220,bar.getMeasuredHeight());
+    }
     @Test public void convertedSymbolsCommitTheirCompletePresentationAndEmojiSequences() throws Exception {
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         var dictionary=new net.neomenia.inputcore.ConversionCandidates();

@@ -75,12 +75,20 @@ final class CandidateBarView extends LinearLayout {
         setCandidates(values,null);
     }
     void setCandidates(List<String> values,String ai){
+        setCandidates(values,ai,true);
+    }
+    void setCandidates(List<String> values,String ai,boolean resetScroll){
         if(choices.equals(values)&&Objects.equals(aiCandidate,ai))return;
+        if(choices.equals(values)){
+            aiCandidate=ai;
+            for(int index=0;index<flow.getChildCount();index++)((WidthLabelView)flow.getChildAt(index)).setAi(choices.get(index).equals(ai));
+            return;
+        }
         aiCandidate=ai;
         choices=new ArrayList<>(values);populate(flow);expandButton.setVisibility(choices.isEmpty()?INVISIBLE:VISIBLE);
         settingsButton.setVisibility(choices.isEmpty()?VISIBLE:GONE);
         if(choices.isEmpty())setExpanded(false);
-        if(strip.getChildCount()>0)strip.getChildAt(0).scrollTo(0,0);
+        if(resetScroll&&strip.getChildCount()>0)strip.getChildAt(0).scrollTo(0,0);
     }
     private void populate(Flow flow){
         Map<String,String> badges=CharacterWidth.badges(choices);

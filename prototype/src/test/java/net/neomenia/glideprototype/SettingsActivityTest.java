@@ -48,6 +48,35 @@ public class SettingsActivityTest {
             assertFalse(((MaterialSwitch)find(root,"AI候補の「AI」を表示")).isChecked());
         }
     }
+    @Test public void conversionWaitSettingIsOptionalAndSaved(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().remove("waitForZenz").apply();
+            View root=activity.getWindow().getDecorView();click(root,"変換");
+            MaterialSwitch toggle=(MaterialSwitch)find(root,"AI変換を待って候補を表示する");
+            assertNotNull(toggle);assertFalse(toggle.isChecked());toggle.setChecked(true);
+            assertTrue(InputPreferences.get(activity).getBoolean("waitForZenz",false));
+            SettingsActivityTest.capture(root,"settings-conversion-wait");
+            activity.onBackPressed();click(root,"変換");
+            assertTrue(((MaterialSwitch)find(root,"AI変換を待って候補を表示する")).isChecked());
+        }
+    }
+    @Test public void variableWaitModeIsSavedAndFixedWaitRemainsAvailable(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();
+            InputPreferences.get(activity).edit().putBoolean("waitForZenz",false).putBoolean("variableZenzWait",false).apply();
+            View root=activity.getWindow().getDecorView();click(root,"変換");
+            android.widget.RadioButton fixed=(android.widget.RadioButton)find(root,"固定：20ms");
+            android.widget.RadioButton variable=(android.widget.RadioButton)find(root,"可変：20＋文字数×2 ms");
+            assertTrue(fixed.isChecked());assertFalse(variable.isEnabled());
+            ((MaterialSwitch)find(root,"AI変換を待って候補を表示する")).setChecked(true);
+            assertTrue(variable.isEnabled());variable.performClick();
+            assertTrue(InputPreferences.get(activity).getBoolean("variableZenzWait",false));assertFalse(fixed.isChecked());
+            activity.onBackPressed();click(root,"変換");
+            assertTrue(((android.widget.RadioButton)find(root,"可変：20＋文字数×2 ms")).isChecked());
+            capture(root,"settings-variable-wait");
+            find(root,"固定：20ms").performClick();assertFalse(InputPreferences.get(activity).getBoolean("variableZenzWait",true));
+        }
+    }
     private static View findType(View view,Class<?> type){
         if(type.isInstance(view))return view;
         if(view instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++){View found=findType(group.getChildAt(i),type);if(found!=null)return found;}return null;

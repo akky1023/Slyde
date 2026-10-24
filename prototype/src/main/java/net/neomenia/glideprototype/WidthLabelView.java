@@ -26,8 +26,8 @@ final class WidthLabelView extends TextView {
     private boolean fontReady;
     private String touchedValue,clickedValue;
     WidthLabelView(Context context){super(context);badgePaint.setTextAlign(Paint.Align.RIGHT);badgePaint.setColor(Color.rgb(160,191,207));badgePaint.setTextSize(9*getResources().getDisplayMetrics().scaledDensity);setPadding(0,0,0,Math.round(8*getResources().getDisplayMetrics().density));fontReady=true;}
-    void setValue(String value){setText(ImeFonts.styled(getContext(),getTypeface(),value));setBadge(CharacterWidth.badge(value));}
-    @Override public void setTypeface(Typeface value){super.setTypeface(value);if(fontReady)setText(ImeFonts.styled(getContext(),value,getText().toString()));}
+    void setValue(String value){if(value.contentEquals(getText()))return;setText(ImeFonts.styled(getContext(),getTypeface(),value));setBadge(CharacterWidth.badge(value));}
+    @Override public void setTypeface(Typeface value){if(fontReady&&getTypeface()==value)return;super.setTypeface(value);if(fontReady)setText(ImeFonts.styled(getContext(),value,getText().toString()));}
     void setBadge(String value){badge=value;updateDescription();invalidate();}
     void setAi(boolean value){ai=value;updateDescription();invalidate();}
     void setAnnotationVisibility(boolean characters,boolean aiLabel){showBadge=characters;showAi=aiLabel;updateDescription();invalidate();}

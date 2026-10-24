@@ -13,6 +13,7 @@ public final class ZenzCandidates {
     }
     public static List<String> merge(List<String> dictionary,String ai,boolean dictionaryReady){
         if(!safe(ai))return new ArrayList<>(dictionary);
+        if(dictionaryReady&&dictionary.contains(ai))return new ArrayList<>(dictionary);
         LinkedHashSet<String> values=new LinkedHashSet<>();if(dictionaryReady&&!dictionary.isEmpty())values.add(dictionary.get(0));values.add(ai);values.addAll(dictionary);return new ArrayList<>(values);
     }
 }

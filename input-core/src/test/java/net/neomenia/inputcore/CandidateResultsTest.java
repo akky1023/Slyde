@@ -5,6 +5,11 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 public class CandidateResultsTest {
+    @Test public void aiAlreadyInDictionaryAddsAnnotationWithoutReordering(){
+        CandidateResults results=new CandidateResults(List.of("今日","京","きょう"),true);
+        results.ai("きょう");assertEquals(List.of("今日","京","きょう"),results.values());
+        assertEquals("きょう",results.ai());
+    }
     @Test public void aiCannotReplaceTheBestCompletedDictionarySentence(){
         for(boolean aiFirst:new boolean[]{true,false}){
             CandidateResults results=new CandidateResults(List.of("あしたのかいぎ"));

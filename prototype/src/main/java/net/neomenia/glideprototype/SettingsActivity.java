@@ -63,9 +63,10 @@ public final class SettingsActivity extends AppCompatActivity {
         boolean selected=id.equals(Settings.Secure.getString(getContentResolver(),Settings.Secure.DEFAULT_INPUT_METHOD));
         inputStatus.setText(selected?"使用中です":enabled?"有効です。キーボードを切り替えてください。":"キーボードを有効にして切り替えてください。");
     }
-    private void toggle(String title,String key,boolean fallback){
+    private MaterialSwitch toggle(String title,String key,boolean fallback){
         MaterialSwitch control=new MaterialSwitch(this);control.setText(title);control.setTextColor(com.google.android.material.color.MaterialColors.getColor(this,com.google.android.material.R.attr.colorOnSurface,0));control.setMinHeight(dp(56));control.setChecked(preferences.getBoolean(key,fallback));
         control.setOnCheckedChangeListener((button,checked)->preferences.edit().putBoolean(key,checked).apply());body.addView(control,new LinearLayout.LayoutParams(-1,-2));
+        return control;
     }
     private void slider(String name,int min,int max,int initial,String suffix,IntConsumer save){
         TextView label=SettingsUi.text(this,name+"（"+initial+suffix+"）",16);label.setPadding(0,dp(16),0,0);body.addView(label);
@@ -80,7 +81,21 @@ public final class SettingsActivity extends AppCompatActivity {
         heading("記号入力ボード");link("記号入力ボード1",()->show("board0"));link("記号入力ボード2",()->show("board1"));
         heading("記号・絵文字");description("「やじるし」「かっこ」「れいわ」などの読みから変換できます。");
     }
-    private void conversion(){heading("変換候補");slider("候補欄の行数",1,3,preferences.getInt("candidateRows",1),"行",value->preferences.edit().putInt("candidateRows",value).apply());toggle("zenzのオフラインAI変換を有効にする","zenzEnabled",true);}
+    private void conversion(){
+        heading("変換候補");slider("候補欄の行数",1,3,preferences.getInt("candidateRows",1),"行",value->preferences.edit().putInt("candidateRows",value).apply());
+        toggle("zenzのオフラインAI変換を有効にする","zenzEnabled",true);
+        MaterialSwitch wait=toggle("AI変換を待って候補を表示する","waitForZenz",false);
+        RadioGroup modes=new RadioGroup(this);body.addView(modes,new LinearLayout.LayoutParams(-1,-2));
+        RadioButton fixed=new RadioButton(this),variable=new RadioButton(this);
+        fixed.setId(View.generateViewId());variable.setId(View.generateViewId());
+        fixed.setText("固定：20ms");variable.setText("可変：20＋文字数×2 ms");
+        modes.addView(fixed);modes.addView(variable);
+        modes.check(preferences.getBoolean("variableZenzWait",false)?variable.getId():fixed.getId());
+        fixed.setEnabled(wait.isChecked());variable.setEnabled(wait.isChecked());
+        modes.setOnCheckedChangeListener((group,id)->preferences.edit().putBoolean("variableZenzWait",id==variable.getId()).apply());
+        wait.setOnCheckedChangeListener((button,checked)->{preferences.edit().putBoolean("waitForZenz",checked).apply();fixed.setEnabled(checked);variable.setEnabled(checked);});
+        description("zenzの変換完了か待ち時間の経過の早い方で候補を表示します。可変では変換する読みの文字数を使い、10文字なら40ms待ちます。");
+    }
     private void display(){
         heading("キーボード");link("大きさ・位置",()->startActivity(new Intent(this,LayoutSettingsActivity.class)));
         heading("フォント");String[] names=ImeFonts.NAMES;int current=Math.max(0,Math.min(2,preferences.getInt("imeFont",0)));

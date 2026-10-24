@@ -49,10 +49,11 @@ final class ZenzRuntime {
             if(!engine.initModel(model.getAbsolutePath()))throw new IOException("zenzモデルを読み込めません");loaded=true;return null;
         }catch(Exception|LinkageError|OutOfMemoryError error){failure=error.getClass().getSimpleName()+": "+error.getMessage();return failure;}
     }
-    void request(String reading,String left,String right,Consumer<String> result){
+    void request(String reading,String left,String right,Consumer<String> result,Runnable completed){
         cancel();long request=sequence.get();
         String key=left+'\0'+reading+'\0'+right;
         actor.execute(()->{
+            try{
             if(sequence.get()!=request)return;
             List<String> cached=cache.get(key);
             if(cached!=null){main.post(()->{if(sequence.get()==request)result.accept(cached.get(0));});return;}
@@ -62,7 +63,7 @@ final class ZenzRuntime {
                 for(var part:ConversionPlan.split(reading,64)){
                     if(sequence.get()!=request)return;
                     if(!part.convert()){converted.append(part.text());continue;}
-                    String prior=ConversionPlan.tail(left+converted,64),following=part.end()==reading.length()?ConversionPlan.head(right,32):"";
+                    String prior=ConversionPlan.tail(left+converted,ConversionHistory.CONTEXT_LIMIT),following=part.end()==reading.length()?ConversionPlan.head(right,32):"";
                     int budget=Math.max(128,Math.min(384,part.text().codePointCount(0,part.text().length())*3+32));
                     String output=ZenzCandidates.normalize(engine.generateWithContextAndConditionsV32("","","","",prior,following,part.text(),budget));
                     if(!ZenzCandidates.safe(output)||output.codePointCount(0,output.length())<part.text().codePointCount(0,part.text().length())/4)return;
@@ -73,6 +74,7 @@ final class ZenzRuntime {
                 if(value.equals(reading)&&reading.length()>8)return;
                 if(sequence.get()==request&&ZenzCandidates.safe(value)){cache.put(key,List.of(value));main.post(()->{if(sequence.get()==request)result.accept(value);});}
             }catch(IOException|RuntimeException|OutOfMemoryError error){android.util.Log.e("ZenzRuntime","推論に失敗しました",error);}
+            }finally{main.post(()->{if(sequence.get()==request)completed.run();});}
         });
     }
 }

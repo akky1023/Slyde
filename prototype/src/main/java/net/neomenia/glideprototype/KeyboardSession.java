@@ -29,9 +29,11 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private InputConnection connection;
     private EditorInfo editorInfo;
     private boolean privateField;
+    private final ConversionHistory conversionHistory=new ConversionHistory();
     private final StringBuilder composing=new StringBuilder();
     private final ExecutorService worker=Executors.newSingleThreadExecutor(task->new Thread(()->{android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);task.run();},"dictionary"));
     private Future<?> dictionaryTask;
+    private CandidateDisplayGate candidateDisplay;
     private final Handler main=new Handler(Looper.getMainLooper());
     private volatile SumireAdapter engine;
     private volatile int generation=0;
@@ -73,6 +75,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private void editLayout(){commit();keyboard.cancelTouches();dock.edit();}
     private SharedPreferences getPreferences(int mode){return InputPreferences.get(this);}
     void start(InputConnection input,EditorInfo info){
+        conversionHistory.start(info);
         generation++;clearCandidates();composing.setLength(0);connection=input;editorInfo=info;
         privateField=net.neomenia.inputcore.EditorPolicy.isPassword(info.inputType);
         reloadSettings();
@@ -108,7 +111,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,KeyEvent.KEYCODE_ENTER));
         }else connection.commitText("\n",1);
     }
-    void destroy(){dock.cancelEdit();keyboard.cancelTouches();destroyed=true;generation++;if(zenz!=null)zenz.cancel();worker.shutdownNow();main.removeCallbacksAndMessages(null);connection=null;}
+    void destroy(){dock.cancelEdit();keyboard.cancelTouches();conversionHistory.clear();destroyed=true;generation++;if(zenz!=null)zenz.cancel();worker.shutdownNow();main.removeCallbacksAndMessages(null);connection=null;}
     @Override public void text(String raw,boolean japanese){
         if(connection==null)return;
         generation++;invalidateCandidates();
@@ -128,10 +131,11 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         zenz.warmup(error->{if(destroyed||!getPreferences(0).getBoolean("zenzEnabled",true))return;zenzState=error==null?"有効":"利用不可："+error;status.setText(inputStatus());});
     }
     private String inputStatus(){return "Sumire基本辞書 · "+(getPreferences(0).getBoolean("zenzEnabled",true)?"zenz "+zenzState+" · ":"")+"オフライン変換";}
-    void commit(){generation++;if(connection==null){composing.setLength(0);clearCandidates();return;}if(composing.length()>0){connection.commitText(reading(),1);composing.setLength(0);}connection.finishComposingText();clearCandidates();}
+    void commit(){generation++;if(connection==null){composing.setLength(0);clearCandidates();return;}if(composing.length()>0){String value=reading();if(connection.commitText(value,1))conversionHistory.record(value);composing.setLength(0);}connection.finishComposingText();clearCandidates();}
     private int candidateRows(){return Math.max(1,Math.min(3,getPreferences(0).getInt("candidateRows",1)));}
     private int candidateHeight(){return candidateRows()*candidates.rowHeight();}
     private void invalidateCandidates(){
+        if(candidateDisplay!=null){candidateDisplay.cancel();candidateDisplay=null;}
         if(zenz!=null)zenz.cancel();
         if(dictionaryTask!=null){dictionaryTask.cancel(false);dictionaryTask=null;}
         main.removeCallbacks(autoCandidates);if(candidates!=null)setCandidateExpanded(false);
@@ -147,7 +151,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(dock!=null){dock.setCandidateHeight(candidateHeight());if(dockHeight>0)applyDockHeight(dockHeight);}
     }
     private void chooseCandidate(String choice){
-        if(connection==null||candidateRequest!=generation)return;generation++;connection.commitText(choice,1);composing.setLength(0);clearCandidates();status.setText(inputStatus());
+        if(connection==null||candidateRequest!=generation)return;generation++;if(connection.commitText(choice,1))conversionHistory.record(choice);composing.setLength(0);clearCandidates();status.setText(inputStatus());
     }
     private void setCandidateExpanded(boolean expanded){
         candidates.setExpanded(expanded);
@@ -177,25 +181,31 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(connection==null||privateField||composing.length()==0)return;
         invalidateCandidates();
         String input=reading();SumireAdapter loaded=engine;
-        final int request=++generation;candidateRequest=request;if(!automatic)status.setText("変換中…");
+        final int request=++generation;candidateRequest=0;if(!automatic)status.setText("変換中…");
         final JapaneseTypography style=typography;
         List<String> cached=loaded==null?null:loaded.cachedCandidates(input);
         final CandidateResults results=new CandidateResults(formatChoices(cached==null?List.of():cached,input,style),cached!=null&&!cached.isEmpty());
-        candidates.setCandidates(results.values());
         final boolean useZenz=getPreferences(0).getBoolean("zenzEnabled",true)&&input.length()<=2048&&input.codePoints().anyMatch(cp->cp>='ぁ'&&cp<='ゖ');
+        final int waitMillis=CandidateDisplayGate.waitMillis(useZenz&&getPreferences(0).getBoolean("waitForZenz",false),getPreferences(0).getBoolean("variableZenzWait",false),input);
+        final boolean[] firstDisplay={true};
+        final CandidateDisplayGate display=new CandidateDisplayGate(main,waitMillis,()->{
+            if(destroyed||request!=generation)return;
+            candidateRequest=request;candidates.setCandidates(results.values(),results.ai(),firstDisplay[0]);firstDisplay[0]=false;
+        });
+        candidateDisplay=display;display.update();
         CharSequence preceding=useZenz?connection.getTextBeforeCursor(192,0):null;
         String before=preceding==null?"":preceding.toString();
         String visible=typography.format(Romanizer.convert(composing.toString(),false));
         if(before.endsWith(visible))before=before.substring(0,before.length()-visible.length());
         CharSequence following=useZenz?connection.getTextAfterCursor(64,0):null;
         String after=following==null?"":following.toString();
-        final String left=before.substring(before.offsetByCodePoints(before.length(),-Math.min(64,before.codePointCount(0,before.length()))));
+        final String left=conversionHistory.context(before);
         final String right=after.substring(0,after.offsetByCodePoints(0,Math.min(32,after.codePointCount(0,after.length()))));
         if(useZenz)zenz.request(input,left,right,value->{
             if(destroyed||request!=generation||!getPreferences(0).getBoolean("zenzEnabled",true))return;
             String formattedAi=style.format(value);if(!ZenzCandidates.safe(formattedAi))return;
-            results.ai(formattedAi);candidates.setCandidates(results.values(),results.ai());status.setText("Sumire基本辞書 + zenz · AI候補を追加");
-        });
+            results.ai(formattedAi);display.update();status.setText("Sumire基本辞書 + zenz · AI候補を追加");
+        },display::release);
         if(loaded==null){if(!automatic)Toast.makeText(this,"辞書を準備しています",Toast.LENGTH_SHORT).show();return;}
         if(cached!=null){if(!automatic)status.setText(inputStatus());return;}
         dictionaryTask=worker.submit(()->{
@@ -208,7 +218,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             String finalError=error;
             main.post(()->{if(destroyed||request!=generation)return;
                 if(!automatic||finalError!=null)status.setText(finalError==null?"Sumire基本辞書 · 候補を選んで確定":"変換エラー："+finalError);
-                results.dictionary(choices,dictionaryReady);candidates.setCandidates(results.values(),results.ai());
+                results.dictionary(choices,dictionaryReady);display.update();
             });
         });
     }
