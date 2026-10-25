@@ -29,7 +29,7 @@ public final class GlideKeyboardView extends View {
         final int pointerId,startSide,startRow;
         final float downX,downY;
         final List<GlideDecoder.Point> points=new ArrayList<>();
-        int active=-1;float x,y;boolean repeating;Runnable repeat;
+        int active=-1;float x,y;boolean repeating,committed;Runnable repeat;
         Stroke(int id,int side,int row,float x,float y){pointerId=id;startSide=side;startRow=row;downX=x;downY=y;}
     }
     private int rowDp=58;
@@ -115,7 +115,7 @@ public final class GlideKeyboardView extends View {
     private boolean isActive(int index){for(Stroke stroke:touches.active())if(stroke.active==index)return true;return false;}
     private void add(Stroke stroke,float x,float y){stroke.x=x;stroke.y=y;stroke.points.add(new GlideDecoder.Point((x-left())/cw(),y/rh()));stroke.active=KeyLayout.index((x-left())/cw(),y/rh());}
     private void updatePreview(Stroke stroke){
-        if(stroke.points.isEmpty()||stroke.startSide!=0)return;
+        if(stroke.committed||stroke.points.isEmpty()||stroke.startSide!=0)return;
         if((page==0||page==1)&&KeyboardGestures.isNumberToggle(stroke.points)){
             listener.preview(page==0?"S → K":"5 → 2",page==0?"数字キーボードへ":"文字キーボードへ");return;
         }
@@ -125,7 +125,7 @@ public final class GlideKeyboardView extends View {
     void cancelTouches(){handler.removeCallbacksAndMessages(null);touches.clear();invalidate();}
     private void samplePointers(MotionEvent event){
         for(int index=0;index<event.getPointerCount();index++){
-            Stroke stroke=touches.get(event.getPointerId(index));if(stroke==null)continue;
+            Stroke stroke=touches.get(event.getPointerId(index));if(stroke==null||stroke.committed)continue;
             for(int h=0;h<event.getHistorySize();h++)add(stroke,event.getHistoricalX(index,h),event.getHistoricalY(index,h));
             add(stroke,event.getX(index),event.getY(index));
             if(Math.hypot(stroke.x-stroke.downX,stroke.y-stroke.downY)>(isSettings(stroke)?ViewConfiguration.get(getContext()).getScaledTouchSlop():20*density())&&stroke.repeat!=null)handler.removeCallbacks(stroke.repeat);
@@ -133,6 +133,21 @@ public final class GlideKeyboardView extends View {
     }
     private boolean isSettings(Stroke stroke){return stroke.startSide==-1&&stroke.startRow==0&&(page!=0||japanese);}
     private String caseText(String s){return shift.upper()?s.toUpperCase(Locale.ROOT):s;}
+    private void commitConsonantVowel(){
+        if(!isJapanese()||touches.active().size()!=2)return;
+        Iterator<Stroke> held=touches.active().iterator();
+        Stroke consonant=held.next(),vowel=held.next();
+        if(consonant.committed||vowel.committed||consonant.startSide!=0||vowel.startSide!=0||!touches.isFirst(consonant))return;
+        String first=GlideDecoder.decode(consonant.points,false,naNyaBias,enableEu,enableIu).raw();
+        String second=GlideDecoder.decode(vowel.points,false,naNyaBias,enableEu,enableIu).raw();
+        if(first.length()!=1||!"kstnhmyrwgzdbpfvjcqlx".contains(first)||!KeyLayout.vowel(second))return;
+        if(!touches.commitHeldPair(consonant.pointerId,vowel.pointerId))return;
+        consonant.committed=true;vowel.committed=true;
+        String raw=first+second;
+        listener.text(raw,true);
+        listener.preview(first.toUpperCase(Locale.ROOT)+" → "+second.toUpperCase(Locale.ROOT),typography.format(Romanizer.convert(raw,true)));
+        performClick();
+    }
     @Override public boolean onTouchEvent(MotionEvent event){
         int action=event.getActionMasked(),index=event.getActionIndex();
         if(action==MotionEvent.ACTION_CANCEL){cancelTouches();listener.preview("","");return true;}
@@ -159,6 +174,7 @@ public final class GlideKeyboardView extends View {
                     handler.postDelayed(stroke.repeat,ViewConfiguration.getLongPressTimeout());
                 }
                 updatePreview(stroke);
+                commitConsonantVowel();
             }
             invalidate();return true;
         }
