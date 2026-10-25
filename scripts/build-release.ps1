@@ -40,7 +40,7 @@ try {
     $env:GLIDE_STORE_PASSWORD = [System.Net.NetworkCredential]::new('', $secret).Password
     $env:GLIDE_KEYSTORE = $keyFile
     if (-not (Test-Path -LiteralPath $keyFile)) {
-        & (Join-Path $JavaHome 'bin/keytool.exe') -genkeypair -keystore $keyFile -storetype PKCS12 -alias glide -keyalg RSA -keysize 3072 -validity 10000 -dname 'CN=Glide Japanese Input, OU=Application Signing, O=Neomenia, C=JP' -storepass:env GLIDE_STORE_PASSWORD -keypass:env GLIDE_STORE_PASSWORD
+        & (Join-Path $JavaHome 'bin/keytool.exe') -genkeypair -keystore $keyFile -storetype PKCS12 -alias glide -keyalg RSA -keysize 3072 -validity 10000 -dname 'CN=akky_1023, O=Neomenia, C=JP' -ext 'SAN=DNS:neomenia.net' -storepass:env GLIDE_STORE_PASSWORD -keypass:env GLIDE_STORE_PASSWORD
         if ($LASTEXITCODE -ne 0) { throw '正式版の署名鍵を作成できませんでした。' }
     }
     & (Join-Path $PSScriptRoot 'prepare-zenz.ps1') -Offline:$Offline

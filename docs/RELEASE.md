@@ -1,6 +1,6 @@
 # 正式版のビルドと配布
 
-- アプリ名: Glide 日本語入力
+- アプリ名: Slyde
 - バージョン: 1.1.11（versionCode 30）
 - アプリID: `net.neomenia.japaneseinput.glide`
 - 配布APK: `dist/Glide-1.1.11.apk`
@@ -59,6 +59,14 @@ SDKとNDKの保存先が別の場合は `-NativeSdk`、既存の依存キャッ�
 初回のみ `.tools/signing/glide-release.p12` と `password.clixml` を生成します。このフォルダはWindowsの現在のアカウントとSYSTEMだけがアクセスでき、`.tools/` はソース管理対象外です。パスワードはランダム生成し、Windows DPAPIで暗号化して保存します。ビルド時だけ環境変数でkeytool／Gradleに渡し、ログ・APK・distには含めません。
 
 更新版には同じ鍵が必要です。署名鍵は安全な場所へバックアップし、パスワードは別途パスワード管理ソフトなどで保管してください。`password.clixml` は同じWindowsアカウント・マシンでの復号を前提としており、このファイルを別PCにコピーするだけでは復旧できません。署名鍵かパスワードの片方が欠けた場合、ビルドは新しい鍵を自動生成せず停止します。
+
+2026-10-25に一般配布用の証明書名義を `CN=akky_1023, O=Neomenia, C=JP` へ変更し、SANに `DNS:neomenia.net` を追加しました。自己署名証明書のため、SANはドメイン所有権の第三者認証を意味しません。RSA 3072ビットの鍵ペアは維持していますが、証明書が変わるため旧証明書版への上書き更新はできません。旧版の設定など必要なデータを退避してから再インストールしてください。
+
+- 現行証明書 SHA-256: `e9970e3491494b00ad296fefcf8838f6e333c0fba9d20ccbbec2e7b61ff1d612`
+- 有効期限: 2054-03-12（JST）
+- 新証明書を反映したAPK: `dist/Glide-1.1.11.apk`（アプリの内容・バージョンは変更せず再署名）
+- 旧鍵・パスワードのローカル退避先: `.tools/signing/backup-before-identity-change-20261025/`
+- 旧署名1.1.11の退避先: `dist/archive/before-signing-identity-change-20261025/`
 
 ## 検証範囲
 

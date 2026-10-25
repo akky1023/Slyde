@@ -1,0 +1,635 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Glide — Motion, icon concept 01</title>
+  <desc id="desc">A seamless blue-to-mint S-shaped swipe whose gradient continues through the rounded tip, over nine flat borderless matte keyboard keys on a solid navy background.</desc>
+  <defs>
+    <linearGradient id="swipe-000" x1="128" y1="351" x2="134.385" y2="353.758" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#438AFF" />
+      <stop offset="1" stop-color="#448BFF" />
+    </linearGradient>
+    <linearGradient id="swipe-001" x1="134.385" y1="353.758" x2="140.93" y2="356.185" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#448BFF" />
+      <stop offset="1" stop-color="#448CFF" />
+    </linearGradient>
+    <linearGradient id="swipe-002" x1="140.93" y1="356.185" x2="147.618" y2="358.291" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#448CFF" />
+      <stop offset="1" stop-color="#458DFF" />
+    </linearGradient>
+    <linearGradient id="swipe-003" x1="147.618" y1="358.291" x2="154.432" y2="360.082" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#458DFF" />
+      <stop offset="1" stop-color="#468EFF" />
+    </linearGradient>
+    <linearGradient id="swipe-004" x1="154.432" y1="360.082" x2="161.355" y2="361.566" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#468EFF" />
+      <stop offset="1" stop-color="#4690FF" />
+    </linearGradient>
+    <linearGradient id="swipe-005" x1="161.355" y1="361.566" x2="168.372" y2="362.752" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4690FF" />
+      <stop offset="1" stop-color="#4791FF" />
+    </linearGradient>
+    <linearGradient id="swipe-006" x1="168.372" y1="362.752" x2="175.464" y2="363.646" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4791FF" />
+      <stop offset="1" stop-color="#4892FF" />
+    </linearGradient>
+    <linearGradient id="swipe-007" x1="175.464" y1="363.646" x2="182.616" y2="364.256" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4892FF" />
+      <stop offset="1" stop-color="#4893FF" />
+    </linearGradient>
+    <linearGradient id="swipe-008" x1="182.616" y1="364.256" x2="189.811" y2="364.59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4893FF" />
+      <stop offset="1" stop-color="#4994FF" />
+    </linearGradient>
+    <linearGradient id="swipe-009" x1="189.811" y1="364.59" x2="197.031" y2="364.656" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4994FF" />
+      <stop offset="1" stop-color="#4A95FF" />
+    </linearGradient>
+    <linearGradient id="swipe-010" x1="197.031" y1="364.656" x2="204.261" y2="364.462" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4A95FF" />
+      <stop offset="1" stop-color="#4A96FF" />
+    </linearGradient>
+    <linearGradient id="swipe-011" x1="204.261" y1="364.462" x2="211.484" y2="364.014" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4A96FF" />
+      <stop offset="1" stop-color="#4B98FF" />
+    </linearGradient>
+    <linearGradient id="swipe-012" x1="211.484" y1="364.014" x2="218.683" y2="363.321" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4B98FF" />
+      <stop offset="1" stop-color="#4C99FF" />
+    </linearGradient>
+    <linearGradient id="swipe-013" x1="218.683" y1="363.321" x2="225.841" y2="362.391" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4C99FF" />
+      <stop offset="1" stop-color="#4C9AFF" />
+    </linearGradient>
+    <linearGradient id="swipe-014" x1="225.841" y1="362.391" x2="232.941" y2="361.23" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4C9AFF" />
+      <stop offset="1" stop-color="#4D9BFF" />
+    </linearGradient>
+    <linearGradient id="swipe-015" x1="232.941" y1="361.23" x2="239.968" y2="359.848" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4D9BFF" />
+      <stop offset="1" stop-color="#4D9CFF" />
+    </linearGradient>
+    <linearGradient id="swipe-016" x1="239.968" y1="359.848" x2="246.904" y2="358.251" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4D9CFF" />
+      <stop offset="1" stop-color="#4E9DFF" />
+    </linearGradient>
+    <linearGradient id="swipe-017" x1="246.904" y1="358.251" x2="253.732" y2="356.447" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4E9DFF" />
+      <stop offset="1" stop-color="#4F9EFF" />
+    </linearGradient>
+    <linearGradient id="swipe-018" x1="253.732" y1="356.447" x2="260.437" y2="354.444" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F9EFF" />
+      <stop offset="1" stop-color="#4FA0FF" />
+    </linearGradient>
+    <linearGradient id="swipe-019" x1="260.437" y1="354.444" x2="267" y2="352.25" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4FA0FF" />
+      <stop offset="1" stop-color="#50A1FF" />
+    </linearGradient>
+    <linearGradient id="swipe-020" x1="267" y1="352.25" x2="273.406" y2="349.872" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#50A1FF" />
+      <stop offset="1" stop-color="#51A2FF" />
+    </linearGradient>
+    <linearGradient id="swipe-021" x1="273.406" y1="349.872" x2="279.638" y2="347.318" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#51A2FF" />
+      <stop offset="1" stop-color="#51A3FF" />
+    </linearGradient>
+    <linearGradient id="swipe-022" x1="279.638" y1="347.318" x2="285.679" y2="344.595" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#51A3FF" />
+      <stop offset="1" stop-color="#52A4FF" />
+    </linearGradient>
+    <linearGradient id="swipe-023" x1="285.679" y1="344.595" x2="291.512" y2="341.712" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#52A4FF" />
+      <stop offset="1" stop-color="#53A5FF" />
+    </linearGradient>
+    <linearGradient id="swipe-024" x1="291.512" y1="341.712" x2="297.121" y2="338.676" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#53A5FF" />
+      <stop offset="1" stop-color="#53A6FF" />
+    </linearGradient>
+    <linearGradient id="swipe-025" x1="297.121" y1="338.676" x2="302.489" y2="335.494" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#53A6FF" />
+      <stop offset="1" stop-color="#54A7FF" />
+    </linearGradient>
+    <linearGradient id="swipe-026" x1="302.489" y1="335.494" x2="307.6" y2="332.175" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#54A7FF" />
+      <stop offset="1" stop-color="#54A8FF" />
+    </linearGradient>
+    <linearGradient id="swipe-027" x1="307.6" y1="332.175" x2="312.436" y2="328.726" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#54A8FF" />
+      <stop offset="1" stop-color="#55A9FF" />
+    </linearGradient>
+    <linearGradient id="swipe-028" x1="312.436" y1="328.726" x2="316.981" y2="325.155" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#55A9FF" />
+      <stop offset="1" stop-color="#55AAFF" />
+    </linearGradient>
+    <linearGradient id="swipe-029" x1="316.981" y1="325.155" x2="321.219" y2="321.469" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#55AAFF" />
+      <stop offset="1" stop-color="#56ABFF" />
+    </linearGradient>
+    <linearGradient id="swipe-030" x1="321.219" y1="321.469" x2="325.132" y2="317.676" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#56ABFF" />
+      <stop offset="1" stop-color="#56ABFF" />
+    </linearGradient>
+    <linearGradient id="swipe-031" x1="325.132" y1="317.676" x2="328.704" y2="313.784" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#56ABFF" />
+      <stop offset="1" stop-color="#57ACFF" />
+    </linearGradient>
+    <linearGradient id="swipe-032" x1="328.704" y1="313.784" x2="331.918" y2="309.801" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57ACFF" />
+      <stop offset="1" stop-color="#57ADFF" />
+    </linearGradient>
+    <linearGradient id="swipe-033" x1="331.918" y1="309.801" x2="334.758" y2="305.733" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57ADFF" />
+      <stop offset="1" stop-color="#58AEFF" />
+    </linearGradient>
+    <linearGradient id="swipe-034" x1="334.758" y1="305.733" x2="337.207" y2="301.59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#58AEFF" />
+      <stop offset="1" stop-color="#58AFFF" />
+    </linearGradient>
+    <linearGradient id="swipe-035" x1="337.207" y1="301.59" x2="339.248" y2="297.378" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#58AFFF" />
+      <stop offset="1" stop-color="#59AFFF" />
+    </linearGradient>
+    <linearGradient id="swipe-036" x1="339.248" y1="297.378" x2="340.864" y2="293.105" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#59AFFF" />
+      <stop offset="1" stop-color="#59B0FF" />
+    </linearGradient>
+    <linearGradient id="swipe-037" x1="340.864" y1="293.105" x2="342.04" y2="288.78" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#59B0FF" />
+      <stop offset="1" stop-color="#59B1FF" />
+    </linearGradient>
+    <linearGradient id="swipe-038" x1="342.04" y1="288.78" x2="342.757" y2="284.409" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#59B1FF" />
+      <stop offset="1" stop-color="#5AB2FF" />
+    </linearGradient>
+    <linearGradient id="swipe-039" x1="342.757" y1="284.409" x2="343" y2="280" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5AB2FF" />
+      <stop offset="1" stop-color="#5AB2FF" />
+    </linearGradient>
+    <linearGradient id="swipe-040" x1="343" y1="280" x2="342.679" y2="275.558" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5AB2FF" />
+      <stop offset="1" stop-color="#5BB3FF" />
+    </linearGradient>
+    <linearGradient id="swipe-041" x1="342.679" y1="275.558" x2="341.738" y2="271.52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5BB3FF" />
+      <stop offset="1" stop-color="#5BB4FF" />
+    </linearGradient>
+    <linearGradient id="swipe-042" x1="341.738" y1="271.52" x2="340.211" y2="267.863" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5BB4FF" />
+      <stop offset="1" stop-color="#5BB4FF" />
+    </linearGradient>
+    <linearGradient id="swipe-043" x1="340.211" y1="267.863" x2="338.128" y2="264.567" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5BB4FF" />
+      <stop offset="1" stop-color="#5CB5FF" />
+    </linearGradient>
+    <linearGradient id="swipe-044" x1="338.128" y1="264.567" x2="335.523" y2="261.611" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5CB5FF" />
+      <stop offset="1" stop-color="#5CB6FF" />
+    </linearGradient>
+    <linearGradient id="swipe-045" x1="335.523" y1="261.611" x2="332.429" y2="258.975" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5CB6FF" />
+      <stop offset="1" stop-color="#5CB6FF" />
+    </linearGradient>
+    <linearGradient id="swipe-046" x1="332.429" y1="258.975" x2="328.879" y2="256.637" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5CB6FF" />
+      <stop offset="1" stop-color="#5DB7FF" />
+    </linearGradient>
+    <linearGradient id="swipe-047" x1="328.879" y1="256.637" x2="324.904" y2="254.576" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5DB7FF" />
+      <stop offset="1" stop-color="#5DB8FF" />
+    </linearGradient>
+    <linearGradient id="swipe-048" x1="324.904" y1="254.576" x2="320.538" y2="252.772" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5DB8FF" />
+      <stop offset="1" stop-color="#5EB8FF" />
+    </linearGradient>
+    <linearGradient id="swipe-049" x1="320.538" y1="252.772" x2="315.812" y2="251.203" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EB8FF" />
+      <stop offset="1" stop-color="#5EB9FF" />
+    </linearGradient>
+    <linearGradient id="swipe-050" x1="315.812" y1="251.203" x2="310.761" y2="249.849" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EB9FF" />
+      <stop offset="1" stop-color="#5FBAFF" />
+    </linearGradient>
+    <linearGradient id="swipe-051" x1="310.761" y1="249.849" x2="305.416" y2="248.689" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5FBAFF" />
+      <stop offset="1" stop-color="#5FBBFF" />
+    </linearGradient>
+    <linearGradient id="swipe-052" x1="305.416" y1="248.689" x2="299.81" y2="247.702" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5FBBFF" />
+      <stop offset="1" stop-color="#60BCFF" />
+    </linearGradient>
+    <linearGradient id="swipe-053" x1="299.81" y1="247.702" x2="293.976" y2="246.866" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60BCFF" />
+      <stop offset="1" stop-color="#60BDFF" />
+    </linearGradient>
+    <linearGradient id="swipe-054" x1="293.976" y1="246.866" x2="287.945" y2="246.162" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60BDFF" />
+      <stop offset="1" stop-color="#61BEFF" />
+    </linearGradient>
+    <linearGradient id="swipe-055" x1="287.945" y1="246.162" x2="281.752" y2="245.568" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#61BEFF" />
+      <stop offset="1" stop-color="#61BFFF" />
+    </linearGradient>
+    <linearGradient id="swipe-056" x1="281.752" y1="245.568" x2="275.428" y2="245.063" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#61BFFF" />
+      <stop offset="1" stop-color="#62C0FE" />
+    </linearGradient>
+    <linearGradient id="swipe-057" x1="275.428" y1="245.063" x2="269.007" y2="244.627" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#62C0FE" />
+      <stop offset="1" stop-color="#62C1FE" />
+    </linearGradient>
+    <linearGradient id="swipe-058" x1="269.007" y1="244.627" x2="262.52" y2="244.238" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#62C1FE" />
+      <stop offset="1" stop-color="#63C2FE" />
+    </linearGradient>
+    <linearGradient id="swipe-059" x1="262.52" y1="244.238" x2="256" y2="243.875" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#63C2FE" />
+      <stop offset="1" stop-color="#64C3FD" />
+    </linearGradient>
+    <linearGradient id="swipe-060" x1="256" y1="243.875" x2="249.48" y2="243.518" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#64C3FD" />
+      <stop offset="1" stop-color="#64C4FD" />
+    </linearGradient>
+    <linearGradient id="swipe-061" x1="249.48" y1="243.518" x2="242.994" y2="243.146" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#64C4FD" />
+      <stop offset="1" stop-color="#65C5FC" />
+    </linearGradient>
+    <linearGradient id="swipe-062" x1="242.994" y1="243.146" x2="236.572" y2="242.737" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#65C5FC" />
+      <stop offset="1" stop-color="#65C6FC" />
+    </linearGradient>
+    <linearGradient id="swipe-063" x1="236.572" y1="242.737" x2="230.248" y2="242.272" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#65C6FC" />
+      <stop offset="1" stop-color="#66C7FC" />
+    </linearGradient>
+    <linearGradient id="swipe-064" x1="230.248" y1="242.272" x2="224.055" y2="241.729" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#66C7FC" />
+      <stop offset="1" stop-color="#66C8FB" />
+    </linearGradient>
+    <linearGradient id="swipe-065" x1="224.055" y1="241.729" x2="218.024" y2="241.086" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#66C8FB" />
+      <stop offset="1" stop-color="#67C9FB" />
+    </linearGradient>
+    <linearGradient id="swipe-066" x1="218.024" y1="241.086" x2="212.19" y2="240.324" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67C9FB" />
+      <stop offset="1" stop-color="#67CAFA" />
+    </linearGradient>
+    <linearGradient id="swipe-067" x1="212.19" y1="240.324" x2="206.584" y2="239.421" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67CAFA" />
+      <stop offset="1" stop-color="#68CBFA" />
+    </linearGradient>
+    <linearGradient id="swipe-068" x1="206.584" y1="239.421" x2="201.239" y2="238.356" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#68CBFA" />
+      <stop offset="1" stop-color="#68CCFA" />
+    </linearGradient>
+    <linearGradient id="swipe-069" x1="201.239" y1="238.356" x2="196.188" y2="237.109" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#68CCFA" />
+      <stop offset="1" stop-color="#69CDF9" />
+    </linearGradient>
+    <linearGradient id="swipe-070" x1="196.188" y1="237.109" x2="191.462" y2="235.659" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#69CDF9" />
+      <stop offset="1" stop-color="#69CDF9" />
+    </linearGradient>
+    <linearGradient id="swipe-071" x1="191.462" y1="235.659" x2="187.096" y2="233.984" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#69CDF9" />
+      <stop offset="1" stop-color="#6ACEF9" />
+    </linearGradient>
+    <linearGradient id="swipe-072" x1="187.096" y1="233.984" x2="183.121" y2="232.064" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ACEF9" />
+      <stop offset="1" stop-color="#6ACFF9" />
+    </linearGradient>
+    <linearGradient id="swipe-073" x1="183.121" y1="232.064" x2="179.57" y2="229.878" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ACFF9" />
+      <stop offset="1" stop-color="#6ACFF8" />
+    </linearGradient>
+    <linearGradient id="swipe-074" x1="179.57" y1="229.878" x2="176.477" y2="227.404" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ACFF8" />
+      <stop offset="1" stop-color="#6BD0F8" />
+    </linearGradient>
+    <linearGradient id="swipe-075" x1="176.477" y1="227.404" x2="173.872" y2="224.623" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6BD0F8" />
+      <stop offset="1" stop-color="#6BD1F8" />
+    </linearGradient>
+    <linearGradient id="swipe-076" x1="173.872" y1="224.623" x2="171.789" y2="221.513" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6BD1F8" />
+      <stop offset="1" stop-color="#6BD1F8" />
+    </linearGradient>
+    <linearGradient id="swipe-077" x1="171.789" y1="221.513" x2="170.262" y2="218.053" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6BD1F8" />
+      <stop offset="1" stop-color="#6CD2F7" />
+    </linearGradient>
+    <linearGradient id="swipe-078" x1="170.262" y1="218.053" x2="169.321" y2="214.222" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6CD2F7" />
+      <stop offset="1" stop-color="#6CD3F7" />
+    </linearGradient>
+    <linearGradient id="swipe-079" x1="169.321" y1="214.222" x2="169" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6CD3F7" />
+      <stop offset="1" stop-color="#6CD3F7" />
+    </linearGradient>
+    <linearGradient id="swipe-080" x1="169" y1="210" x2="169.182" y2="206.356" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6CD3F7" />
+      <stop offset="1" stop-color="#6DD4F7" />
+    </linearGradient>
+    <linearGradient id="swipe-081" x1="169.182" y1="206.356" x2="169.723" y2="202.776" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6DD4F7" />
+      <stop offset="1" stop-color="#6DD4F6" />
+    </linearGradient>
+    <linearGradient id="swipe-082" x1="169.723" y1="202.776" x2="170.612" y2="199.265" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6DD4F6" />
+      <stop offset="1" stop-color="#6DD5F6" />
+    </linearGradient>
+    <linearGradient id="swipe-083" x1="170.612" y1="199.265" x2="171.842" y2="195.827" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6DD5F6" />
+      <stop offset="1" stop-color="#6ED6F6" />
+    </linearGradient>
+    <linearGradient id="swipe-084" x1="171.842" y1="195.827" x2="173.402" y2="192.467" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ED6F6" />
+      <stop offset="1" stop-color="#6ED6F6" />
+    </linearGradient>
+    <linearGradient id="swipe-085" x1="173.402" y1="192.467" x2="175.284" y2="189.189" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ED6F6" />
+      <stop offset="1" stop-color="#6ED7F5" />
+    </linearGradient>
+    <linearGradient id="swipe-086" x1="175.284" y1="189.189" x2="177.479" y2="185.997" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ED7F5" />
+      <stop offset="1" stop-color="#6FD7F5" />
+    </linearGradient>
+    <linearGradient id="swipe-087" x1="177.479" y1="185.997" x2="179.976" y2="182.896" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6FD7F5" />
+      <stop offset="1" stop-color="#6FD8F5" />
+    </linearGradient>
+    <linearGradient id="swipe-088" x1="179.976" y1="182.896" x2="182.767" y2="179.89" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6FD8F5" />
+      <stop offset="1" stop-color="#6FD9F5" />
+    </linearGradient>
+    <linearGradient id="swipe-089" x1="182.767" y1="179.89" x2="185.844" y2="176.984" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6FD9F5" />
+      <stop offset="1" stop-color="#70D9F4" />
+    </linearGradient>
+    <linearGradient id="swipe-090" x1="185.844" y1="176.984" x2="189.196" y2="174.182" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#70D9F4" />
+      <stop offset="1" stop-color="#70DAF4" />
+    </linearGradient>
+    <linearGradient id="swipe-091" x1="189.196" y1="174.182" x2="192.814" y2="171.489" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#70DAF4" />
+      <stop offset="1" stop-color="#71DBF4" />
+    </linearGradient>
+    <linearGradient id="swipe-092" x1="192.814" y1="171.489" x2="196.69" y2="168.908" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#71DBF4" />
+      <stop offset="1" stop-color="#71DCF4" />
+    </linearGradient>
+    <linearGradient id="swipe-093" x1="196.69" y1="168.908" x2="200.813" y2="166.445" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#71DCF4" />
+      <stop offset="1" stop-color="#71DCF3" />
+    </linearGradient>
+    <linearGradient id="swipe-094" x1="200.813" y1="166.445" x2="205.176" y2="164.104" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#71DCF3" />
+      <stop offset="1" stop-color="#72DDF3" />
+    </linearGradient>
+    <linearGradient id="swipe-095" x1="205.176" y1="164.104" x2="209.768" y2="161.888" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#72DDF3" />
+      <stop offset="1" stop-color="#72DEF3" />
+    </linearGradient>
+    <linearGradient id="swipe-096" x1="209.768" y1="161.888" x2="214.581" y2="159.803" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#72DEF3" />
+      <stop offset="1" stop-color="#73DFF2" />
+    </linearGradient>
+    <linearGradient id="swipe-097" x1="214.581" y1="159.803" x2="219.605" y2="157.853" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#73DFF2" />
+      <stop offset="1" stop-color="#73E0F2" />
+    </linearGradient>
+    <linearGradient id="swipe-098" x1="219.605" y1="157.853" x2="224.831" y2="156.042" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#73E0F2" />
+      <stop offset="1" stop-color="#74E1F2" />
+    </linearGradient>
+    <linearGradient id="swipe-099" x1="224.831" y1="156.042" x2="230.25" y2="154.375" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#74E1F2" />
+      <stop offset="1" stop-color="#74E2F1" />
+    </linearGradient>
+    <linearGradient id="swipe-100" x1="230.25" y1="154.375" x2="235.853" y2="152.856" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#74E2F1" />
+      <stop offset="1" stop-color="#75E2F1" />
+    </linearGradient>
+    <linearGradient id="swipe-101" x1="235.853" y1="152.856" x2="241.63" y2="151.49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#75E2F1" />
+      <stop offset="1" stop-color="#75E3F1" />
+    </linearGradient>
+    <linearGradient id="swipe-102" x1="241.63" y1="151.49" x2="247.573" y2="150.28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#75E3F1" />
+      <stop offset="1" stop-color="#76E4F0" />
+    </linearGradient>
+    <linearGradient id="swipe-103" x1="247.573" y1="150.28" x2="253.672" y2="149.232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#76E4F0" />
+      <stop offset="1" stop-color="#78E5F0" />
+    </linearGradient>
+    <linearGradient id="swipe-104" x1="253.672" y1="149.232" x2="259.918" y2="148.35" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#78E5F0" />
+      <stop offset="1" stop-color="#7BE7F0" />
+    </linearGradient>
+    <linearGradient id="swipe-105" x1="259.918" y1="148.35" x2="266.302" y2="147.637" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7BE7F0" />
+      <stop offset="1" stop-color="#7FE8F1" />
+    </linearGradient>
+    <linearGradient id="swipe-106" x1="266.302" y1="147.637" x2="272.814" y2="147.1" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7FE8F1" />
+      <stop offset="1" stop-color="#83E9F1" />
+    </linearGradient>
+    <linearGradient id="swipe-107" x1="272.814" y1="147.1" x2="279.446" y2="146.741" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#83E9F1" />
+      <stop offset="1" stop-color="#87EAF1" />
+    </linearGradient>
+    <linearGradient id="swipe-108" x1="279.446" y1="146.741" x2="286.188" y2="146.566" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#87EAF1" />
+      <stop offset="1" stop-color="#8CEBF1" />
+    </linearGradient>
+    <linearGradient id="swipe-109" x1="286.188" y1="146.566" x2="293.031" y2="146.578" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8CEBF1" />
+      <stop offset="1" stop-color="#90EDF1" />
+    </linearGradient>
+    <linearGradient id="swipe-110" x1="293.031" y1="146.578" x2="299.966" y2="146.783" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#90EDF1" />
+      <stop offset="1" stop-color="#94EEF2" />
+    </linearGradient>
+    <linearGradient id="swipe-111" x1="299.966" y1="146.783" x2="306.984" y2="147.184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#94EEF2" />
+      <stop offset="1" stop-color="#98EFF2" />
+    </linearGradient>
+    <linearGradient id="swipe-112" x1="306.984" y1="147.184" x2="314.075" y2="147.786" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#98EFF2" />
+      <stop offset="1" stop-color="#9DF1F2" />
+    </linearGradient>
+    <linearGradient id="swipe-113" x1="314.075" y1="147.786" x2="321.231" y2="148.594" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9DF1F2" />
+      <stop offset="1" stop-color="#A1F2F2" />
+    </linearGradient>
+    <linearGradient id="swipe-114" x1="321.231" y1="148.594" x2="328.441" y2="149.611" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A1F2F2" />
+      <stop offset="1" stop-color="#A5F3F3" />
+    </linearGradient>
+    <linearGradient id="swipe-115" x1="328.441" y1="149.611" x2="335.698" y2="150.843" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A5F3F3" />
+      <stop offset="1" stop-color="#AAF5F3" />
+    </linearGradient>
+    <linearGradient id="swipe-116" x1="335.698" y1="150.843" x2="342.991" y2="152.293" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#AAF5F3" />
+      <stop offset="1" stop-color="#AFF6F3" />
+    </linearGradient>
+    <linearGradient id="swipe-117" x1="342.991" y1="152.293" x2="350.312" y2="153.967" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#AFF6F3" />
+      <stop offset="1" stop-color="#B3F7F4" />
+    </linearGradient>
+    <linearGradient id="swipe-118" x1="350.312" y1="153.967" x2="357.652" y2="155.867" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B3F7F4" />
+      <stop offset="1" stop-color="#B8F9F4" />
+    </linearGradient>
+    <linearGradient id="swipe-119" x1="357.652" y1="155.867" x2="365" y2="158" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B8F9F4" />
+      <stop offset="1" stop-color="#BCFAF4" />
+    </linearGradient>
+    <mask id="swipe-silhouette" maskUnits="userSpaceOnUse" x="80" y="90" width="330" height="320" style="mask-type:alpha">
+      <path d="M128 351C212 390 343 339 343 280C343 218 169 269 169 210C169 161 267 128 365 158" fill="none" stroke="#FFFFFF" stroke-width="54" stroke-linecap="round" />
+    </mask>
+    <filter id="blend-color-sections" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="0.65" />
+    </filter>
+    <linearGradient id="swipe-tip" gradientUnits="userSpaceOnUse" x1="339.1826" y1="150.0967" x2="390.8174" y2="165.9033">
+      <stop stop-color="#ACF5F3" />
+      <stop offset="0.5" stop-color="#BCFAF4" />
+      <stop offset="1" stop-color="#CDFFF5" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#102C50" />
+  <g id="keyboard-grid" fill="#1B385B">
+    <rect x="112" y="112" width="84" height="84" rx="15" />
+    <rect x="214" y="112" width="84" height="84" rx="15" />
+    <rect x="316" y="112" width="84" height="84" rx="15" />
+    <rect x="112" y="214" width="84" height="84" rx="15" />
+    <rect x="214" y="214" width="84" height="84" rx="15" />
+    <rect x="316" y="214" width="84" height="84" rx="15" />
+    <rect x="112" y="316" width="84" height="84" rx="15" />
+    <rect x="214" y="316" width="84" height="84" rx="15" />
+    <rect x="316" y="316" width="84" height="84" rx="15" />
+  </g>
+  <g mask="url(#swipe-silhouette)">
+    <g id="swipe-along-path" aria-label="Blue to mint gradient following the swipe" filter="url(#blend-color-sections)">
+      <circle cx="128" cy="351" r="27" fill="#438AFF" />
+      <path d="M116.63 375.489L124.344 378.821L144.427 328.694L139.37 326.511Z" fill="url(#swipe-000)" stroke="url(#swipe-000)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M124.344 378.821L132.187 381.731L149.673 330.64L144.427 328.694Z" fill="url(#swipe-001)" stroke="url(#swipe-001)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M132.187 381.731L140.139 384.234L155.098 332.348L149.673 330.64Z" fill="url(#swipe-002)" stroke="url(#swipe-002)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M140.139 384.234L148.177 386.347L160.687 333.817L155.098 332.348Z" fill="url(#swipe-003)" stroke="url(#swipe-003)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M148.177 386.347L156.283 388.086L166.428 335.047L160.687 333.817Z" fill="url(#swipe-004)" stroke="url(#swipe-004)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M156.283 388.086L164.441 389.464L172.302 336.039L166.428 335.047Z" fill="url(#swipe-005)" stroke="url(#swipe-005)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M164.441 389.464L172.634 390.497L178.294 336.794L172.302 336.039Z" fill="url(#swipe-006)" stroke="url(#swipe-006)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M172.634 390.497L180.848 391.198L184.384 337.314L178.294 336.794Z" fill="url(#swipe-007)" stroke="url(#swipe-007)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M180.848 391.198L189.066 391.58L190.555 337.601L184.384 337.314Z" fill="url(#swipe-008)" stroke="url(#swipe-008)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M189.066 391.58L197.276 391.655L196.786 337.657L190.555 337.601Z" fill="url(#swipe-009)" stroke="url(#swipe-009)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M197.276 391.655L205.464 391.435L203.058 337.488L196.786 337.657Z" fill="url(#swipe-010)" stroke="url(#swipe-010)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M205.464 391.435L213.616 390.93L209.352 337.098L203.058 337.488Z" fill="url(#swipe-011)" stroke="url(#swipe-011)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M213.616 390.93L221.72 390.15L215.646 336.493L209.352 337.098Z" fill="url(#swipe-012)" stroke="url(#swipe-012)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M221.72 390.15L229.761 389.105L221.921 335.677L215.646 336.493Z" fill="url(#swipe-013)" stroke="url(#swipe-013)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M229.761 389.105L237.727 387.803L228.156 334.658L221.921 335.677Z" fill="url(#swipe-014)" stroke="url(#swipe-014)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M237.727 387.803L245.605 386.253L234.331 333.443L228.156 334.658Z" fill="url(#swipe-015)" stroke="url(#swipe-015)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M245.605 386.253L253.382 384.462L240.426 332.04L234.331 333.443Z" fill="url(#swipe-016)" stroke="url(#swipe-016)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M253.382 384.462L261.045 382.438L246.419 330.456L240.426 332.04Z" fill="url(#swipe-017)" stroke="url(#swipe-017)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M261.045 382.438L268.582 380.186L252.291 328.702L246.419 330.456Z" fill="url(#swipe-018)" stroke="url(#swipe-018)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M268.582 380.186L275.978 377.713L258.022 326.787L252.291 328.702Z" fill="url(#swipe-019)" stroke="url(#swipe-019)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M275.978 377.713L283.223 375.024L263.589 324.72L258.022 326.787Z" fill="url(#swipe-020)" stroke="url(#swipe-020)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M283.223 375.024L290.303 372.122L268.973 322.513L263.589 324.72Z" fill="url(#swipe-021)" stroke="url(#swipe-021)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M290.303 372.122L297.205 369.011L274.152 320.179L268.973 322.513Z" fill="url(#swipe-022)" stroke="url(#swipe-022)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M297.205 369.011L303.917 365.693L279.107 317.731L274.152 320.179Z" fill="url(#swipe-023)" stroke="url(#swipe-023)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M303.917 365.693L310.427 362.169L283.815 315.182L279.107 317.731Z" fill="url(#swipe-024)" stroke="url(#swipe-024)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M310.427 362.169L316.721 358.439L288.257 312.55L283.815 315.182Z" fill="url(#swipe-025)" stroke="url(#swipe-025)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M316.721 358.439L322.787 354.499L292.412 309.851L288.257 312.55Z" fill="url(#swipe-026)" stroke="url(#swipe-026)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M322.787 354.499L328.611 350.345L296.261 307.107L292.412 309.851Z" fill="url(#swipe-027)" stroke="url(#swipe-027)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M328.611 350.345L334.177 345.971L299.786 304.339L296.261 307.107Z" fill="url(#swipe-028)" stroke="url(#swipe-028)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M334.177 345.971L339.47 341.366L302.968 301.571L299.786 304.339Z" fill="url(#swipe-029)" stroke="url(#swipe-029)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M339.47 341.366L344.469 336.519L305.794 298.833L302.968 301.571Z" fill="url(#swipe-030)" stroke="url(#swipe-030)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M344.469 336.519L349.153 331.414L308.255 296.154L305.794 298.833Z" fill="url(#swipe-031)" stroke="url(#swipe-031)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M349.153 331.414L353.493 326.035L310.344 293.567L308.255 296.154Z" fill="url(#swipe-032)" stroke="url(#swipe-032)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M353.493 326.035L357.452 320.362L312.064 291.105L310.344 293.567Z" fill="url(#swipe-033)" stroke="url(#swipe-033)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M357.452 320.362L360.986 314.379L313.428 288.8L312.064 291.105Z" fill="url(#swipe-034)" stroke="url(#swipe-034)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M360.986 314.379L364.038 308.077L314.458 286.679L313.428 288.8Z" fill="url(#swipe-035)" stroke="url(#swipe-035)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M364.038 308.077L366.541 301.456L315.188 284.755L314.458 286.679Z" fill="url(#swipe-036)" stroke="url(#swipe-036)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M366.541 301.456L368.419 294.536L315.66 283.024L315.188 284.755Z" fill="url(#swipe-037)" stroke="url(#swipe-037)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M368.419 294.536L369.595 287.36L315.919 281.457L315.66 283.024Z" fill="url(#swipe-038)" stroke="url(#swipe-038)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M369.595 287.36L370 280L316 280L315.919 281.457Z" fill="url(#swipe-039)" stroke="url(#swipe-039)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M370 280L369.38 271.549L315.979 279.568L316 280Z" fill="url(#swipe-040)" stroke="url(#swipe-040)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M369.38 271.549L367.435 263.233L316.042 279.807L315.979 279.568Z" fill="url(#swipe-041)" stroke="url(#swipe-041)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M367.435 263.233L364.152 255.38L316.269 280.345L316.042 279.807Z" fill="url(#swipe-042)" stroke="url(#swipe-042)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M364.152 255.38L359.704 248.335L316.552 280.799L316.269 280.345Z" fill="url(#swipe-043)" stroke="url(#swipe-043)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M359.704 248.335L354.404 242.311L316.643 280.912L316.552 280.799Z" fill="url(#swipe-044)" stroke="url(#swipe-044)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M354.404 242.311L348.58 237.337L316.279 280.612L316.643 280.912Z" fill="url(#swipe-045)" stroke="url(#swipe-045)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M348.58 237.337L342.473 233.309L315.284 279.965L316.279 280.612Z" fill="url(#swipe-046)" stroke="url(#swipe-046)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M342.473 233.309L336.226 230.065L313.582 279.087L315.284 279.965Z" fill="url(#swipe-047)" stroke="url(#swipe-047)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M336.226 230.065L329.902 227.448L311.173 278.096L313.582 279.087Z" fill="url(#swipe-048)" stroke="url(#swipe-048)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M329.902 227.448L323.521 225.327L308.104 277.079L311.173 278.096Z" fill="url(#swipe-049)" stroke="url(#swipe-049)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M323.521 225.327L317.085 223.6L304.438 276.098L308.104 277.079Z" fill="url(#swipe-050)" stroke="url(#swipe-050)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M317.085 223.6L310.59 222.189L300.242 275.189L304.438 276.098Z" fill="url(#swipe-051)" stroke="url(#swipe-051)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M310.59 222.189L304.038 221.035L295.582 274.369L300.242 275.189Z" fill="url(#swipe-052)" stroke="url(#swipe-052)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M304.038 221.035L297.431 220.088L290.52 273.644L295.582 274.369Z" fill="url(#swipe-053)" stroke="url(#swipe-053)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M297.431 220.088L290.78 219.311L285.111 273.013L290.52 273.644Z" fill="url(#swipe-054)" stroke="url(#swipe-054)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M290.78 219.311L284.097 218.67L279.407 272.466L285.111 273.013Z" fill="url(#swipe-055)" stroke="url(#swipe-055)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M284.097 218.67L277.401 218.135L273.456 271.991L279.407 272.466Z" fill="url(#swipe-056)" stroke="url(#swipe-056)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M277.401 218.135L270.714 217.681L267.299 271.573L273.456 271.991Z" fill="url(#swipe-057)" stroke="url(#swipe-057)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M270.714 217.681L264.062 217.282L260.978 271.193L267.299 271.573Z" fill="url(#swipe-058)" stroke="url(#swipe-058)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M264.062 217.282L257.472 216.915L254.528 270.835L260.978 271.193Z" fill="url(#swipe-059)" stroke="url(#swipe-059)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M257.472 216.915L250.976 216.56L247.985 270.477L254.528 270.835Z" fill="url(#swipe-060)" stroke="url(#swipe-060)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M250.976 216.56L244.607 216.194L241.38 270.098L247.985 270.477Z" fill="url(#swipe-061)" stroke="url(#swipe-061)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M244.607 216.194L238.402 215.8L234.741 269.675L241.38 270.098Z" fill="url(#swipe-062)" stroke="url(#swipe-062)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M238.402 215.8L232.401 215.358L228.095 269.186L234.741 269.675Z" fill="url(#swipe-063)" stroke="url(#swipe-063)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M232.401 215.358L226.644 214.853L221.465 268.604L228.095 269.186Z" fill="url(#swipe-064)" stroke="url(#swipe-064)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M226.644 214.853L221.18 214.271L214.869 267.901L221.465 268.604Z" fill="url(#swipe-065)" stroke="url(#swipe-065)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M221.18 214.271L216.059 213.603L208.321 267.045L214.869 267.901Z" fill="url(#swipe-066)" stroke="url(#swipe-066)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M216.059 213.603L211.337 212.843L201.831 265.999L208.321 267.045Z" fill="url(#swipe-067)" stroke="url(#swipe-067)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M211.337 212.843L207.077 211.995L195.401 264.718L201.831 265.999Z" fill="url(#swipe-068)" stroke="url(#swipe-068)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M207.077 211.995L203.344 211.075L189.031 263.144L195.401 264.718Z" fill="url(#swipe-069)" stroke="url(#swipe-069)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M203.344 211.075L200.213 210.116L182.712 261.201L189.031 263.144Z" fill="url(#swipe-070)" stroke="url(#swipe-070)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M200.213 210.116L197.753 209.176L176.439 258.792L182.712 261.201Z" fill="url(#swipe-071)" stroke="url(#swipe-071)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M197.753 209.176L196.023 208.346L170.22 255.782L176.439 258.792Z" fill="url(#swipe-072)" stroke="url(#swipe-072)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M196.023 208.346L195.04 207.749L164.101 252.007L170.22 255.782Z" fill="url(#swipe-073)" stroke="url(#swipe-073)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M195.04 207.749L194.748 207.526L158.205 247.283L164.101 252.007Z" fill="url(#swipe-074)" stroke="url(#swipe-074)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M194.748 207.526L194.972 207.777L152.772 241.469L158.205 247.283Z" fill="url(#swipe-075)" stroke="url(#swipe-075)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M194.972 207.777L195.43 208.469L148.149 234.557L152.772 241.469Z" fill="url(#swipe-076)" stroke="url(#swipe-076)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M195.43 208.469L195.821 209.352L144.702 226.754L148.149 234.557Z" fill="url(#swipe-077)" stroke="url(#swipe-077)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M195.821 209.352L195.989 210.005L142.652 218.44L144.702 226.754Z" fill="url(#swipe-078)" stroke="url(#swipe-078)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M195.989 210.005L196 210L142 210L142.652 218.44Z" fill="url(#swipe-079)" stroke="url(#swipe-079)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M196 210L196.047 209.054L142.317 203.657L142 210Z" fill="url(#swipe-080)" stroke="url(#swipe-080)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M196.047 209.054L196.188 208.124L143.258 197.428L142.317 203.657Z" fill="url(#swipe-081)" stroke="url(#swipe-081)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M196.188 208.124L196.435 207.15L144.789 191.38L143.258 197.428Z" fill="url(#swipe-082)" stroke="url(#swipe-082)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M196.435 207.15L196.817 206.086L146.867 185.568L144.789 191.38Z" fill="url(#swipe-083)" stroke="url(#swipe-083)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M196.817 206.086L197.368 204.902L149.437 180.031L146.867 185.568Z" fill="url(#swipe-084)" stroke="url(#swipe-084)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M197.368 204.902L198.125 203.586L152.443 174.791L149.437 180.031Z" fill="url(#swipe-085)" stroke="url(#swipe-085)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M198.125 203.586L199.121 202.14L155.836 169.854L152.443 174.791Z" fill="url(#swipe-086)" stroke="url(#swipe-086)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M199.121 202.14L200.382 200.576L159.57 165.216L155.836 169.854Z" fill="url(#swipe-087)" stroke="url(#swipe-087)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M200.382 200.576L201.928 198.914L163.607 160.867L159.57 165.216Z" fill="url(#swipe-088)" stroke="url(#swipe-088)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M201.928 198.914L203.769 197.176L167.919 156.793L163.607 160.867Z" fill="url(#swipe-089)" stroke="url(#swipe-089)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M203.769 197.176L205.91 195.387L172.481 152.978L167.919 156.793Z" fill="url(#swipe-090)" stroke="url(#swipe-090)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M205.91 195.387L208.352 193.57L177.276 149.408L172.481 152.978Z" fill="url(#swipe-091)" stroke="url(#swipe-091)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M208.352 193.57L211.09 191.748L182.29 146.069L177.276 149.408Z" fill="url(#swipe-092)" stroke="url(#swipe-092)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M211.09 191.748L214.116 189.941L187.511 142.95L182.29 146.069Z" fill="url(#swipe-093)" stroke="url(#swipe-093)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M214.116 189.941L217.421 188.167L192.93 140.04L187.511 142.95Z" fill="url(#swipe-094)" stroke="url(#swipe-094)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M217.421 188.167L220.996 186.443L198.54 137.333L192.93 140.04Z" fill="url(#swipe-095)" stroke="url(#swipe-095)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M220.996 186.443L224.828 184.783L204.333 134.823L198.54 137.333Z" fill="url(#swipe-096)" stroke="url(#swipe-096)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M224.828 184.783L228.906 183.2L210.304 132.505L204.333 134.823Z" fill="url(#swipe-097)" stroke="url(#swipe-097)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M228.906 183.2L233.217 181.707L216.445 130.377L210.304 132.505Z" fill="url(#swipe-098)" stroke="url(#swipe-098)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M233.217 181.707L237.749 180.313L222.751 128.437L216.445 130.377Z" fill="url(#swipe-099)" stroke="url(#swipe-099)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M237.749 180.313L242.49 179.028L229.216 126.685L222.751 128.437Z" fill="url(#swipe-100)" stroke="url(#swipe-100)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M242.49 179.028L247.428 177.86L235.833 125.119L229.216 126.685Z" fill="url(#swipe-101)" stroke="url(#swipe-101)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M247.428 177.86L252.55 176.817L242.596 123.743L235.833 125.119Z" fill="url(#swipe-102)" stroke="url(#swipe-102)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M252.55 176.817L257.846 175.907L249.498 122.557L242.596 123.743Z" fill="url(#swipe-103)" stroke="url(#swipe-103)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M257.846 175.907L263.302 175.137L256.534 121.563L249.498 122.557Z" fill="url(#swipe-104)" stroke="url(#swipe-104)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M263.302 175.137L268.909 174.511L263.695 120.764L256.534 121.563Z" fill="url(#swipe-105)" stroke="url(#swipe-105)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M268.909 174.511L274.654 174.037L270.975 120.162L263.695 120.764Z" fill="url(#swipe-106)" stroke="url(#swipe-106)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M274.654 174.037L280.526 173.719L278.366 119.763L270.975 120.162Z" fill="url(#swipe-107)" stroke="url(#swipe-107)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M280.526 173.719L286.515 173.564L285.862 119.568L278.366 119.763Z" fill="url(#swipe-108)" stroke="url(#swipe-108)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M286.515 173.564L292.609 173.575L293.454 119.581L285.862 119.568Z" fill="url(#swipe-109)" stroke="url(#swipe-109)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M292.609 173.575L298.798 173.757L301.135 119.808L293.454 119.581Z" fill="url(#swipe-110)" stroke="url(#swipe-110)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M298.798 173.757L305.072 174.116L308.896 120.252L301.135 119.808Z" fill="url(#swipe-111)" stroke="url(#swipe-111)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M305.072 174.116L311.42 174.655L316.731 120.917L308.896 120.252Z" fill="url(#swipe-112)" stroke="url(#swipe-112)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M311.42 174.655L317.831 175.379L324.63 121.809L316.731 120.917Z" fill="url(#swipe-113)" stroke="url(#swipe-113)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M317.831 175.379L324.297 176.291L332.586 122.931L324.63 121.809Z" fill="url(#swipe-114)" stroke="url(#swipe-114)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M324.297 176.291L330.807 177.396L340.589 124.29L332.586 122.931Z" fill="url(#swipe-115)" stroke="url(#swipe-115)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M330.807 177.396L337.352 178.698L348.631 125.889L340.589 124.29Z" fill="url(#swipe-116)" stroke="url(#swipe-116)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M337.352 178.698L343.921 180.199L356.704 127.734L348.631 125.889Z" fill="url(#swipe-117)" stroke="url(#swipe-117)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M343.921 180.199L350.506 181.905L364.797 129.83L356.704 127.734Z" fill="url(#swipe-118)" stroke="url(#swipe-118)" stroke-width="2" stroke-linejoin="round" />
+      <path d="M350.506 181.905L357.097 183.817L372.903 132.183L364.797 129.83Z" fill="url(#swipe-119)" stroke="url(#swipe-119)" stroke-width="2" stroke-linejoin="round" />
+      <circle cx="365" cy="158" r="27" fill="url(#swipe-tip)" />
+    </g>
+  </g>
+</svg>

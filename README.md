@@ -1,4 +1,4 @@
-# Glide 日本語入力
+# Slyde
 
 正式版APKは `dist/Glide-1.1.11.apk`、アプリIDは `net.neomenia.japaneseinput.glide` です。Android 8.0以降、arm64-v8a／x86_64に対応します。APKをインストールして設定アプリを開き、「キーボードを有効にする」「キーボードを切り替える」の順に操作すると、他のアプリで入力できます。
 
@@ -28,7 +28,7 @@
 
 1.0.0では試作の入力・変換・記号・フォント設定を共通の処理にまとめ、AndroidのIMEとして登録しました。数字・電話・日時欄では数字配列、URL・メール・パスワード欄では英字配列で開始します。エンターは変換中なら確定、それ以外は検索・送信・次へなど入力欄の指定に従います。パスワード欄では変換候補を作成せず、記号履歴も保存しません。
 
-正式版の専用署名鍵は `.tools/signing/` にあり、テスト版とは別の鍵です。署名・再ビルド・バックアップの説明と検証範囲は [リリース手順](docs/RELEASE.md) を参照してください。テスト版は `scripts/build-prototype.ps1` で作成でき、IDは `net.neomenia.japaneseinput.glide.debug`、表示名は「Glide 日本語入力 (テスト)」です。旧試作版の設定は別IDのため自動移行しません。
+正式版の専用署名鍵は `.tools/signing/` にあり、テスト版とは別の鍵です。署名・再ビルド・バックアップの説明と検証範囲は [リリース手順](docs/RELEASE.md) を参照してください。テスト版は `scripts/build-prototype.ps1` で作成でき、IDは `net.neomenia.japaneseinput.glide.debug`、表示名は「Slyde (テスト)」です。旧試作版の設定は別IDのため自動移行しません。
 
 ## 入力方法・開発履歴
 

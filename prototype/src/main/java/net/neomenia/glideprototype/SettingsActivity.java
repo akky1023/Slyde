@@ -52,7 +52,7 @@ public final class SettingsActivity extends AppCompatActivity {
     private void description(String value){TextView text=SettingsUi.text(this,value,14);text.setPadding(0,dp(4),0,dp(12));body.addView(text);}
     private void link(String value,Runnable action){SettingsUi.addButton(body,value,action);}
     private void home(){
-        heading("Glide 日本語入力");inputStatus=SettingsUi.text(this,"",14);body.addView(inputStatus);refreshInputStatus();
+        heading(getString(R.string.app_name));inputStatus=SettingsUi.text(this,"",14);body.addView(inputStatus);refreshInputStatus();
         link("キーボードを有効にする",()->startActivity(new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)));
         link("キーボードを切り替える",()->getSystemService(InputMethodManager.class).showInputMethodPicker());
         heading("設定");for(String name:new String[]{"入力","変換","表示","このアプリについて"})link(name,()->show(name));
@@ -107,7 +107,7 @@ public final class SettingsActivity extends AppCompatActivity {
         heading("注記");toggle("紛らわしい文字の注記を表示（全・半・漢・カナなど）","showCharacterBadges",true);toggle("AI候補の「AI」を表示","showAiBadges",true);
     }
     private void about(){
-        heading("Glide 日本語入力");try{description("バージョン "+getPackageManager().getPackageInfo(getPackageName(),0).versionName);}catch(android.content.pm.PackageManager.NameNotFoundException ignored){}
+        heading(getString(R.string.app_name));try{description("バージョン "+getPackageManager().getPackageInfo(getPackageName(),0).versionName);}catch(android.content.pm.PackageManager.NameNotFoundException ignored){}
         description("12キーをなぞって入力する日本語キーボードです。辞書・AI変換は端末内で動作します。");link("ライセンス",this::licenses);
     }
     private void licenses(){
