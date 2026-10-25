@@ -48,7 +48,7 @@
 
 ### GitHub Releaseの自動作成
 
-`develop` へのpushでRelease Pleaseが動きます。`fix: ...` はパッチ、`feat: ...` はマイナー、`feat!: ...` または `BREAKING CHANGE:` はメジャーバージョンを更新します。リリース対象の変更があると、バージョンと `CHANGELOG.md` を更新するPRを自動作成・更新し、マージ後に `v1.1.12` などのタグとGitHub Releaseを公開します。Actionsの「Release Please」から手動実行もできます。
+`main` へのpushでRelease Pleaseが動きます。`fix: ...` はパッチ、`feat: ...` はマイナー、`feat!: ...` または `BREAKING CHANGE:` はメジャーバージョンを更新します。リリース対象の変更があると、バージョンと `CHANGELOG.md` を更新するPRを自動作成・更新し、マージ後に `v1.1.12` などのタグとGitHub Releaseを公開します。Actionsの「Release Please」から手動実行もできます。
 
 導入時点の `1.1.11` とコミット `a9f5434` を起点とし、それ以前の変更は次回の変更履歴に含めません。バージョンは `version.txt`、`.release-please-manifest.json`、`prototype/build.gradle` に反映されます。Androidの `versionCode` はバージョンから自動計算します。1.1.11は既存と同じ30、1.1.12は31、1.2.0は1019になります。minorとpatchはそれぞれ999以下とし、Androidの上限を超える値はビルド時に拒否します。
 
