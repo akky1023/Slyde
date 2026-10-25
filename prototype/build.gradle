@@ -1,12 +1,19 @@
 plugins { id 'com.android.application' }
+def releaseVersion = '1.1.11' // x-release-please-version
+if (!(releaseVersion ==~ /\d+\.\d+\.\d+/)) throw new GradleException('Release version must be major.minor.patch')
+def versionParts = releaseVersion.tokenize('.').collect { it.toInteger() }
+if (versionParts[1] > 999 || versionParts[2] > 999) throw new GradleException('Minor and patch versions must be at most 999')
+// Keep 1.1.11 at code 30; later stable SemVer releases increase monotonically.
+def releaseVersionCode = 30L + versionParts[0] * 1000000L + versionParts[1] * 1000L + versionParts[2] - 1001011L
+if (releaseVersionCode < 1 || releaseVersionCode > 2100000000L) throw new GradleException('Release versionCode is outside Android limits')
 android {
     namespace 'net.neomenia.glideprototype'
     compileSdk 35
     ndkVersion '28.2.13676358'
     if (providers.gradleProperty('zenzNdkPath').isPresent()) ndkPath providers.gradleProperty('zenzNdkPath').get()
     defaultConfig {
-        applicationId 'net.neomenia.japaneseinput.glide'; minSdk 26; targetSdk 35; versionCode 30
-        versionName '1.1.11' // x-release-please-version
+        applicationId 'net.neomenia.japaneseinput.glide'; minSdk 26; targetSdk 35; versionCode releaseVersionCode.toInteger()
+        versionName releaseVersion
         testInstrumentationRunner 'net.neomenia.glideprototype.SessionInstrumentation'
     }
     signingConfigs {

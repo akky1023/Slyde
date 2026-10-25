@@ -4,6 +4,15 @@ on:
   push:
     branches: [develop]
   workflow_dispatch:
+    inputs:
+      build-apk:
+        description: 'Build and verify a signed APK without publishing a release'
+        type: boolean
+        default: false
+      release-tag:
+        description: 'Existing release tag to build and attach APKs to (optional retry)'
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -17,10 +26,63 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      sha: ${{ steps.release.outputs.sha }}
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0 (Node.js 24)
+        id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           target-branch: develop
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          skip-github-release: ${{ inputs.build-apk || inputs.release-tag != '' }}
+          skip-github-pull-request: ${{ inputs.build-apk || inputs.release-tag != '' }}
+
+  build-apk:
+    needs: release
+    if: needs.release.outputs.release_created == 'true' || inputs.build-apk == true || inputs.release-tag != ''
+    runs-on: windows-2025
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6 (Node.js 24)
+        with:
+          ref: ${{ needs.release.outputs.sha || inputs.release-tag || github.sha }}
+          persist-credentials: false
+      - name: Install Android build tools
+        run: |
+          $env:JAVA_HOME = $env:JAVA_HOME_17_X64
+          & "$env:ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.bat" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
+          if ($LASTEXITCODE -ne 0) { throw 'Android SDK setup failed' }
+      - name: Build, test and verify signed APK
+        env:
+          GLIDE_KEYSTORE_BASE64: ${{ secrets.GLIDE_KEYSTORE_BASE64 }}
+          GLIDE_STORE_PASSWORD: ${{ secrets.GLIDE_STORE_PASSWORD }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag_name || inputs.release-tag }}
+        run: ./scripts/build-ci-release.ps1 -ExpectedVersion ($env:RELEASE_TAG -replace '^v', '')
+      - name: Save verified APK and checksum
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: Slyde-release-apk
+          path: |
+            dist/Glide-*.apk
+            dist/Glide-*.apk.sha256
+          if-no-files-found: error
+          retention-days: 14
+      - name: Attach APK and checksum to GitHub Release
+        if: needs.release.outputs.release_created == 'true' || inputs.release-tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag_name || inputs.release-tag }}
+        run: |
+          $assets = Get-ChildItem -LiteralPath dist -File | Where-Object Name -Match '^Glide-.*\.apk(\.sha256)?$'
+          & gh release upload $env:RELEASE_TAG @($assets.FullName)
+          if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed' }

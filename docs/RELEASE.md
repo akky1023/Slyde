@@ -50,9 +50,13 @@
 
 `develop` へのpushでRelease Pleaseが動きます。`fix: ...` はパッチ、`feat: ...` はマイナー、`feat!: ...` または `BREAKING CHANGE:` はメジャーバージョンを更新します。リリース対象の変更があると、バージョンと `CHANGELOG.md` を更新するPRを自動作成・更新し、マージ後に `v1.1.12` などのタグとGitHub Releaseを公開します。Actionsの「Release Please」から手動実行もできます。
 
-導入時点の `1.1.11` とコミット `a9f5434` を起点とし、それ以前の変更は次回の変更履歴に含めません。バージョンは `version.txt`、`.release-please-manifest.json`、`prototype/build.gradle` の `versionName` に反映されます。Androidの `versionCode` は自動更新しないため、リリースPRのマージ前に前回より大きな値へ更新してください（現在は30）。
+導入時点の `1.1.11` とコミット `a9f5434` を起点とし、それ以前の変更は次回の変更履歴に含めません。バージョンは `version.txt`、`.release-please-manifest.json`、`prototype/build.gradle` に反映されます。Androidの `versionCode` はバージョンから自動計算します。1.1.11は既存と同じ30、1.1.12は31、1.2.0は1019になります。minorとpatchはそれぞれ999以下とし、Androidの上限を超える値はビルド時に拒否します。
 
-このワークフローはタグ・変更履歴・GitHub Releaseを作成します。署名APKは以下のローカル手順でビルド・検証し、対応するGitHub Releaseに添付してください。署名鍵はGitHubへ登録していません。
+リリースPRをマージすると、同じワークフロー内でWindows 2025／JDK 17／SDK 35を使い、タグ対象のコミットから正式版APKをビルドします。ユニットテスト・lint・アプリID・バージョン・署名証明書・debuggableフラグ・16KB alignmentを検証し、`Glide-<version>.apk` とSHA-256ファイルをGitHub Releaseに添付します。いずれかに失敗した場合は添付せず、リリース自体はAPK未添付の状態で残ります。成功したAPKはActionsの成果物としても14日間保存します。端末での操作確認は別途必要です。
+
+署名には既存の正式版と同じ鍵を使います。リポジトリのActions Secretsに `GLIDE_KEYSTORE_BASE64`（既存PKCS12鍵のBase64）と `GLIDE_STORE_PASSWORD` を登録します。鍵はビルド中だけ一時ファイルに復元し、終了時に削除します。鍵が未登録・不完全ならビルドを停止し、CIで新しい署名鍵は生成しません。外部ActionはコミットSHAに固定しています。
+
+Actionsの「Release Please」を手動実行し、`build-apk` をONにすると、Releaseを公開せず署名APKのビルドを検証できます。添付失敗時は、同じ画面の `release-tag` に対象タグ（例：`v1.1.12`）を指定して再ビルド・添付できます。既存の同名添付ファイルは上書きしません。
 
 認証には標準の `GITHUB_TOKEN` を使います。リポジトリの Settings → Actions → General → Workflow permissions で「Allow GitHub Actions to create and approve pull requests」を有効にします。このトークンが作成したPRやタグでは別のActionsワークフローが起動しないため、将来CIやAPK自動ビルドを追加する場合は認証・実行方法を調整してください。
 

@@ -4,6 +4,8 @@ param(
     [string]$GradleExecutable = '',
     [string]$ReadOnlyCache = '',
     [string]$NativeSdk = '',
+    [string]$ExpectedVersion = '',
+    [string]$ExpectedSigningFingerprint = '',
     [switch]$Offline
 )
 $ErrorActionPreference = 'Stop'
@@ -22,26 +24,34 @@ $previousKey = $env:GLIDE_KEYSTORE
 $previousPassword = $env:GLIDE_STORE_PASSWORD
 Push-Location $workspace
 try {
-    New-Item -ItemType Directory -Force -Path $signingDir | Out-Null
-    # Limit local signing material to this Windows account and SYSTEM.
-    $account = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-    & icacls.exe $signingDir /inheritance:r /grant:r "${account}:(OI)(CI)F" '*S-1-5-18:(OI)(CI)F' | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw '署名フォルダのアクセス制限に失敗しました。' }
-    if ((Test-Path -LiteralPath $keyFile) -xor (Test-Path -LiteralPath $passwordFile)) { throw '署名鍵とパスワードが揃っていません。既存の署名情報を復旧してください。' }
-    if (-not (Test-Path -LiteralPath $passwordFile)) {
-        $randomBytes = New-Object byte[] 32
-        $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-        try { $rng.GetBytes($randomBytes) } finally { $rng.Dispose() }
-        $password = ConvertTo-SecureString ([Convert]::ToBase64String($randomBytes)) -AsPlainText -Force
-        # Export-Clixml uses Windows DPAPI for SecureString, not plaintext.
-        $password | Export-Clixml -LiteralPath $passwordFile
-    }
-    $secret = Import-Clixml -LiteralPath $passwordFile
-    $env:GLIDE_STORE_PASSWORD = [System.Net.NetworkCredential]::new('', $secret).Password
-    $env:GLIDE_KEYSTORE = $keyFile
-    if (-not (Test-Path -LiteralPath $keyFile)) {
-        & (Join-Path $JavaHome 'bin/keytool.exe') -genkeypair -keystore $keyFile -storetype PKCS12 -alias glide -keyalg RSA -keysize 3072 -validity 10000 -dname 'CN=akky_1023, O=Neomenia, C=JP' -ext 'SAN=DNS:neomenia.net' -storepass:env GLIDE_STORE_PASSWORD -keypass:env GLIDE_STORE_PASSWORD
-        if ($LASTEXITCODE -ne 0) { throw '正式版の署名鍵を作成できませんでした。' }
+    if ($previousKey -or $previousPassword) {
+        if (-not $previousKey -or -not $previousPassword -or -not (Test-Path -LiteralPath $previousKey)) {
+            throw '環境変数の署名鍵とパスワードが揃っていません。'
+        }
+        # CI supplies the existing production key; never generate a replacement.
+    } else {
+        if ($env:GITHUB_ACTIONS -eq 'true') { throw 'CIには既存の署名鍵を指定してください。' }
+        New-Item -ItemType Directory -Force -Path $signingDir | Out-Null
+        # Limit local signing material to this Windows account and SYSTEM.
+        $account = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        & icacls.exe $signingDir /inheritance:r /grant:r "${account}:(OI)(CI)F" '*S-1-5-18:(OI)(CI)F' | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw '署名フォルダのアクセス制限に失敗しました。' }
+        if ((Test-Path -LiteralPath $keyFile) -xor (Test-Path -LiteralPath $passwordFile)) { throw '署名鍵とパスワードが揃っていません。既存の署名情報を復旧してください。' }
+        if (-not (Test-Path -LiteralPath $passwordFile)) {
+            $randomBytes = New-Object byte[] 32
+            $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+            try { $rng.GetBytes($randomBytes) } finally { $rng.Dispose() }
+            $password = ConvertTo-SecureString ([Convert]::ToBase64String($randomBytes)) -AsPlainText -Force
+            # Export-Clixml uses Windows DPAPI for SecureString, not plaintext.
+            $password | Export-Clixml -LiteralPath $passwordFile
+        }
+        $secret = Import-Clixml -LiteralPath $passwordFile
+        $env:GLIDE_STORE_PASSWORD = [System.Net.NetworkCredential]::new('', $secret).Password
+        $env:GLIDE_KEYSTORE = $keyFile
+        if (-not (Test-Path -LiteralPath $keyFile)) {
+            & (Join-Path $JavaHome 'bin/keytool.exe') -genkeypair -keystore $keyFile -storetype PKCS12 -alias glide -keyalg RSA -keysize 3072 -validity 10000 -dname 'CN=akky_1023, O=Neomenia, C=JP' -ext 'SAN=DNS:neomenia.net' -storepass:env GLIDE_STORE_PASSWORD -keypass:env GLIDE_STORE_PASSWORD
+            if ($LASTEXITCODE -ne 0) { throw '正式版の署名鍵を作成できませんでした。' }
+        }
     }
     & (Join-Path $PSScriptRoot 'prepare-zenz.ps1') -Offline:$Offline
     $gradleArgs = @(':input-core:test', ':sumire-engine:test', ':prototype:testDebugUnitTest', ':prototype:assembleRelease', ':prototype:lintRelease', ':zenz:lintRelease', '--no-daemon', '--console=plain')
@@ -56,6 +66,7 @@ try {
     & $GradleExecutable @gradleArgs
     if ($LASTEXITCODE -ne 0) { throw "ビルドが失敗しました: $LASTEXITCODE" }
     $metadata = Get-Content -Raw -LiteralPath (Join-Path $workspace 'prototype/build/outputs/apk/release/output-metadata.json') | ConvertFrom-Json
+    if ($ExpectedVersion -and $metadata.elements[0].versionName -ne $ExpectedVersion) { throw 'APKとリリースのバージョンが一致しません。' }
     $apkName = 'Glide-' + $metadata.elements[0].versionName + '.apk'
     $apk = Join-Path $workspace ('dist/' + $apkName)
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $apk) | Out-Null
@@ -63,8 +74,13 @@ try {
     $buildTools = Join-Path $AndroidSdk 'build-tools/35.0.0'
     $badging = & (Join-Path $buildTools 'aapt.exe') dump badging $apk
     if ($LASTEXITCODE -ne 0 -or -not ($badging -match "package: name='net.neomenia.japaneseinput.glide' ")) { throw 'APKのアプリIDを確認できませんでした。' }
-    & (Join-Path $buildTools 'apksigner.bat') verify --print-certs $apk
+    if ($badging -match 'application-debuggable') { throw '正式版APKにdebuggableフラグがあります。' }
+    $signing = & (Join-Path $buildTools 'apksigner.bat') verify --print-certs $apk
     if ($LASTEXITCODE -ne 0) { throw 'APKの署名検証に失敗しました。' }
+    $signing | Write-Output
+    if ($ExpectedSigningFingerprint -and -not ($signing -match ('certificate SHA-256 digest: ' + [regex]::Escape($ExpectedSigningFingerprint) + '$'))) { throw 'APKの署名証明書が正式版と一致しません。' }
+    & (Join-Path $buildTools 'zipalign.exe') -c -P 16 4 $apk
+    if ($LASTEXITCODE -ne 0) { throw 'APKの16KB alignment検証に失敗しました。' }
     (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLower() + '  ' + $apkName | Set-Content -LiteralPath ($apk + '.sha256') -Encoding ascii
     Write-Output $apk
 } finally {
