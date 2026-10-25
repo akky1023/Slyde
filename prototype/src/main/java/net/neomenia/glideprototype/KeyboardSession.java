@@ -56,7 +56,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         candidates=new CandidateBarView(this,this::chooseCandidate,this::setCandidateExpanded);view.addView(candidates,new LinearLayout.LayoutParams(-1,candidateHeight()));renderCandidates();
         keyboardArea=new FrameLayout(this);view.addView(keyboardArea);
         keyboard=new GlideKeyboardView(this,this);keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));keyboardArea.addView(keyboard);
-        keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",true),getPreferences(0).getBoolean("enableIu",true));
+        keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",false),getPreferences(0).getBoolean("enableIu",false));
         loadTypography();applyImeFont();
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
         dock=new KeyboardDockView(this,view,getPreferences(0),candidateHeight(),this::applyDockHeight,keyboard::setSideWidths);
@@ -101,7 +101,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     }
     void reloadSettings(){
         keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));
-        keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",true),getPreferences(0).getBoolean("enableIu",true));
+        keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",false),getPreferences(0).getBoolean("enableIu",false));
         loadTypography();applyImeFont();renderCandidates();
         dock.reloadPreferences();
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
@@ -156,7 +156,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         connection.setComposingText(reading(),1);
     }
     private void loadTypography(){
-        typography=new JapaneseTypography(getPreferences(0).getBoolean("commaStyle",false),getPreferences(0).getBoolean("periodStyle",false),getPreferences(0).getBoolean("openParenStyle",false),getPreferences(0).getBoolean("closeParenStyle",false));keyboard.setTypography(typography);
+        boolean parentheses=InputPreferences.halfWidthParentheses(getPreferences(0));
+        typography=new JapaneseTypography(getPreferences(0).getBoolean("commaStyle",false),getPreferences(0).getBoolean("periodStyle",false),parentheses,parentheses);keyboard.setTypography(typography);
     }
     private void applyImeFont(){
         android.graphics.Typeface font=ImeFonts.load(this,Math.max(0,Math.min(2,getPreferences(0).getInt("imeFont",0))));keyboard.setTypeface(font);candidates.setTypeface(font);candidates.setTextSp(getPreferences(0).getInt("candidateTextSp",18));

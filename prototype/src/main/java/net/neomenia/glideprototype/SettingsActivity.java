@@ -75,11 +75,21 @@ public final class SettingsActivity extends AppCompatActivity {
     }
     private void input(){
         heading("グライド入力");slider("NA／NYAの判定",0,100,preferences.getInt("naNyaBias",50),"",value->preferences.edit().putInt("naNyaBias",value).apply());
-        description("左はNA寄り、右はNYA寄りです。");toggle("EUの連母音を有効にする","enableEu",true);toggle("IUの連母音を有効にする","enableIu",true);
-        description("無効時は途中のE・Iを無視し、KEU・KIUはどちらもKUになります。母音だけの入力や個別タップには影響しません。");
-        heading("句読点・括弧");toggle("「、」を「，」にする","commaStyle",false);toggle("「。」を「．」にする","periodStyle",false);toggle("「（」を「(」にする","openParenStyle",false);toggle("「）」を「)」にする","closeParenStyle",false);
+        description("左はNA寄り、右はNYA寄りです。");toggle("XEUをグライド入力","enableEu",false);toggle("XIUをグライド入力","enableIu",false);
+        description("子音から始まる -EU/-IU の形の連母音をグライド入力するかを設定します．基本的に日本語では低頻度で -U の誤入力が増えやすくなるためオフを推奨しています．");
+        heading("句読点・括弧");punctuationDropdown();
+        toggle("丸括弧を半角にする","halfWidthParentheses",InputPreferences.halfWidthParentheses(preferences));
         heading("記号入力ボード");link("記号入力ボード1",()->show("board0"));link("記号入力ボード2",()->show("board1"));
-        heading("記号・絵文字");description("「やじるし」「かっこ」「れいわ」などの読みから変換できます。");
+    }
+    private void punctuationDropdown(){
+        String[] styles={"、。","，．","，。","、．"};
+        boolean comma=preferences.getBoolean("commaStyle",false),period=preferences.getBoolean("periodStyle",false);
+        int current=comma?(period?1:2):(period?3:0);
+        TextInputLayout box=new TextInputLayout(this,null,com.google.android.material.R.attr.textInputOutlinedExposedDropdownMenuStyle);box.setHint("句読点の種類");
+        com.google.android.material.textfield.MaterialAutoCompleteTextView dropdown=new com.google.android.material.textfield.MaterialAutoCompleteTextView(box.getContext());
+        dropdown.setInputType(InputType.TYPE_NULL);dropdown.setSimpleItems(styles);dropdown.setText(styles[current],false);
+        dropdown.setOnItemClickListener((parent,view,index,id)->preferences.edit().putBoolean("commaStyle",index==1||index==2).putBoolean("periodStyle",index==1||index==3).apply());
+        box.addView(dropdown,new LinearLayout.LayoutParams(-1,-2));body.addView(box,new LinearLayout.LayoutParams(-1,-2));
     }
     private void conversion(){
         heading("変換候補");slider("候補欄の行数",1,3,preferences.getInt("candidateRows",1),"行",value->preferences.edit().putInt("candidateRows",value).apply());
@@ -94,28 +104,63 @@ public final class SettingsActivity extends AppCompatActivity {
         fixed.setEnabled(wait.isChecked());variable.setEnabled(wait.isChecked());
         modes.setOnCheckedChangeListener((group,id)->preferences.edit().putBoolean("variableZenzWait",id==variable.getId()).apply());
         wait.setOnCheckedChangeListener((button,checked)->{preferences.edit().putBoolean("waitForZenz",checked).apply();fixed.setEnabled(checked);variable.setEnabled(checked);});
-        description("zenzの変換完了か待ち時間の経過の早い方で候補を表示します。可変では変換する読みの文字数を使い、10文字なら40ms待ちます。");
+        description("比較的時間のかかるAI予測変換をある程度待つことで変換予測のちらつきを低減します．");
     }
     private void display(){
         heading("キーボード");link("大きさ・位置",()->startActivity(new Intent(this,LayoutSettingsActivity.class)));
         heading("フォント");String[] names=ImeFonts.NAMES;int current=Math.max(0,Math.min(2,preferences.getInt("imeFont",0)));
         TextView selected=SettingsUi.text(this,"現在のフォント："+names[current],14);body.addView(selected);
-        TextView preview=SettingsUi.text(this,"日本語の変換候補",preferences.getInt("candidateTextSp",18));preview.setTextSize(preferences.getInt("candidateTextSp",18));preview.setTypeface(ImeFonts.load(this,current));
-        link("フォントを選ぶ",()->new MaterialAlertDialogBuilder(this).setTitle("IMEのフォント").setSingleChoiceItems(names,Math.max(0,Math.min(2,preferences.getInt("imeFont",0))),(dialog,index)->{preferences.edit().putInt("imeFont",index).apply();selected.setText("現在のフォント："+names[index]);preview.setTypeface(ImeFonts.load(this,index));dialog.dismiss();}).setNegativeButton("取消",null).show());
-        body.addView(preview);
-        slider("変換候補の文字サイズ",12,30,preferences.getInt("candidateTextSp",18),"sp",value->{preferences.edit().putInt("candidateTextSp",value).apply();preview.setTextSize(value);});
-        heading("注記");toggle("紛らわしい文字の注記を表示（全・半・漢・カナなど）","showCharacterBadges",true);toggle("AI候補の「AI」を表示","showAiBadges",true);
+        link("フォントを選ぶ",()->new MaterialAlertDialogBuilder(this).setTitle("IMEのフォント").setSingleChoiceItems(names,Math.max(0,Math.min(2,preferences.getInt("imeFont",0))),(dialog,index)->{preferences.edit().putInt("imeFont",index).apply();selected.setText("現在のフォント："+names[index]);dialog.dismiss();}).setNegativeButton("取消",null).show());
+        slider("変換候補の文字サイズ",12,30,preferences.getInt("candidateTextSp",18),"sp",value->preferences.edit().putInt("candidateTextSp",value).apply());
+        toggle("紛らわしい文字の注記を表示（全・半・漢・カナなど）","showCharacterBadges",true);toggle("AI候補の「AI」を表示","showAiBadges",true);
     }
     private void about(){
         heading(getString(R.string.app_name));try{description("バージョン "+getPackageManager().getPackageInfo(getPackageName(),0).versionName);}catch(android.content.pm.PackageManager.NameNotFoundException ignored){}
-        description("12キーをなぞって入力する日本語キーボードです。辞書・AI変換は端末内で動作します。");link("ライセンス",this::licenses);
+        description("12キーをなぞって入力する日本語キーボードです。辞書・AI変換は端末内で動作します。");
+        link("リポジトリ",()->openUrl("https://github.com/akky1023/Slyde"));link("ライセンス",this::licenses);
+        link("制作者情報",this::author);
+    }
+    private void openUrl(String url){startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse(url)));}
+    private void author(){
+        LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setGravity(Gravity.CENTER_HORIZONTAL);content.setPadding(dp(24),dp(24),dp(24),dp(8));
+        androidx.core.graphics.drawable.RoundedBitmapDrawable portrait=androidx.core.graphics.drawable.RoundedBitmapDrawableFactory.create(getResources(),android.graphics.BitmapFactory.decodeResource(getResources(),R.drawable.author_avatar));portrait.setCircular(true);portrait.setAntiAlias(true);ImageView avatar=new ImageView(this);avatar.setImageDrawable(portrait);avatar.setContentDescription("akky_1023のプロフィール画像");avatar.setScaleType(ImageView.ScaleType.CENTER_CROP);content.addView(avatar,new LinearLayout.LayoutParams(dp(120),dp(120)));
+        android.text.SpannableString name=new android.text.SpannableString("akky_1023");
+        name.setSpan(new android.text.style.URLSpan("https://neomenia.net"),0,name.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        TextView label=SettingsUi.text(this,"",18);label.setText(name);label.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());label.setGravity(Gravity.CENTER);
+        label.setLinkTextColor(com.google.android.material.color.MaterialColors.getColor(this,com.google.android.material.R.attr.colorPrimary,0));label.setPadding(0,dp(16),0,dp(12));content.addView(label,new LinearLayout.LayoutParams(-1,-2));
+        androidx.appcompat.widget.AppCompatImageButton github=new androidx.appcompat.widget.AppCompatImageButton(this,null,android.R.attr.borderlessButtonStyle);github.setImageResource(R.drawable.ic_github);github.setImageTintList(android.content.res.ColorStateList.valueOf(com.google.android.material.color.MaterialColors.getColor(this,com.google.android.material.R.attr.colorOnSurface,0)));github.setContentDescription("GitHub");github.setPadding(dp(12),dp(12),dp(12),dp(12));github.setScaleType(ImageView.ScaleType.FIT_CENTER);github.setOnClickListener(view->openUrl("https://github.com/akky1023"));content.addView(github,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        new MaterialAlertDialogBuilder(this).setView(content).setPositiveButton("閉じる",null).show();
     }
     private void licenses(){
-        StringBuilder text=new StringBuilder("Sumire / kotlin-kana-kanji-converter\n基本辞書と変換処理を使用しています。\n\nMozc\n読み付きの記号・絵文字辞書を使用しています。\n\nUnicode / CLDR\n記号名・日本語注釈をもとに日本語の読みと訳語を追加しています。\n\nMaterial Components for Android / AndroidX\nApache License 2.0\n\n");
+        String[] groups={"Slyde本体","Mozc","Sumire","zenz"};
+        new MaterialAlertDialogBuilder(this).setTitle("ライセンス").setItems(groups,(dialog,index)->licenseDetails(groups[index])).setNegativeButton("閉じる",null).show();
+    }
+    private void licenseDetails(String group){
+        String summary;String[][] notices;
+        switch(group){
+            case "Slyde本体"->{
+                summary="Slyde本体はMIT Licenseで公開しています。\n画面表示・フォント・記号名に使用する素材とライブラリの通知も掲載しています。";
+                notices=new String[][]{{"Slyde本体 — MIT License","slyde-MIT.txt"},{"Material Components for Android / AndroidX — Apache License 2.0","zenz-model-Apache-2.0.txt"},{"GitHub Octicons — MIT License","github-octicons-MIT.txt"},{"Unicode","unicode.txt"},{"CLDR","cldr.txt"},{"Noto Sans JP — SIL Open Font License","NotoSansJP-OFL.txt"},{"Noto Sans JP — Notices","NotoSansJP-Notices.txt"},{"Bizin Gothic Discord — SIL Open Font License","BizinGothicDiscord-OFL.txt"},{"Bizin Gothic Discord — Notices","BizinGothicDiscord-Regular-Notices.txt"},{"Noto Sans Symbols — SIL Open Font License","NotoSymbols-OFL.txt"}};
+            }
+            case "Mozc"->{
+                summary="読み付きの記号・絵文字辞書を使用しています。\nMozcのライセンスと第三者の通知を掲載しています。";
+                notices=new String[][]{{"Mozc — Copyright / License / Third-party notices","mozc.txt"}};
+            }
+            case "Sumire"->{
+                summary="Sumireの基本辞書とkotlin-kana-kanji-converterの変換処理を使用しています。\nコードのMIT Licenseと、辞書・データの個別の利用条件を掲載しています。";
+                notices=new String[][]{{"Sumire — MIT License","sumire-MIT.txt"},{"kotlin-kana-kanji-converter — MIT License","sumire-converter-MIT.txt"},{"IPADIC — License / Notices","ipadic.txt"},{"IPADIC — COPYING","ipadic-copying.txt"},{"Data — License / Attribution","data.txt"},{"Mozc由来の辞書 — License / Notices","mozc.txt"}};
+            }
+            case "zenz"->{
+                summary="端末内のAI変換にzenzを使用しています。\nJNIブリッジ・llama.cppはMIT License、zenzモデルはApache License 2.0です。";
+                notices=new String[][]{{"Sumire JNI bridge — MIT License","zenz-bridge-MIT.txt"},{"llama.cpp — MIT License","llama-MIT.txt"},{"zenzモデル — Apache License 2.0","zenz-model-Apache-2.0.txt"}};
+            }
+            default->throw new IllegalArgumentException(group);
+        }
+        StringBuilder text=new StringBuilder(summary).append("\n\n");
         try{
-            for(String name:new String[]{"sumire-MIT.txt","sumire-converter-MIT.txt","mozc.txt","ipadic.txt","data.txt","unicode.txt","cldr.txt","NotoSansJP-OFL.txt","BizinGothicDiscord-OFL.txt","NotoSymbols-OFL.txt","NotoSansJP-Notices.txt","BizinGothicDiscord-Regular-Notices.txt","zenz-bridge-MIT.txt","llama-MIT.txt","zenz-model-Apache-2.0.txt"})try(InputStream in=getAssets().open("licenses/"+name)){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] buffer=new byte[4096];int count;while((count=in.read(buffer))!=-1)out.write(buffer,0,count);text.append(out.toString("UTF-8")).append("\n\n");}
+            for(String[] notice:notices){text.append("■ ").append(notice[0]).append("\n\n");try(InputStream in=getAssets().open("licenses/"+notice[1])){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] buffer=new byte[4096];int count;while((count=in.read(buffer))!=-1)out.write(buffer,0,count);text.append(out.toString("UTF-8")).append("\n\n");}}
             ScrollView scroll=new ScrollView(this);TextView content=SettingsUi.text(this,text.toString(),12);content.setTextIsSelectable(true);content.setPadding(dp(20),dp(8),dp(20),dp(8));scroll.addView(content);
-            new MaterialAlertDialogBuilder(this).setTitle("ライセンス").setView(scroll).setPositiveButton("閉じる",null).show();
+            new MaterialAlertDialogBuilder(this).setTitle(group).setView(scroll).setNeutralButton("一覧に戻る",(dialog,which)->licenses()).setPositiveButton("閉じる",null).show();
         }catch(IOException error){Toast.makeText(this,error.getMessage(),Toast.LENGTH_LONG).show();}
     }
     private void symbolBoard(int board){

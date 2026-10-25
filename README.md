@@ -14,6 +14,8 @@ Android 8.0以降のarm64-v8a／x86_64端末に対応．[Releases](https://githu
 
 ## 使用している技術・ライセンス
 
+Slyde本体は[MIT License](LICENSE)で公開しています．同梱の辞書・モデル・フォントなどには，それぞれのライセンスが適用されます．
+
 - [Sumire](sumire-engine/README.md): 基本辞書・漢字変換コード
 - [Mozc](docs/SYMBOLS.md): 記号・絵文字辞書
 - [zenz](zenz/README.md): AI変換

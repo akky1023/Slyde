@@ -34,7 +34,7 @@ public class SettingsActivityTest {
             assertEquals(0,count(root,GlideKeyboardView.class));assertEquals(0,count(root,TextInputEditText.class));
             capture(root,"settings-home");
             click(root,"入力");assertNotNull(find(root,"記号入力ボード1"));assertNotNull(find(root,"記号入力ボード2"));assertNull(find(root,"総合記号ボード"));assertEquals(0,count(root,TextInputEditText.class));
-            assertNotNull(find(root,"記号・絵文字"));capture(root,"settings-conversion-only-input");
+            assertNull(find(root,"記号・絵文字"));capture(root,"settings-conversion-only-input");
             click(root,"記号入力ボード1");assertEquals(12,count(root,TextInputEditText.class));click(root,"保存");
             activity.onBackPressed();click(root,"表示");assertNotNull(find(root,"大きさ・位置"));capture(root,"settings-display");
             activity.onBackPressed();click(root,"このアプリについて");assertNotNull(find(root,"ライセンス"));
@@ -46,6 +46,100 @@ public class SettingsActivityTest {
             MaterialSwitch toggle=(MaterialSwitch)find(root,"AI候補の「AI」を表示");assertNotNull(toggle);toggle.setChecked(false);
             assertFalse(InputPreferences.get(activity).getBoolean("showAiBadges",true));activity.onBackPressed();click(root,"表示");
             assertFalse(((MaterialSwitch)find(root,"AI候補の「AI」を表示")).isChecked());
+        }
+    }
+    @Test public void inputDefaultsAndSavedVowelChoicesAgree(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();
+            InputPreferences.get(activity).edit().clear().apply();click(root,"入力");
+            for(String name:new String[]{"XEUをグライド入力","XIUをグライド入力","丸括弧を半角にする"})assertFalse(((MaterialSwitch)find(root,name)).isChecked());
+            ((MaterialSwitch)find(root,"XEUをグライド入力")).setChecked(true);
+            activity.onBackPressed();click(root,"入力");
+            assertTrue(((MaterialSwitch)find(root,"XEUをグライド入力")).isChecked());
+            assertFalse(((MaterialSwitch)find(root,"XIUをグライド入力")).isChecked());
+        }
+    }
+    @Test public void punctuationDropdownSavesAllFourPairsAndRestoresLegacyChoices(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();
+            android.content.SharedPreferences prefs=InputPreferences.get(activity);
+            String[] styles={"、。","，．","，。","、．"};
+            for(int index=0;index<styles.length;index++){
+                prefs.edit().putBoolean("commaStyle",index==1||index==2).putBoolean("periodStyle",index==1||index==3).apply();
+                click(root,"入力");
+                android.widget.AutoCompleteTextView dropdown=(android.widget.AutoCompleteTextView)find(root,styles[index]);assertNotNull(dropdown);
+                assertEquals(4,dropdown.getAdapter().getCount());
+                for(int choice=0;choice<styles.length;choice++){
+                    assertEquals(styles[choice],dropdown.getAdapter().getItem(choice));
+                    dropdown.getOnItemClickListener().onItemClick(null,null,choice,choice);
+                    net.neomenia.inputcore.JapaneseTypography typography=new net.neomenia.inputcore.JapaneseTypography(prefs.getBoolean("commaStyle",false),prefs.getBoolean("periodStyle",false),false,false);
+                    assertEquals(styles[choice],typography.format("、。"));
+                }
+                activity.onBackPressed();
+            }
+        }
+    }
+    @Test public void unifiedParenthesesInheritEitherLegacySideAndCanBeTurnedOff(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();
+            android.content.SharedPreferences prefs=InputPreferences.get(activity);
+            for(String legacy:new String[]{"openParenStyle","closeParenStyle"}){
+                prefs.edit().clear().putBoolean(legacy,true).apply();click(root,"入力");
+                MaterialSwitch toggle=(MaterialSwitch)find(root,"丸括弧を半角にする");assertTrue(toggle.isChecked());
+                toggle.setChecked(false);assertFalse(InputPreferences.halfWidthParentheses(prefs));
+                activity.onBackPressed();click(root,"入力");
+                assertFalse(((MaterialSwitch)find(root,"丸括弧を半角にする")).isChecked());activity.onBackPressed();
+            }
+        }
+    }
+    @Test public void displayRemovesExtraLabelsAndAuthorLinksOpenTheirDestinations(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();click(root,"表示");
+            assertNull(find(root,"日本語の変換候補"));assertNull(find(root,"注記"));
+            assertNotNull(find(root,"紛らわしい文字の注記を表示（全・半・漢・カナなど）"));
+            activity.onBackPressed();click(root,"このアプリについて");
+            ViewGroup about=(ViewGroup)find(root,"リポジトリ").getParent();int count=about.getChildCount();
+            assertEquals(find(root,"リポジトリ"),about.getChildAt(count-3));assertEquals(find(root,"ライセンス"),about.getChildAt(count-2));assertEquals(find(root,"制作者情報"),about.getChildAt(count-1));
+            assertNull(find(root,"akky_1023"));click(root,"リポジトリ");
+            assertEquals("https://github.com/akky1023/Slyde",org.robolectric.Shadows.shadowOf(activity).getNextStartedActivity().getDataString());
+            capture(root,"settings-about");
+            click(root,"制作者情報");android.app.Dialog dialog=org.robolectric.shadows.ShadowDialog.getLatestDialog();assertTrue(dialog.isShowing());
+            TextView name=(TextView)find(dialog.getWindow().getDecorView(),"akky_1023");assertNotNull(name);assertFalse(name instanceof Button);
+            ViewGroup content=(ViewGroup)name.getParent();assertEquals(3,content.getChildCount());
+            assertTrue(content.getChildAt(0) instanceof android.widget.ImageView);assertNotNull(((android.widget.ImageView)content.getChildAt(0)).getDrawable());
+            android.widget.ImageView avatar=(android.widget.ImageView)content.getChildAt(0);
+            assertEquals(android.widget.ImageView.ScaleType.CENTER_CROP,avatar.getScaleType());
+            assertTrue(((androidx.core.graphics.drawable.RoundedBitmapDrawable)avatar.getDrawable()).isCircular());
+            android.text.Spanned linkedName=(android.text.Spanned)name.getText();linkedName.getSpans(0,linkedName.length(),android.text.style.URLSpan.class)[0].onClick(name);
+            assertEquals("https://neomenia.net",org.robolectric.Shadows.shadowOf(activity).getNextStartedActivity().getDataString());
+            View github=content.getChildAt(2);assertTrue(github instanceof android.widget.ImageButton);assertEquals("GitHub",github.getContentDescription());github.performClick();
+            assertEquals("https://github.com/akky1023",org.robolectric.Shadows.shadowOf(activity).getNextStartedActivity().getDataString());
+            capture(content,"settings-author",280,280);
+            for(int i=0;i<content.getChildCount();i++){View child=content.getChildAt(i);assertEquals(content.getWidth()/2,(child.getLeft()+child.getRight())/2);}
+        }
+    }
+    @Test public void licenseGroupsOpenTheirOwnNoticesAndReturnToTheList(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();click(root,"このアプリについて");
+            String[] groups={"Slyde本体","Mozc","Sumire","zenz"};
+            String[] notices={"Copyright (c) 2026 akky_1023","Google","Kazuma Naka","The ggml authors"};
+            click(root,"ライセンス");
+            for(int index=0;index<groups.length;index++){
+                androidx.appcompat.app.AlertDialog list=(androidx.appcompat.app.AlertDialog)org.robolectric.shadows.ShadowDialog.getLatestDialog();
+                assertEquals(groups.length,list.getListView().getAdapter().getCount());
+                for(int i=0;i<groups.length;i++)assertEquals(groups[i],list.getListView().getAdapter().getItem(i));
+                list.getListView().performItemClick(null,index,index);
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+                androidx.appcompat.app.AlertDialog details=(androidx.appcompat.app.AlertDialog)org.robolectric.shadows.ShadowDialog.getLatestDialog();
+                assertNotNull(find(details.getWindow().getDecorView(),groups[index]));
+                android.widget.ScrollView scroll=(android.widget.ScrollView)findType(details.getWindow().getDecorView(),android.widget.ScrollView.class);
+                String text=((TextView)scroll.getChildAt(0)).getText().toString();assertTrue(text,text.contains(notices[index]));
+                if(index==0){assertTrue(text.contains("GitHub Octicons"));assertTrue(text.contains("SIL Open Font License"));}
+                if(index==2){assertTrue(text.contains("IPADIC"));assertTrue(text.contains("Data — License"));}
+                if(index==3){assertTrue(text.contains("Apache License"));assertTrue(text.contains("JNI bridge"));}
+                details.getButton(android.content.DialogInterface.BUTTON_NEUTRAL).performClick();
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            }
         }
     }
     @Test public void conversionWaitSettingIsOptionalAndSaved(){

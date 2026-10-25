@@ -34,7 +34,7 @@ public final class GlideKeyboardView extends View {
     }
     private int rowDp=58;
     private int naNyaBias=50;
-    private boolean enableEu=true,enableIu=true;
+    private boolean enableEu=false,enableIu=false;
     private int leftSidePercent=15,rightSidePercent=15;
     private JapaneseTypography typography=new JapaneseTypography(false,false,false,false);
     private static final String[] NUM={"1","2","3","4","5","6","7","8","9","記号1","0","記号2"};

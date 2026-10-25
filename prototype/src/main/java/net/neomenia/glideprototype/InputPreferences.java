@@ -6,4 +6,7 @@ import android.content.SharedPreferences;
 /** Preserve the original preference file across the settings-only migration. */
 final class InputPreferences {
     static SharedPreferences get(Context context){return context.getSharedPreferences("PracticeActivity",Context.MODE_PRIVATE);}
+    static boolean halfWidthParentheses(SharedPreferences preferences){
+        return preferences.getBoolean("halfWidthParentheses",preferences.getBoolean("openParenStyle",false)||preferences.getBoolean("closeParenStyle",false));
+    }
 }
