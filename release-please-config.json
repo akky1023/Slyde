@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "a9f5434526e0f846c4c1991db3eebe7a15db8dee",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "extra-files": ["prototype/build.gradle"],
+      "pull-request-header": "- バージョンと変更履歴を更新します。",
+      "pull-request-footer": "- マージするとタグとGitHub Releaseを作成します。"
+    }
+  }
+}

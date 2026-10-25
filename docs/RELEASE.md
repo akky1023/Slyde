@@ -46,6 +46,20 @@
 
 ## ビルド
 
+### GitHub Releaseの自動作成
+
+`develop` へのpushでRelease Pleaseが動きます。`fix: ...` はパッチ、`feat: ...` はマイナー、`feat!: ...` または `BREAKING CHANGE:` はメジャーバージョンを更新します。リリース対象の変更があると、バージョンと `CHANGELOG.md` を更新するPRを自動作成・更新し、マージ後に `v1.1.12` などのタグとGitHub Releaseを公開します。Actionsの「Release Please」から手動実行もできます。
+
+導入時点の `1.1.11` とコミット `a9f5434` を起点とし、それ以前の変更は次回の変更履歴に含めません。バージョンは `version.txt`、`.release-please-manifest.json`、`prototype/build.gradle` の `versionName` に反映されます。Androidの `versionCode` は自動更新しないため、リリースPRのマージ前に前回より大きな値へ更新してください（現在は30）。
+
+このワークフローはタグ・変更履歴・GitHub Releaseを作成します。署名APKは以下のローカル手順でビルド・検証し、対応するGitHub Releaseに添付してください。署名鍵はGitHubへ登録していません。
+
+認証には標準の `GITHUB_TOKEN` を使います。リポジトリの Settings → Actions → General → Workflow permissions で「Allow GitHub Actions to create and approve pull requests」を有効にします。このトークンが作成したPRやタグでは別のActionsワークフローが起動しないため、将来CIやAPK自動ビルドを追加する場合は認証・実行方法を調整してください。
+
+設定は [Release Please Actionの公式手順](https://github.com/googleapis/release-please-action) に従っています。
+
+### ローカルビルド
+
 JDK 17、Android SDK 35、NDK 28.2.13676358、CMake 3.22.1、Gradle 8.11.1を用意します。zenzソースの準備方法は `zenz/README.md` を参照してください。
 
 ```powershell
