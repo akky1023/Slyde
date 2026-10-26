@@ -83,8 +83,9 @@ public final class SettingsActivity extends AppCompatActivity {
             if(!checked)editor.remove("savedJapaneseInputMode").remove("inputModeHiddenAt");
             editor.apply();reset.setEnabled(checked);
         });
-        heading("グライド入力");slider("NA／NYAの判定",0,100,preferences.getInt("naNyaBias",50),"",value->preferences.edit().putInt("naNyaBias",value).apply());
-        description("左はNA寄り、右はNYA寄りです。");toggle("XEUをグライド入力","enableEu",false);toggle("XIUをグライド入力","enableIu",false);
+        // Saved bias increases toward NYA; reverse the UI so increasing it favors NA, preserving existing choices.
+        heading("グライド入力");slider("NAの判定を出しやすくする",0,100,100-preferences.getInt("naNyaBias",50),"",value->preferences.edit().putInt("naNyaBias",100-value).apply());
+        description("グライドの軌道がNYA側に曲がってもある程度NA判定が出るようにします．");toggle("XEUをグライド入力","enableEu",false);toggle("XIUをグライド入力","enableIu",false);
         description("子音から始まる -EU/-IU の形の連母音をグライド入力するかを設定します．基本的に日本語では低頻度で -U の誤入力が増えやすくなるためオフを推奨しています．");
         heading("句読点・括弧");punctuationDropdown();
         toggle("丸括弧を半角にする","halfWidthParentheses",InputPreferences.halfWidthParentheses(preferences));
