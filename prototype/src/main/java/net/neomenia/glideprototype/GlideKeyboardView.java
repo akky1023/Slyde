@@ -14,6 +14,7 @@ public final class GlideKeyboardView extends View {
         void text(String raw, boolean japanese);
         void action(String action);
         void preview(String route, String result);
+        default void modeChanged(boolean japanese){}
     }
     private final Listener listener;
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -232,7 +233,7 @@ public final class GlideKeyboardView extends View {
         switch(startRow){
             case 0 -> {if(page==0&&!japanese){shift.tap();listener.preview(shift.locked()?"CapsLock":shift.upper()?"Shift":"英字",shift.locked()?"大文字を固定":shift.upper()?"次の英字入力を大文字に":"小文字入力");}}
             case 1 -> listener.action("left");
-            case 3 -> {listener.action("commit");if(page!=0)page=0;else japanese=!japanese;listener.preview(japanese?"日本語":"英字", "キー配列は同じです");}
+            case 3 -> {listener.action("commit");if(page!=0)page=0;else {japanese=!japanese;listener.modeChanged(japanese);}listener.preview(japanese?"日本語":"英字", "キー配列は同じです");}
         }
     }
     @Override public boolean performClick(){super.performClick();return true;}

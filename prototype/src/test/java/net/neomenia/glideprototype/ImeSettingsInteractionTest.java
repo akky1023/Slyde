@@ -80,6 +80,34 @@ public class ImeSettingsInteractionTest {
         root.measure(View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(600,View.MeasureSpec.AT_MOST));
         root.layout(0,0,root.getMeasuredWidth(),root.getMeasuredHeight());
     }
+    @Test public void sessionRemembersTappedModeAcrossRecreationAndExpiresAfterHiding(){
+        Context context=RuntimeEnvironment.getApplication();
+        android.content.SharedPreferences prefs=InputPreferences.get(context);
+        prefs.edit().clear().putBoolean("zenzEnabled",false).putBoolean("rememberInputMode",true)
+                .putBoolean("resetInputModeAfterThreeMinutes",true).apply();
+        android.view.inputmethod.EditorInfo info=new android.view.inputmethod.EditorInfo();
+        info.inputType=android.text.InputType.TYPE_CLASS_TEXT;
+        KeyboardSession session=new KeyboardSession(context,null,null);
+        try{
+            session.start(new android.view.inputmethod.BaseInputConnection(new View(context),true),info);
+            View root=session.view();layout(root);GlideKeyboardView keyboard=find(root,GlideKeyboardView.class);
+            touch(keyboard,MotionEvent.ACTION_DOWN,20,keyboard.getHeight()-10);
+            touch(keyboard,MotionEvent.ACTION_UP,20,keyboard.getHeight()-10);
+            assertFalse(keyboard.isJapanese());assertFalse(prefs.getBoolean("savedJapaneseInputMode",true));
+            session.finish();
+            prefs.edit().putLong("inputModeHiddenAt",1000).apply();
+            session.finish();assertEquals(1000,prefs.getLong("inputModeHiddenAt",0));
+            prefs.edit().putLong("inputModeHiddenAt",System.currentTimeMillis()).apply();
+        }finally{session.destroy();}
+        session=new KeyboardSession(context,null,null);
+        try{
+            session.start(new android.view.inputmethod.BaseInputConnection(new View(context),true),info);
+            GlideKeyboardView keyboard=find(session.view(),GlideKeyboardView.class);assertFalse(keyboard.isJapanese());
+            session.finish();prefs.edit().putLong("inputModeHiddenAt",System.currentTimeMillis()-180000).apply();
+            session.start(new android.view.inputmethod.BaseInputConnection(new View(context),true),info);
+            assertTrue(keyboard.isJapanese());
+        }finally{session.destroy();}
+    }
     @Test public void settingsReplaceEntireKeyboardAndBackRestoresItsSize(){
         Context context=RuntimeEnvironment.getApplication();
         InputPreferences.get(context).edit().putBoolean("zenzEnabled",false).apply();

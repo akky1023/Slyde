@@ -96,7 +96,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         generation++;clearCandidates();clearComposition();connection=input;editorInfo=info;
         privateField=net.neomenia.inputcore.EditorPolicy.isPassword(info.inputType);
         reloadSettings();
-        keyboard.resetMode(net.neomenia.inputcore.EditorPolicy.prefersLatin(info.inputType));
+        keyboard.resetMode(new InputModeMemory(getPreferences(0)).startLatin(info.inputType,System.currentTimeMillis()));
         if(net.neomenia.inputcore.EditorPolicy.prefersNumbers(info.inputType))keyboard.showNumbers();
     }
     void reloadSettings(){
@@ -107,6 +107,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
     }
     void finish(){
+        if(connection!=null)new InputModeMemory(getPreferences(0)).hidden(System.currentTimeMillis());
         closeSettings();dock.cancelEdit();keyboard.cancelTouches();commit();
         if(connection!=null)connection.finishComposingText();connection=null;
     }
@@ -128,7 +129,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,KeyEvent.KEYCODE_ENTER));
         }else connection.commitText("\n",1);
     }
-    void destroy(){dock.cancelEdit();keyboard.cancelTouches();conversionHistory.clear();destroyed=true;generation++;if(zenz!=null)zenz.cancel();worker.shutdownNow();main.removeCallbacksAndMessages(null);connection=null;}
+    void destroy(){if(connection!=null)new InputModeMemory(getPreferences(0)).hidden(System.currentTimeMillis());dock.cancelEdit();keyboard.cancelTouches();conversionHistory.clear();destroyed=true;generation++;if(zenz!=null)zenz.cancel();worker.shutdownNow();main.removeCallbacksAndMessages(null);connection=null;}
+    @Override public void modeChanged(boolean japanese){new InputModeMemory(getPreferences(0)).changed(japanese);}
     @Override public void text(String raw,boolean japanese){
         if(connection==null)return;
         if(alphabetCase>=0)commit();

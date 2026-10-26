@@ -59,6 +59,24 @@ public class SettingsActivityTest {
             assertFalse(((MaterialSwitch)find(root,"XIUをグライド入力")).isChecked());
         }
     }
+    @Test public void inputModeSettingsSaveAndResetDependsOnMemory(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();
+            View root=activity.getWindow().getDecorView();click(root,"入力");
+            MaterialSwitch remember=(MaterialSwitch)find(root,"日本語・アルファベットの入力モードを記憶する");
+            MaterialSwitch reset=(MaterialSwitch)find(root,"3分経過で日本語入力に戻す");
+            assertFalse(remember.isChecked());assertFalse(reset.isChecked());assertFalse(reset.isEnabled());
+            remember.setChecked(true);assertTrue(reset.isEnabled());reset.setChecked(true);
+            activity.onBackPressed();click(root,"入力");
+            remember=(MaterialSwitch)find(root,"日本語・アルファベットの入力モードを記憶する");
+            reset=(MaterialSwitch)find(root,"3分経過で日本語入力に戻す");
+            assertTrue(remember.isChecked());assertTrue(reset.isChecked());assertTrue(reset.isEnabled());
+            InputPreferences.get(activity).edit().putBoolean("savedJapaneseInputMode",false).apply();
+            remember.setChecked(false);assertFalse(reset.isEnabled());
+            assertFalse(InputPreferences.get(activity).contains("savedJapaneseInputMode"));
+            capture(root,"settings-input-mode");
+        }
+    }
     @Test public void punctuationDropdownSavesAllFourPairsAndRestoresLegacyChoices(){
         try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
             SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();

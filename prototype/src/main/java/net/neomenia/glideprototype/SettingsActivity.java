@@ -74,6 +74,15 @@ public final class SettingsActivity extends AppCompatActivity {
         slider.addOnChangeListener((view,value,user)->{label.setText(name+"（"+Math.round(value)+suffix+"）");if(user)save.accept(Math.round(value));});body.addView(slider,new LinearLayout.LayoutParams(-1,dp(48)));
     }
     private void input(){
+        heading("入力モード");
+        MaterialSwitch remember=toggle("日本語・アルファベットの入力モードを記憶する","rememberInputMode",false);
+        MaterialSwitch reset=toggle("3分経過で日本語入力に戻す","resetInputModeAfterThreeMinutes",false);
+        reset.setEnabled(remember.isChecked());
+        remember.setOnCheckedChangeListener((button,checked)->{
+            SharedPreferences.Editor editor=preferences.edit().putBoolean("rememberInputMode",checked);
+            if(!checked)editor.remove("savedJapaneseInputMode").remove("inputModeHiddenAt");
+            editor.apply();reset.setEnabled(checked);
+        });
         heading("グライド入力");slider("NA／NYAの判定",0,100,preferences.getInt("naNyaBias",50),"",value->preferences.edit().putInt("naNyaBias",value).apply());
         description("左はNA寄り、右はNYA寄りです。");toggle("XEUをグライド入力","enableEu",false);toggle("XIUをグライド入力","enableIu",false);
         description("子音から始まる -EU/-IU の形の連母音をグライド入力するかを設定します．基本的に日本語では低頻度で -U の誤入力が増えやすくなるためオフを推奨しています．");
