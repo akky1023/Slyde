@@ -133,10 +133,19 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     @Override public void modeChanged(boolean japanese){new InputModeMemory(getPreferences(0)).changed(japanese);}
     @Override public void text(String raw,boolean japanese){
         if(connection==null)return;
-        if(alphabetCase>=0)commit();
-        generation++;invalidateCandidates();
-        if(japanese&&!privateField){composing.append(raw);connection.setComposingText(typography.format(composing.toString()),1);scheduleCandidates();}
-        else{commit();connection.commitText(raw,1);}
+        InputConnection input=connection;
+        // Deliver the alphabet commit and the next composing text as one editor update.
+        input.beginBatchEdit();
+        try{
+            if(alphabetCase>=0){
+                if(japanese&&!privateField&&getPreferences(0).getBoolean("cancelAlphabetOnInput",false)){
+                    alphabetCase=-1;alphabetSource="";
+                }else commit();
+            }
+            generation++;invalidateCandidates();
+            if(japanese&&!privateField){composing.append(raw);connection.setComposingText(typography.format(composing.toString()),1);scheduleCandidates();}
+            else{commit();connection.commitText(raw,1);}
+        }finally{input.endBatchEdit();}
     }
     private void clearComposition(){composing.clear();alphabetCase=-1;alphabetSource="";}
     private String reading(){
@@ -152,6 +161,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         return typography.format(Romanizer.convert(composing.toString(),true));
     }
     private void alphabet(){
+        if(!getPreferences(0).getBoolean("alphabetButtonEnabled",true))return;
         if(!keyboard.isJapanese()||privateField||composing.length()==0)return;
         if(alphabetCase<0)alphabetSource=composing.alphabet();
         alphabetCase=(alphabetCase+1)%3;generation++;clearCandidates();
@@ -208,6 +218,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
                 if(composing.length()>0){
                     if(alphabetCase>=0){
                         alphabetSource=alphabetSource.substring(0,alphabetSource.offsetByCodePoints(alphabetSource.length(),-1));
+                        // Keep the kana restored on resumed input consistent with alphabet edits.
+                        composing.clear();composing.append(alphabetSource);
                         if(alphabetSource.isEmpty())clearComposition();
                         connection.setComposingText(alphabetCase>=0?reading():"",1);
                     }else{composing.delete();connection.setComposingText(typography.format(composing.toString()),1);}

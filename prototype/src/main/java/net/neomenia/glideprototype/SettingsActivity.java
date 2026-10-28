@@ -102,6 +102,11 @@ public final class SettingsActivity extends AppCompatActivity {
         box.addView(dropdown,new LinearLayout.LayoutParams(-1,-2));body.addView(box,new LinearLayout.LayoutParams(-1,-2));
     }
     private void conversion(){
+        heading("無変換");
+        MaterialSwitch alphabet=toggle("無変換を有効にする","alphabetButtonEnabled",true);
+        MaterialSwitch cancelAlphabet=toggle("入力再開時に無変換を取り消す","cancelAlphabetOnInput",false);
+        cancelAlphabet.setEnabled(alphabet.isChecked());
+        alphabet.setOnCheckedChangeListener((button,checked)->{preferences.edit().putBoolean("alphabetButtonEnabled",checked).apply();cancelAlphabet.setEnabled(checked);});
         heading("変換候補");slider("候補欄の行数",1,3,preferences.getInt("candidateRows",1),"行",value->preferences.edit().putInt("candidateRows",value).apply());
         toggle("zenzのオフラインAI変換を有効にする","zenzEnabled",true);
         MaterialSwitch wait=toggle("AI変換を待って候補を表示する","waitForZenz",false);

@@ -48,6 +48,27 @@ public class SettingsActivityTest {
             assertFalse(((MaterialSwitch)find(root,"AI候補の「AI」を表示")).isChecked());
         }
     }
+    @Test public void cancelAlphabetOnInputDefaultsOffAndPersists(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();
+            View root=activity.getWindow().getDecorView();click(root,"変換");
+            assertNotNull(find(root,"無変換"));assertNull(find(root,"英字に戻すボタン"));
+            MaterialSwitch enabled=(MaterialSwitch)find(root,"無変換を有効にする");
+            assertTrue(enabled.isChecked());
+            MaterialSwitch toggle=(MaterialSwitch)find(root,"入力再開時に無変換を取り消す");
+            assertNotNull(toggle);assertFalse(toggle.isChecked());toggle.setChecked(true);
+            assertTrue(InputPreferences.get(activity).getBoolean("cancelAlphabetOnInput",false));
+            activity.onBackPressed();click(root,"変換");
+            toggle=(MaterialSwitch)find(root,"入力再開時に無変換を取り消す");assertTrue(toggle.isChecked());
+            enabled=(MaterialSwitch)find(root,"無変換を有効にする");enabled.setChecked(false);
+            assertFalse(toggle.isEnabled());assertTrue(toggle.isChecked());
+            assertFalse(InputPreferences.get(activity).getBoolean("alphabetButtonEnabled",true));
+            activity.onBackPressed();click(root,"変換");
+            toggle=(MaterialSwitch)find(root,"入力再開時に無変換を取り消す");assertFalse(toggle.isEnabled());
+            enabled=(MaterialSwitch)find(root,"無変換を有効にする");assertFalse(enabled.isChecked());
+            enabled.setChecked(true);assertTrue(toggle.isEnabled());assertTrue(toggle.isChecked());
+        }
+    }
     @Test public void inputDefaultsAndSavedVowelChoicesAgree(){
         try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
             SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();
