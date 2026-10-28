@@ -96,6 +96,9 @@ final class CandidateBarView extends FrameLayout {
     }
     private void populate(Flow flow){
         Map<String,String> badges=CharacterWidth.badges(choices);
+        // Keep the same text-to-padding ratio as 18sp text with 10dp padding
+        // at the default system font scale.
+        int horizontalPadding=Math.round(android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP,textSp,getResources().getDisplayMetrics())*10f/18f);
         while(flow.getChildCount()>choices.size())flow.removeViewAt(flow.getChildCount()-1);
         for(int index=0;index<choices.size();index++){
             WidthLabelView text;
@@ -110,7 +113,7 @@ final class CandidateBarView extends FrameLayout {
                 text.setOnClickListener(view->select.accept(((WidthLabelView)view).valueForClick()));
                 text.setOnLongClickListener(view->{Toast.makeText(getContext(),((TextView)view).getText(),Toast.LENGTH_SHORT).show();return true;});flow.addView(text);
             }
-            String value=choices.get(index);text.setValue(value);text.setBadge(badges.get(value));text.setAi(value.equals(aiCandidate));text.setAnnotationVisibility(showBadges,showAi);text.setTypeface(typeface);text.setTextSize(textSp);text.setPadding(dp(16),0,dp(16),0);
+            String value=choices.get(index);text.setValue(value);text.setBadge(badges.get(value));text.setAi(value.equals(aiCandidate));text.setAnnotationVisibility(showBadges,showAi);text.setTypeface(typeface);text.setTextSize(textSp);text.setPadding(horizontalPadding,0,horizontalPadding,0);
             text.setSelected(index==selectedCandidate);
         }
     }
