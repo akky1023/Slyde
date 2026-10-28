@@ -1,5 +1,5 @@
 plugins { id 'com.android.application' }
-def releaseVersion = '1.2.0' // x-release-please-version
+def releaseVersion = '1.3.0' // x-release-please-version
 if (!(releaseVersion ==~ /\d+\.\d+\.\d+/)) throw new GradleException('Release version must be major.minor.patch')
 def versionParts = releaseVersion.tokenize('.').collect { it.toInteger() }
 if (versionParts[1] > 999 || versionParts[2] > 999) throw new GradleException('Minor and patch versions must be at most 999')
