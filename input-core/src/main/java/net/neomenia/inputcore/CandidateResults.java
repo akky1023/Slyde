@@ -13,5 +13,14 @@ public final class CandidateResults {
     public void dictionary(List<String> values,boolean ready){dictionary=new ArrayList<>(values);dictionaryReady=ready;}
     public void ai(String value){if(ZenzCandidates.safe(value))ai=value;}
     public String ai(){return ai;}
-    public List<String> values(){return ZenzCandidates.merge(dictionary,ai,dictionaryReady);}
+    private static boolean historicalKana(String value){
+        // Includes archaic kana also filed under へんたいがな in the bundled Mozc dictionary.
+        return value.codePoints().anyMatch(cp->cp>=0x1b000&&cp<=0x1b122);
+    }
+    public List<String> values(){
+        List<String> merged=ZenzCandidates.merge(dictionary,ai,dictionaryReady);
+        List<String> regular=new ArrayList<>(),historical=new ArrayList<>();
+        for(String value:merged)(historicalKana(value)?historical:regular).add(value);
+        regular.addAll(historical);return regular;
+    }
 }
