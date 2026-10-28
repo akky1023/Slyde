@@ -14,7 +14,7 @@ public final class JapaneseComposition {
     public String alphabet(){
         StringBuilder raw=new StringBuilder();for(Part part:parts)raw.append(part.raw());
         // The decoder uses n' to finish a glide ending in N; the apostrophe is internal.
-        return raw.toString().replace("n'","n");
+        return raw.toString().replace("n'","n").replace('ー','-');
     }
     public void append(String raw){
         if(raw.isEmpty())return;

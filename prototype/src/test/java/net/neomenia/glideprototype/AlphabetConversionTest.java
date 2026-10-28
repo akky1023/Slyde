@@ -31,6 +31,14 @@ public class AlphabetConversionTest {
         },info);
     }
     @After public void teardown(){session.destroy();}
+    @Test public void alphabetConvertsLongVowelMarkToHyphenInEveryCase(){
+        for(String raw:new String[]{"j","ー","po","p"})session.text(raw,true);
+        assertEquals("jーぽp",visible);
+        for(String expected:new String[]{"j-pop","J-pop","J-POP"}){
+            session.action("alphabet");assertEquals(expected,visible);
+        }
+        session.action("enter");assertEquals(List.of("J-POP"),committed);
+    }
     @Test public void enabledFullWidthAlphabetStillFormsKana(){
         InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("fullWidthComposingAlphabet",true).apply();
         session.text("shi",true);session.text("k",true);assertEquals("しｋ",visible);

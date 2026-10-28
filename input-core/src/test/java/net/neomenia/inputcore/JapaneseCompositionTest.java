@@ -4,6 +4,15 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class JapaneseCompositionTest {
+    @Test public void alphabetRestoresLongVowelMarksAsHyphens(){
+        for(String hyphen:new String[]{"ー","-"}){
+            JapaneseComposition text=new JapaneseComposition();
+            for(String raw:new String[]{"j",hyphen,"po","p"})text.append(raw);
+            assertEquals("jーぽp",text.toString());assertEquals("j-pop",text.alphabet());
+            text.delete();assertEquals("j-po",text.alphabet());
+            assertEquals("jーぽ",text.toString());
+        }
+    }
     @Test public void retainsActualSpellingAcrossTapsAndGlides(){
         JapaneseComposition text=new JapaneseComposition();
         for(String raw:new String[]{"te","su","to","shi","qi"})text.append(raw);
