@@ -70,10 +70,11 @@ final class CandidateBarView extends LinearLayout {
     }
     private void configureScroller(){
         if(flow.getParent() instanceof ViewGroup previous)previous.removeView(flow);strip.removeAllViews();flow.wrap=expanded||rows>1;
+        // DPAD events leave touch mode; do not light up the whole candidate strip on focus.
         if(!flow.wrap){
-            HorizontalScrollView scroll=new HorizontalScrollView(getContext());scroll.setHorizontalScrollBarEnabled(false);scroll.addView(flow,new HorizontalScrollView.LayoutParams(-2,-1));strip.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
+            HorizontalScrollView scroll=new HorizontalScrollView(getContext());scroll.setDefaultFocusHighlightEnabled(false);scroll.setHorizontalScrollBarEnabled(false);scroll.addView(flow,new HorizontalScrollView.LayoutParams(-2,-1));strip.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
         }else{
-            ScrollView scroll=new ScrollView(getContext());scroll.addView(flow,new ScrollView.LayoutParams(-1,-2));strip.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
+            ScrollView scroll=new ScrollView(getContext());scroll.setDefaultFocusHighlightEnabled(false);scroll.addView(flow,new ScrollView.LayoutParams(-1,-2));strip.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
         }
     }
     void setCandidates(List<String> values){

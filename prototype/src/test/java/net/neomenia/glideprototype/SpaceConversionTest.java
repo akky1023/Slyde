@@ -49,6 +49,11 @@ public class SpaceConversionTest {
         ready();session.action("space");session.action("space");session.text("ka",true);
         assertEquals(List.of("箸"),committed);assertEquals("か",visible);
     }
+    @Test public void cursorMovesCommitTheSelectedCandidateOnlyOnce()throws Exception {
+        ready();session.action("space");session.action("space");
+        session.action("left");session.action("left");session.action("right");
+        assertEquals(List.of("箸"),committed);assertEquals(-1,get("conversionIndex"));
+    }
     @Test public void cancellationRestoresReadingAndContinuesComposition()throws Exception {
         InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("cancelConversionOnInput",true).apply();
         ready();session.action("space");session.text("ka",true);

@@ -257,7 +257,11 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             }
             case "space" -> {if(keyboard.isJapanese()&&alphabetCase<0&&composing.length()>0)spaceConversion();else{commit();connection.commitText(" ",1);}}
             case "enter" -> {if(composing.length()>0)commit();else enter(connection,editorInfo);}
-            case "left","right" -> {commit();sendKey(action.equals("left")?KeyEvent.KEYCODE_DPAD_LEFT:KeyEvent.KEYCODE_DPAD_RIGHT);}
+            case "left","right" -> {
+                // Repeated cursor moves must not restart the editor's composition updates.
+                if(composing.length()>0)commit();
+                sendKey(action.equals("left")?KeyEvent.KEYCODE_DPAD_LEFT:KeyEvent.KEYCODE_DPAD_RIGHT);
+            }
         }
     }
     @Override public void preview(String path,String result){route.setText(path.isEmpty()?"子音から母音へなぞって入力":path+"   →   "+result);}
