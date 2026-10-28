@@ -69,6 +69,23 @@ public class SettingsActivityTest {
             enabled.setChecked(true);assertTrue(toggle.isEnabled());assertTrue(toggle.isChecked());
         }
     }
+    @Test public void spaceConversionSettingsDefaultOffAndPersist(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();
+            View root=activity.getWindow().getDecorView();click(root,"変換");
+            MaterialSwitch cycle=(MaterialSwitch)find(root,"空白キーで変換");
+            MaterialSwitch cancel=(MaterialSwitch)find(root,"入力再開時に変換を取り消す");
+            assertFalse(cycle.isChecked());assertFalse(cancel.isChecked());assertFalse(cancel.isEnabled());
+            cycle.setChecked(true);assertTrue(cancel.isEnabled());cancel.setChecked(true);
+            activity.onBackPressed();click(root,"変換");
+            cycle=(MaterialSwitch)find(root,"空白キーで変換");
+            cancel=(MaterialSwitch)find(root,"入力再開時に変換を取り消す");
+            assertTrue(cycle.isChecked());assertTrue(cancel.isChecked());assertTrue(cancel.isEnabled());
+            cycle.setChecked(false);assertFalse(cancel.isEnabled());
+            assertFalse(InputPreferences.get(activity).getBoolean("spaceCyclesCandidates",true));
+            assertTrue(InputPreferences.get(activity).getBoolean("cancelConversionOnInput",false));
+        }
+    }
     @Test public void inputDefaultsAndSavedVowelChoicesAgree(){
         try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
             SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();

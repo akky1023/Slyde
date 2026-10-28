@@ -26,6 +26,7 @@ final class CandidateBarView extends LinearLayout {
     private int keyboardHeight=0;
     private List<String> choices=List.of();
     private String aiCandidate;
+    private int selectedCandidate=-1;
     private int rows=1;
     private boolean expanded=false;
     private Typeface typeface=Typeface.DEFAULT;
@@ -44,6 +45,14 @@ final class CandidateBarView extends LinearLayout {
         setRows(1);setCandidates(List.of());
     }
     void setAnnotationVisibility(boolean characters,boolean ai){showBadges=characters;showAi=ai;populate(flow);}
+    void setSelectedCandidate(int index){
+        selectedCandidate=index;
+        for(int i=0;i<flow.getChildCount();i++)flow.getChildAt(i).setSelected(i==index);
+        if(index>=0&&index<flow.getChildCount()){
+            View selected=flow.getChildAt(index);
+            selected.post(()->{if(selected.isSelected())selected.requestRectangleOnScreen(new android.graphics.Rect(0,0,selected.getWidth(),selected.getHeight()),false);});
+        }
+    }
     void setKeyboardHeight(int height){if(keyboardHeight==height)return;keyboardHeight=height;requestLayout();}
     void setTypeface(Typeface value){if(typeface==value)return;typeface=value;populate(flow);requestLayout();}
     void setTextSp(int value){value=Math.max(12,Math.min(30,value));if(textSp==value)return;textSp=value;populate(flow);requestLayout();}
@@ -94,11 +103,15 @@ final class CandidateBarView extends LinearLayout {
             else{
                 text=new WidthLabelView(getContext());text.setTextColor(Color.rgb(235,242,246));
                 text.setGravity(Gravity.CENTER);text.setSingleLine(true);text.useCandidateTypography();text.setEllipsize(TextUtils.TruncateAt.END);text.setMinWidth(dp(56));
-                text.setBackground(new RippleDrawable(ColorStateList.valueOf(Color.rgb(69,104,118)),new ColorDrawable(Color.TRANSPARENT),new ColorDrawable(Color.WHITE)));
+                android.graphics.drawable.StateListDrawable background=new android.graphics.drawable.StateListDrawable();
+                background.addState(new int[]{android.R.attr.state_selected},new ColorDrawable(Color.rgb(69,104,118)));
+                background.addState(new int[]{},new ColorDrawable(Color.TRANSPARENT));
+                text.setBackground(new RippleDrawable(ColorStateList.valueOf(Color.rgb(69,104,118)),background,new ColorDrawable(Color.WHITE)));
                 text.setOnClickListener(view->select.accept(((WidthLabelView)view).valueForClick()));
                 text.setOnLongClickListener(view->{Toast.makeText(getContext(),((TextView)view).getText(),Toast.LENGTH_SHORT).show();return true;});flow.addView(text);
             }
             String value=choices.get(index);text.setValue(value);text.setBadge(badges.get(value));text.setAi(value.equals(aiCandidate));text.setAnnotationVisibility(showBadges,showAi);text.setTypeface(typeface);text.setTextSize(textSp);text.setPadding(dp(16),0,dp(16),0);
+            text.setSelected(index==selectedCandidate);
         }
     }
     private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}

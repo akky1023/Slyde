@@ -102,6 +102,11 @@ public final class SettingsActivity extends AppCompatActivity {
         box.addView(dropdown,new LinearLayout.LayoutParams(-1,-2));body.addView(box,new LinearLayout.LayoutParams(-1,-2));
     }
     private void conversion(){
+        heading("変換");
+        MaterialSwitch cycle=toggle("空白キーで変換","spaceCyclesCandidates",false);
+        MaterialSwitch cancelConversion=toggle("入力再開時に変換を取り消す","cancelConversionOnInput",false);
+        cancelConversion.setEnabled(cycle.isChecked());
+        cycle.setOnCheckedChangeListener((button,checked)->{preferences.edit().putBoolean("spaceCyclesCandidates",checked).apply();cancelConversion.setEnabled(checked);});
         heading("無変換");
         MaterialSwitch alphabet=toggle("無変換を有効にする","alphabetButtonEnabled",true);
         MaterialSwitch cancelAlphabet=toggle("入力再開時に無変換を取り消す","cancelAlphabetOnInput",false);

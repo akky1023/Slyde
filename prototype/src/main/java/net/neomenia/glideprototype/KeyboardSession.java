@@ -22,6 +22,9 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private CandidateBarView candidates;
     private boolean candidateExpanded=false;
     private int candidateRequest=0;
+    private List<String> conversionChoices=List.of();
+    private int conversionIndex=-1,pendingSpaceSteps=0;
+    private boolean conversionChoicesReady=false;
     private GlideKeyboardView keyboard;
     private FrameLayout keyboardArea;
     private ImeSettingsMenu settings;
@@ -81,6 +84,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     boolean cancelLayoutEdit(){if(settingsShowing){closeSettings();return true;}if(!dock.isEditing())return false;dock.cancelEdit();return true;}
     private void settingsMenu(){
         generation++;invalidateCandidates();keyboard.cancelTouches();settingsShowing=true;
+        pendingSpaceSteps=0;if(conversionIndex>=0)candidateRequest=generation;
         candidates.setVisibility(View.GONE);keyboardArea.setVisibility(View.GONE);
         settings.getLayoutParams().height=dockHeight>0?dockHeight:view.getHeight();settings.setVisibility(View.VISIBLE);
     }
@@ -137,18 +141,23 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         // Deliver the alphabet commit and the next composing text as one editor update.
         input.beginBatchEdit();
         try{
+            if(conversionIndex>=0){
+                if(japanese&&!privateField&&getPreferences(0).getBoolean("cancelConversionOnInput",false))clearCandidates();
+                else commit();
+            }
             if(alphabetCase>=0){
                 if(japanese&&!privateField&&getPreferences(0).getBoolean("cancelAlphabetOnInput",false)){
                     alphabetCase=-1;alphabetSource="";
                 }else commit();
             }
-            generation++;invalidateCandidates();
+            pendingSpaceSteps=0;generation++;invalidateCandidates();
             if(japanese&&!privateField){composing.append(raw);connection.setComposingText(typography.format(composing.toString()),1);scheduleCandidates();}
             else{commit();connection.commitText(raw,1);}
         }finally{input.endBatchEdit();}
     }
     private void clearComposition(){composing.clear();alphabetCase=-1;alphabetSource="";}
     private String reading(){
+        if(conversionIndex>=0)return conversionChoices.get(conversionIndex);
         if(alphabetCase>=0){
             String lower=alphabetSource.toLowerCase(Locale.ROOT);
             if(alphabetCase==2)return lower.toUpperCase(Locale.ROOT);
@@ -190,10 +199,27 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         main.removeCallbacks(autoCandidates);if(candidates!=null)setCandidateExpanded(false);
     }
     private void clearCandidates(){
+        conversionChoices=List.of();conversionIndex=-1;pendingSpaceSteps=0;conversionChoicesReady=false;
+        if(candidates!=null)candidates.setSelectedCandidate(-1);
         invalidateCandidates();if(candidates!=null)candidates.setCandidates(List.of());
     }
+    private void spaceConversion(){
+        if(!getPreferences(0).getBoolean("spaceCyclesCandidates",false)){convert();return;}
+        if(conversionIndex>=0){selectConversion(1);return;}
+        if(candidateRequest==generation&&conversionChoicesReady&&!conversionChoices.isEmpty()){selectConversion(1);return;}
+        pendingSpaceSteps++;
+        if(candidateDisplay==null)convert();
+    }
+    private void selectConversion(int steps){
+        if(conversionChoices.isEmpty())return;
+        conversionIndex=(int)(((long)conversionIndex+steps)%conversionChoices.size());
+        // Freeze this list so late dictionary/AI results cannot change the selected text.
+        generation++;invalidateCandidates();candidateRequest=generation;pendingSpaceSteps=0;
+        candidates.setSelectedCandidate(conversionIndex);
+        connection.setComposingText(reading(),1);
+    }
     private void scheduleCandidates(){
-        main.removeCallbacks(autoCandidates);if(!destroyed&&alphabetCase<0&&composing.length()>0)main.post(autoCandidates);
+        main.removeCallbacks(autoCandidates);if(!destroyed&&alphabetCase<0&&conversionIndex<0&&composing.length()>0)main.post(autoCandidates);
     }
     private void renderCandidates(){
         candidates.setRows(candidateRows());candidates.getLayoutParams().height=candidateHeight();candidates.requestLayout();
@@ -214,6 +240,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             case "commit" -> commit();
             case "alphabet" -> alphabet();
             case "delete" -> {
+                pendingSpaceSteps=0;
+                if(conversionIndex>=0){clearCandidates();connection.setComposingText(typography.format(composing.toString()),1);scheduleCandidates();break;}
                 generation++;invalidateCandidates();
                 if(composing.length()>0){
                     if(alphabetCase>=0){
@@ -227,7 +255,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
                 else if(connection.getSelectedText(0)!=null)connection.commitText("",1);else if(!connection.deleteSurroundingTextInCodePoints(1,0))sendKey(KeyEvent.KEYCODE_DEL);
                 if(composing.length()>0)scheduleCandidates();else clearCandidates();
             }
-            case "space" -> {if(keyboard.isJapanese()&&alphabetCase<0&&composing.length()>0)convert();else{commit();connection.commitText(" ",1);}}
+            case "space" -> {if(keyboard.isJapanese()&&alphabetCase<0&&composing.length()>0)spaceConversion();else{commit();connection.commitText(" ",1);}}
             case "enter" -> {if(composing.length()>0)commit();else enter(connection,editorInfo);}
             case "left","right" -> {commit();sendKey(action.equals("left")?KeyEvent.KEYCODE_DPAD_LEFT:KeyEvent.KEYCODE_DPAD_RIGHT);}
         }
@@ -237,7 +265,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         convert(false);
     }
     private void convert(boolean automatic){
-        if(settingsShowing||alphabetCase>=0||connection==null||privateField||composing.length()==0)return;
+        if(settingsShowing||alphabetCase>=0||conversionIndex>=0||connection==null||privateField||composing.length()==0)return;
         invalidateCandidates();
         String input=reading();SumireAdapter loaded=engine;
         final int request=++generation;candidateRequest=0;if(!automatic)status.setText("変換中…");
@@ -247,11 +275,16 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         final boolean useZenz=getPreferences(0).getBoolean("zenzEnabled",true)&&input.length()<=2048&&input.codePoints().anyMatch(cp->cp>='ぁ'&&cp<='ゖ');
         final int waitMillis=CandidateDisplayGate.waitMillis(useZenz&&getPreferences(0).getBoolean("waitForZenz",false),getPreferences(0).getBoolean("variableZenzWait",false),input);
         final boolean[] firstDisplay={true};
+        final boolean[] choicesReady={cached!=null&&!cached.isEmpty()};
         final CandidateDisplayGate display=new CandidateDisplayGate(main,waitMillis,()->{
             if(destroyed||request!=generation)return;
             candidateRequest=request;candidates.setCandidates(results.values(),results.ai(),firstDisplay[0]);firstDisplay[0]=false;
+            conversionChoices=new ArrayList<>(results.values());
+            conversionChoicesReady=choicesReady[0];
+            if(pendingSpaceSteps>0&&conversionChoicesReady&&!conversionChoices.isEmpty())selectConversion(pendingSpaceSteps);
         });
         candidateDisplay=display;display.update();
+        if(request!=generation)return;
         CharSequence preceding=useZenz?connection.getTextBeforeCursor(192,0):null;
         String before=preceding==null?"":preceding.toString();
         String visible=typography.format(Romanizer.convert(composing.toString(),false));
@@ -277,7 +310,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             String finalError=error;
             main.post(()->{if(destroyed||request!=generation)return;
                 if(!automatic||finalError!=null)status.setText(finalError==null?"Sumire基本辞書 · 候補を選んで確定":"変換エラー："+finalError);
-                results.dictionary(choices,dictionaryReady);display.update();
+                results.dictionary(choices,dictionaryReady);choicesReady[0]=true;display.update();
             });
         });
     }
