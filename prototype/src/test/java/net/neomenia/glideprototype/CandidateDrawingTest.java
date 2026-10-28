@@ -15,6 +15,26 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class CandidateDrawingTest {
+    @Test public void wrappedRowsUseFullWidthExceptBesideTheExpandButton(){
+        android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
+        for(boolean expanded:new boolean[]{false,true}){
+            CandidateBarView bar=new CandidateBarView(context,value->{},value->{});
+            bar.setRows(3);bar.setKeyboardHeight(240);bar.setExpanded(expanded);
+            bar.setCandidates(List.of("あ","い","う","え","お","か","き","く","け","こ","さ","し"));layoutBar(bar);
+            ViewGroup cells=flow(bar);
+            View button=bar.getChildAt(1);
+            assertEquals(bar.getWidth(),cells.getWidth());
+            assertEquals(bar.rowHeight(),button.getHeight());
+            int rowEnds=0;
+            for(int i=0;i<cells.getChildCount();i++){
+                View cell=cells.getChildAt(i);
+                if(i+1<cells.getChildCount()&&cells.getChildAt(i+1).getTop()==cell.getTop())continue;
+                assertEquals(cell.getTop()==0?button.getLeft():bar.getWidth(),cell.getRight());rowEnds++;
+            }
+            assertTrue(rowEnds>=3);
+            button.performClick();
+        }
+    }
     @Test public void flickBracketsKeepBothWidthsUnderEveryTypographySetting() throws Exception {
         var dictionary=new net.neomenia.inputcore.ConversionCandidates();
         for(boolean open:new boolean[]{false,true})for(boolean close:new boolean[]{false,true}){

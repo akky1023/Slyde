@@ -4,6 +4,17 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class CandidateLayoutTest {
+    @Test public void expandControlReservesOnlyTheFirstWrappedRow(){
+        var layout=CandidateLayout.pack(300,44,new int[]{100,100,100,100,100},true,44);
+        assertEquals(300,layout.width());assertEquals(88,layout.height());
+        assertEquals(256,layout.cells().get(1).x()+layout.cells().get(1).width());
+        assertEquals(44,layout.cells().get(2).y());
+        assertEquals(100,layout.cells().get(2).width());
+        assertEquals(300,layout.cells().get(4).x()+layout.cells().get(4).width());
+        var longCells=CandidateLayout.pack(300,44,new int[]{500,500},true,44);
+        assertEquals(256,longCells.cells().get(0).width());
+        assertEquals(300,longCells.cells().get(1).width());
+    }
     @Test public void wrapsInRankOrderAtTheAvailableWidth(){
         var layout=CandidateLayout.pack(300,44,new int[]{80,100,90,150,150,80},true);
         assertEquals(132,layout.height());

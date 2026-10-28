@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /** One candidate view shared by the compact strip and expanded list. */
-final class CandidateBarView extends LinearLayout {
+final class CandidateBarView extends FrameLayout {
     private final FrameLayout strip;
     private final ImageButton expandButton;
     private final Consumer<String> select;
@@ -34,13 +34,12 @@ final class CandidateBarView extends LinearLayout {
     private boolean showBadges=true,showAi=true;
 
     CandidateBarView(Context context,Consumer<String> select,Consumer<Boolean> expand){
-        super(context);this.select=select;this.expand=expand;setOrientation(HORIZONTAL);setBackgroundColor(Color.rgb(28,40,51));
+        super(context);this.select=select;this.expand=expand;setBackgroundColor(Color.rgb(28,40,51));
         setContentDescription("変換候補");
-        strip=new FrameLayout(context);addView(strip,new LayoutParams(0,-1,1));
+        strip=new FrameLayout(context);addView(strip,new LayoutParams(-1,-1));
         expandButton=UiIcons.button(context,R.drawable.ic_expand,"変換候補をすべて表示",()->expand.accept(!expanded));
         expandButton.setVisibility(INVISIBLE);
-        FrameLayout controls=new FrameLayout(context);addView(controls,new LayoutParams(dp(44),-1));
-        controls.addView(expandButton,new FrameLayout.LayoutParams(dp(44),-1,Gravity.TOP));
+        addView(expandButton,new LayoutParams(dp(44),-1,Gravity.TOP|Gravity.RIGHT));
         flow=new Flow(context);
         setRows(1);setCandidates(List.of());
     }
@@ -117,6 +116,10 @@ final class CandidateBarView extends LinearLayout {
     }
     private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
     @Override protected void onMeasure(int widthSpec,int heightSpec){
+        // A scrolling single row keeps the button outside its viewport. Wrapped
+        // candidates use the full width and leave room only in their first row.
+        FrameLayout.LayoutParams stripParams=(FrameLayout.LayoutParams)strip.getLayoutParams();
+        stripParams.rightMargin=!flow.wrap&&expandButton.getVisibility()==VISIBLE?dp(44):0;
         int controlHeight=rowHeight();
         for(ImageButton button:new ImageButton[]{expandButton}){
             button.getLayoutParams().height=controlHeight;
@@ -131,13 +134,14 @@ final class CandidateBarView extends LinearLayout {
         private CandidateLayout.Result placement=new CandidateLayout.Result(List.of(),0,0);
         Flow(Context context){super(context);setWillNotDraw(false);divider.setColor(Color.rgb(61,76,88));}
         @Override protected void onMeasure(int widthSpec,int heightSpec){
-            int viewport=MeasureSpec.getMode(widthSpec)==MeasureSpec.UNSPECIFIED?Math.max(dp(48),CandidateBarView.this.getWidth()-dp(44)):MeasureSpec.getSize(widthSpec);
-            if(viewport<=0)viewport=Math.max(dp(48),getResources().getDisplayMetrics().widthPixels-dp(44));
+            int inset=expandButton.getVisibility()==VISIBLE?dp(44):0;
+            int viewport=MeasureSpec.getMode(widthSpec)==MeasureSpec.UNSPECIFIED?Math.max(dp(48),CandidateBarView.this.getWidth()-(wrap?0:inset)):MeasureSpec.getSize(widthSpec);
+            if(viewport<=0)viewport=Math.max(dp(48),getResources().getDisplayMetrics().widthPixels-(wrap?0:inset));
             int[] widths=new int[getChildCount()];
             for(int i=0;i<getChildCount();i++){
                 View child=getChildAt(i);child.measure(MeasureSpec.makeMeasureSpec(viewport,MeasureSpec.AT_MOST),MeasureSpec.makeMeasureSpec(rowHeight(),MeasureSpec.EXACTLY));widths[i]=child.getMeasuredWidth();
             }
-            placement=CandidateLayout.pack(viewport,rowHeight(),widths,wrap);
+            placement=CandidateLayout.pack(viewport,rowHeight(),widths,wrap,wrap?inset:0);
             for(var cell:placement.cells())getChildAt(cell.index()).measure(MeasureSpec.makeMeasureSpec(cell.width(),MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(rowHeight(),MeasureSpec.EXACTLY));
             setMeasuredDimension(resolveSize(placement.width(),widthSpec),resolveSize(placement.height(),heightSpec));
         }
