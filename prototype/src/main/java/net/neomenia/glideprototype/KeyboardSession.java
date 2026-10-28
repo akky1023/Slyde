@@ -158,9 +158,11 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     }
     private void clearComposition(){composing.clear();alphabetCase=-1;alphabetSource="";}
     private String composingDisplay(){
-        String value=typography.format(composing.toString());
+        return composingAlphabet(typography.format(composing.toString()));
+    }
+    private String composingAlphabet(String value){
         if(!getPreferences(0).getBoolean("fullWidthComposingAlphabet",false))return value;
-        // Keep romanization, conversion readings and explicit alphabet conversion unchanged.
+        // Keep internal romanization and explicit alphabet conversion unchanged.
         StringBuilder display=new StringBuilder(value.length());
         for(int i=0;i<value.length();i++){
             char c=value.charAt(i);
@@ -179,7 +181,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             }
             return lower;
         }
-        return typography.format(Romanizer.convert(composing.toString(),true));
+        return composingAlphabet(typography.format(Romanizer.convert(composing.toString(),true)));
     }
     private void alphabet(){
         if(!getPreferences(0).getBoolean("alphabetButtonEnabled",true))return;

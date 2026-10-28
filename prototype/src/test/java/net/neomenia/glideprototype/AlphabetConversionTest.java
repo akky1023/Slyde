@@ -56,6 +56,19 @@ public class AlphabetConversionTest {
         assertEquals("k",visible);
         session.action("enter");assertEquals(List.of("k"),committed);
     }
+    @Test public void enabledFullWidthAlphabetIsCommittedWithKanaNumbersAndSymbols(){
+        InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("fullWidthComposingAlphabet",true).apply();
+        session.text("shi",true);session.text("k1!😀",true);assertEquals("しｋ1!😀",visible);
+        session.action("enter");assertEquals(List.of("しｋ1!😀"),committed);
+        session.text("n",true);assertEquals("ｎ",visible);
+        session.action("enter");assertEquals(List.of("しｋ1!😀","ん"),committed);
+    }
+    @Test public void enabledFullWidthAlphabetSurvivesImplicitCommitAndConversionFallback(){
+        InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("fullWidthComposingAlphabet",true).apply();
+        session.text("j",true);session.action("space");assertEquals("ｊ",visible);
+        session.text("ABC",false);assertEquals(List.of("ｊ","ABC"),committed);
+        session.text("k",true);session.action("left");assertEquals(List.of("ｊ","ABC","ｋ"),committed);
+    }
     @Test public void fullWidthDisplayDoesNotChangeExplicitAlphabetOrLatinInput(){
         InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("fullWidthComposingAlphabet",true).apply();
         session.text("ka",true);session.text("k",true);assertEquals("かｋ",visible);
