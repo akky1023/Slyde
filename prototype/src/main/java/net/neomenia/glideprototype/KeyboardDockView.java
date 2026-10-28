@@ -25,6 +25,7 @@ final class KeyboardDockView extends ViewGroup {
     private int leftPercent=15,rightPercent=15;
     private Runnable editFinished=()->{};
     private String sideKey;
+    // Bounds describe only the key surface; the candidate strip sits above this canvas.
     private Rect bounds;
     private boolean editing;
     private int candidateHeight,areaHeight,lastWidth;
@@ -56,7 +57,7 @@ final class KeyboardDockView extends ViewGroup {
     private void control(LinearLayout row,String label,Runnable action){
         com.google.android.material.button.MaterialButton button=SettingsUi.button(row.getContext(),label,action);button.setTextSize(14);button.setMinWidth(0);button.setMinimumWidth(0);button.setPadding(dp(4),0,dp(4),0);row.addView(button,new LinearLayout.LayoutParams(0,-1,1));
     }
-    void setCandidateHeight(int value){if(candidateHeight!=value){candidateHeight=value;bounds=null;requestLayout();}}
+    void setCandidateHeight(int value){if(candidateHeight!=value){candidateHeight=value;requestLayout();}}
     void reloadPreferences(){if(editing)return;loadSideWidths();bounds=null;requestLayout();}
     boolean isEditing(){return editing;}
     void edit(){if(editing)return;adjustingSides=false;loadSideWidths();editing=true;bounds=null;toolbar.setVisibility(VISIBLE);handles.setVisibility(VISIBLE);requestLayout();announceForAccessibility("キーボードの大きさと位置を調整。枠をドラッグ、または2本指で拡大縮小できます。");}
@@ -65,19 +66,23 @@ final class KeyboardDockView extends ViewGroup {
         if(save&&bounds!=null){
             preferences.edit().putFloat(key()+"width",bounds.width()/Math.max(1,lastWidth))
                 .putFloat(key()+"left",lastWidth>bounds.width()?bounds.left()/(lastWidth-bounds.width()):.5f)
-                .putFloat(key()+"height",bounds.height()/density).putFloat(key()+"bottom",(areaHeight-bounds.bottom())/density)
+                .putFloat(key()+"keyHeight",bounds.height()/density).putFloat(key()+"bottom",(areaHeight-bounds.bottom())/density)
                 .putInt(key()+"leftSidePercent",leftPercent).putInt(key()+"rightSidePercent",rightPercent).apply();
         }
         loadSideWidths();
         editing=false;bounds=null;toolbar.setVisibility(GONE);handles.setVisibility(GONE);requestLayout();
         editFinished.run();
     }
-    private float minHeight(){return candidateHeight+dp(4*32);}
+    private float minHeight(){return dp(4*32);}
     private float minWidth(){return Math.min(dp(240),lastWidth*.7f);}
-    private Rect defaults(int width){return fit(new Rect(0,areaHeight-candidateHeight-dp(232+24),width,candidateHeight+dp(232)),width);}
+    private Rect defaults(int width){return fit(new Rect(0,areaHeight-dp(232+24),width,dp(232)),width);}
     private Rect fit(Rect r,int width){return KeyboardGeometry.fit(r,width,areaHeight,minWidth(),minHeight(),dp(12));}
     private Rect load(int width){
-        float w=width*preferences.getFloat(key()+"width",1),h=dp(preferences.getFloat(key()+"height",candidateHeight/density+232));
+        // Older saved heights included the candidate strip.
+        float legacyHeight=preferences.getFloat(key()+"height",candidateHeight/density+232)-candidateHeight/density;
+        if(!preferences.contains(key()+"keyHeight")&&preferences.contains(key()+"height"))
+            preferences.edit().putFloat(key()+"keyHeight",legacyHeight).apply();
+        float w=width*preferences.getFloat(key()+"width",1),h=dp(preferences.getFloat(key()+"keyHeight",legacyHeight));
         float gap=dp(preferences.getFloat(key()+"bottom",24));
         return fit(new Rect((width-w)*preferences.getFloat(key()+"left",.5f),areaHeight-gap-h,w,h),width);
     }
@@ -88,7 +93,7 @@ final class KeyboardDockView extends ViewGroup {
         if(MeasureSpec.getMode(heightSpec)!=MeasureSpec.UNSPECIFIED)available=Math.min(available,MeasureSpec.getSize(heightSpec));
         // The IME can measure WRAP_CONTENT again using the height from its first pass.
         // A hidden toolbar must not be deducted from that already allocated keyboard height.
-        int nextHeight=KeyboardSizing.canvasHeight(available,dp(12)+candidateHeight+dp(96),controls,editing);
+        int nextHeight=KeyboardSizing.canvasHeight(available,dp(12)+candidateHeight+dp(96),controls,editing)-candidateHeight;
         if(lastWidth!=width||areaHeight!=nextHeight){
             if(bounds!=null&&lastWidth>0){
                 float fraction=bounds.width()/lastWidth,anchor=lastWidth>bounds.width()?bounds.left()/(lastWidth-bounds.width()):.5f,gap=areaHeight-bounds.bottom();
@@ -97,17 +102,18 @@ final class KeyboardDockView extends ViewGroup {
             lastWidth=width;areaHeight=nextHeight;
         }
         if(bounds==null)bounds=load(width);else bounds=fit(bounds,width);
-        int height=editing?areaHeight+controls:Math.round(areaHeight-bounds.top());
-        resized.accept(Math.round(bounds.height()));
-        keyboard.measure(MeasureSpec.makeMeasureSpec(Math.round(bounds.width()),MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(Math.round(bounds.height()),MeasureSpec.EXACTLY));
+        int height=candidateHeight+(editing?areaHeight+controls:Math.round(areaHeight-bounds.top()));
+        int contentHeight=Math.round(bounds.height())+candidateHeight;
+        resized.accept(contentHeight);
+        keyboard.measure(MeasureSpec.makeMeasureSpec(Math.round(bounds.width()),MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(contentHeight,MeasureSpec.EXACTLY));
         toolbar.measure(MeasureSpec.makeMeasureSpec(width,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(controls,MeasureSpec.EXACTLY));
         handles.measure(MeasureSpec.makeMeasureSpec(width,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(areaHeight,MeasureSpec.EXACTLY));
         setMeasuredDimension(width,height);
     }
     @Override protected void onLayout(boolean changed,int l,int t,int r,int b){
         int top=editing?toolbarHeight()+Math.round(bounds.top()):0,left=Math.round(bounds.left());
-        keyboard.layout(left,top,left+Math.round(bounds.width()),top+Math.round(bounds.height()));
-        toolbar.layout(0,0,getWidth(),toolbarHeight());handles.layout(0,toolbarHeight(),getWidth(),toolbarHeight()+areaHeight);if(editing)handles.invalidate();
+        keyboard.layout(left,top,left+Math.round(bounds.width()),top+candidateHeight+Math.round(bounds.height()));
+        toolbar.layout(0,0,getWidth(),toolbarHeight());handles.layout(0,toolbarHeight()+candidateHeight,getWidth(),toolbarHeight()+candidateHeight+areaHeight);if(editing)handles.invalidate();
     }
     @Override protected LayoutParams generateDefaultLayoutParams(){return new LayoutParams(-1,-2);}
     private final class Handles extends View {
@@ -133,7 +139,7 @@ final class KeyboardDockView extends ViewGroup {
             for(int i=1;i<3;i++){canvas.drawLine(l+(r-l)*i/3,t,l+(r-l)*i/3,b,paint);canvas.drawLine(l,t+(b-t)*i/3,r,t+(b-t)*i/3,paint);}
             paint.setStyle(Paint.Style.FILL);paint.setColor(Color.rgb(104,181,255));
             if(adjustingSides){
-                float keysTop=Math.min(b,t+candidateHeight),middle=(keysTop+b)/2;
+                float keysTop=t,middle=(keysTop+b)/2;
                 paint.setColor(Color.rgb(104,181,255));paint.setStrokeWidth(dp(4));
                 for(float x:new float[]{l+(r-l)*leftPercent/100f,r-(r-l)*rightPercent/100f}){
                     canvas.drawLine(x,keysTop,x,b,paint);canvas.drawRoundRect(x-dp(6),middle-dp(22),x+dp(6),middle+dp(22),dp(6),dp(6),paint);
