@@ -12,6 +12,7 @@ import net.neomenia.inputcore.JapaneseComposition;
 import net.neomenia.inputcore.JapaneseTypography;
 import net.neomenia.inputcore.ZenzCandidates;
 import net.neomenia.inputcore.CandidateResults;
+import net.neomenia.inputcore.ConversionForms;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -335,7 +336,9 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     static List<String> formatChoices(List<String> values,String input,JapaneseTypography style){
         LinkedHashSet<String> choices=new LinkedHashSet<>();
         for(String value:values)choices.add(value.codePoints().anyMatch(Character::isLetterOrDigit)?style.format(value):value);
-        choices.add(input);choices.add(toKatakana(input));return new ArrayList<>(choices);
+        for(String value:values){String full=ConversionForms.fullWidthNumber(value);if(!full.equals(value))choices.add(full);}
+        choices.add(input);choices.add(ConversionForms.katakana(input));
+        choices.add(ConversionForms.halfWidthKatakana(input));choices.add(ConversionForms.fullWidthNumber(input));
+        return new ArrayList<>(choices);
     }
-    private static String toKatakana(String input){StringBuilder out=new StringBuilder();for(char c:input.toCharArray())out.append(c>='ぁ'&&c<='ゖ'?(char)(c+0x60):c);return out.toString();}
 }
