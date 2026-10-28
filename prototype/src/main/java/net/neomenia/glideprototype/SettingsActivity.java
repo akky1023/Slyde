@@ -75,7 +75,7 @@ public final class SettingsActivity extends AppCompatActivity {
     }
     private void input(){
         heading("編集中文字列");
-        toggle("日本語入力中の英字を全角で表示する","fullWidthComposingAlphabet",false);
+        toggle("日本語入力モードでは全角英字を使う","fullWidthComposingAlphabet",false);
         heading("入力モード");
         MaterialSwitch remember=toggle("日本語・アルファベットの入力モードを記憶する","rememberInputMode",false);
         MaterialSwitch reset=toggle("3分経過で日本語入力に戻す","resetInputModeAfterThreeMinutes",false);
