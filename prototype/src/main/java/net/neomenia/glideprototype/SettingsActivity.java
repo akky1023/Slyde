@@ -74,6 +74,8 @@ public final class SettingsActivity extends AppCompatActivity {
         slider.addOnChangeListener((view,value,user)->{label.setText(name+"（"+Math.round(value)+suffix+"）");if(user)save.accept(Math.round(value));});body.addView(slider,new LinearLayout.LayoutParams(-1,dp(48)));
     }
     private void input(){
+        heading("編集中文字列");
+        toggle("日本語入力中の英字を全角で表示する","fullWidthComposingAlphabet",false);
         heading("入力モード");
         MaterialSwitch remember=toggle("日本語・アルファベットの入力モードを記憶する","rememberInputMode",false);
         MaterialSwitch reset=toggle("3分経過で日本語入力に戻す","resetInputModeAfterThreeMinutes",false);

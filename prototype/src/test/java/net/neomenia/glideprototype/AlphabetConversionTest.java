@@ -31,6 +31,38 @@ public class AlphabetConversionTest {
         },info);
     }
     @After public void teardown(){session.destroy();}
+    @Test public void enabledFullWidthAlphabetStillFormsKana(){
+        InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("fullWidthComposingAlphabet",true).apply();
+        session.text("shi",true);session.text("k",true);assertEquals("しｋ",visible);
+        session.text("y",true);assertEquals("しｋｙ",visible);
+        session.action("delete");assertEquals("しｋ",visible);
+        session.text("a",true);assertEquals("しか",visible);
+        session.action("enter");assertEquals(List.of("しか"),committed);
+    }
+    @Test public void pendingAlphabetWidthCanBeChangedWithoutChangingTheReading(){
+        var preferences=InputPreferences.get(RuntimeEnvironment.getApplication());
+        session.text("k",true);assertEquals("k",visible);
+        preferences.edit().putBoolean("fullWidthComposingAlphabet",true).apply();session.reloadSettings();
+        assertEquals("ｋ",visible);
+        preferences.edit().putBoolean("fullWidthComposingAlphabet",false).apply();session.reloadSettings();
+        assertEquals("k",visible);
+        session.action("enter");assertEquals(List.of("k"),committed);
+    }
+    @Test public void fullWidthDisplayDoesNotChangeExplicitAlphabetOrLatinInput(){
+        InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("fullWidthComposingAlphabet",true).apply();
+        session.text("ka",true);session.text("k",true);assertEquals("かｋ",visible);
+        session.action("alphabet");assertEquals("kak",visible);
+        session.reloadSettings();assertEquals("kak",visible);
+        session.action("enter");session.text("ABC123",false);
+        assertEquals(List.of("kak","ABC123"),committed);
+    }
+    @Test public void fullWidthDisplayLeavesNumbersSymbolsAndSupplementaryCharactersAlone(){
+        InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("fullWidthComposingAlphabet",true).apply();
+        session.text("k1!😀",true);assertEquals("ｋ1!😀",visible);
+        session.action("delete");assertEquals("ｋ1!",visible);
+        session.action("delete");session.action("delete");assertEquals("ｋ",visible);
+        session.text("a",true);assertEquals("か",visible);
+    }
     @Test public void cyclesLowerTitleUpperAndCommitsTheDisplayedAlphabet(){
         session.text("te",true);session.text("su",true);session.text("to",true);assertEquals("てすと",visible);
         for(String expected:new String[]{"tesuto","Tesuto","TESUTO","tesuto","Tesuto"}){

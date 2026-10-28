@@ -107,6 +107,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));
         keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",false),getPreferences(0).getBoolean("enableIu",false));
         loadTypography();applyImeFont();renderCandidates();
+        if(connection!=null&&composing.length()>0&&alphabetCase<0&&conversionIndex<0)connection.setComposingText(composingDisplay(),1);
         dock.reloadPreferences();
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
     }
@@ -151,11 +152,22 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
                 }else commit();
             }
             pendingSpaceSteps=0;generation++;invalidateCandidates();
-            if(japanese&&!privateField){composing.append(raw);connection.setComposingText(typography.format(composing.toString()),1);scheduleCandidates();}
+            if(japanese&&!privateField){composing.append(raw);connection.setComposingText(composingDisplay(),1);scheduleCandidates();}
             else{commit();connection.commitText(raw,1);}
         }finally{input.endBatchEdit();}
     }
     private void clearComposition(){composing.clear();alphabetCase=-1;alphabetSource="";}
+    private String composingDisplay(){
+        String value=typography.format(composing.toString());
+        if(!getPreferences(0).getBoolean("fullWidthComposingAlphabet",false))return value;
+        // Keep romanization, conversion readings and explicit alphabet conversion unchanged.
+        StringBuilder display=new StringBuilder(value.length());
+        for(int i=0;i<value.length();i++){
+            char c=value.charAt(i);
+            display.append((c>='a'&&c<='z')||(c>='A'&&c<='Z')?(char)(c+0xfee0):c);
+        }
+        return display.toString();
+    }
     private String reading(){
         if(conversionIndex>=0)return conversionChoices.get(conversionIndex);
         if(alphabetCase>=0){
@@ -241,7 +253,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
             case "alphabet" -> alphabet();
             case "delete" -> {
                 pendingSpaceSteps=0;
-                if(conversionIndex>=0){clearCandidates();connection.setComposingText(typography.format(composing.toString()),1);scheduleCandidates();break;}
+                if(conversionIndex>=0){clearCandidates();connection.setComposingText(composingDisplay(),1);scheduleCandidates();break;}
                 generation++;invalidateCandidates();
                 if(composing.length()>0){
                     if(alphabetCase>=0){
@@ -250,7 +262,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
                         composing.clear();composing.append(alphabetSource);
                         if(alphabetSource.isEmpty())clearComposition();
                         connection.setComposingText(alphabetCase>=0?reading():"",1);
-                    }else{composing.delete();connection.setComposingText(typography.format(composing.toString()),1);}
+                    }else{composing.delete();connection.setComposingText(composingDisplay(),1);}
                 }
                 else if(connection.getSelectedText(0)!=null)connection.commitText("",1);else if(!connection.deleteSurroundingTextInCodePoints(1,0))sendKey(KeyEvent.KEYCODE_DEL);
                 if(composing.length()>0)scheduleCandidates();else clearCandidates();
@@ -291,7 +303,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(request!=generation)return;
         CharSequence preceding=useZenz?connection.getTextBeforeCursor(192,0):null;
         String before=preceding==null?"":preceding.toString();
-        String visible=typography.format(Romanizer.convert(composing.toString(),false));
+        String visible=composingDisplay();
         if(before.endsWith(visible))before=before.substring(0,before.length()-visible.length());
         CharSequence following=useZenz?connection.getTextAfterCursor(64,0):null;
         String after=following==null?"":following.toString();
