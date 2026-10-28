@@ -19,7 +19,7 @@ public class AlphabetConversionTest {
     private String visible="";
     @Before public void setup(){
         var context=RuntimeEnvironment.getApplication();
-        InputPreferences.get(context).edit().putBoolean("zenzEnabled",false).apply();
+        InputPreferences.get(context).edit().clear().putBoolean("zenzEnabled",false).apply();
         session=new KeyboardSession(context,null,null);
         start(InputType.TYPE_CLASS_TEXT);
     }
@@ -42,6 +42,71 @@ public class AlphabetConversionTest {
         session.text("shi",true);session.action("alphabet");assertEquals("shi",visible);
         session.text("ka",true);assertEquals(List.of("shi"),committed);assertEquals("か",visible);
         session.action("alphabet");assertEquals("ka",visible);
+    }
+    @Test public void separateConsonantAfterAlphabetSurvivesEditorSelectionUpdates(){
+        class Editor extends BaseInputConnection {
+            int batchDepth;
+            final List<int[]> updates=new ArrayList<>();
+            Editor(){super(new View(RuntimeEnvironment.getApplication()),true);}
+            private void changed(){
+                var text=getEditable();
+                int[] update={android.text.Selection.getSelectionStart(text),android.text.Selection.getSelectionEnd(text),getComposingSpanEnd(text)};
+                if(batchDepth>0)updates.clear();
+                updates.add(update);
+            }
+            @Override public boolean beginBatchEdit(){batchDepth++;return true;}
+            @Override public boolean endBatchEdit(){batchDepth--;return true;}
+            @Override public boolean commitText(CharSequence text,int cursor){boolean result=super.commitText(text,cursor);changed();return result;}
+            @Override public boolean setComposingText(CharSequence text,int cursor){boolean result=super.setComposingText(text,cursor);changed();return result;}
+            @Override public boolean finishComposingText(){boolean result=super.finishComposingText();changed();return result;}
+            void deliver(){
+                while(!updates.isEmpty()){
+                    var pending=new ArrayList<>(updates);updates.clear();
+                    for(int[] update:pending)session.selectionChanged(update[0],update[1],update[2]);
+                }
+            }
+        }
+        Editor editor=new Editor();EditorInfo info=new EditorInfo();info.inputType=InputType.TYPE_CLASS_TEXT;
+        session.start(editor,info);editor.deliver();
+        for(String raw:new String[]{"a","k","a","s","a"}){session.text(raw,true);editor.deliver();}
+        session.action("alphabet");editor.deliver();assertEquals("akasa",editor.getEditable().toString());
+        for(String raw:new String[]{"t","a","n","a","h","a"}){session.text(raw,true);editor.deliver();}
+        session.action("enter");editor.deliver();assertEquals("akasaたなは",editor.getEditable().toString());
+    }
+    private void cancelOnInput(){
+        InputPreferences.get(RuntimeEnvironment.getApplication()).edit().putBoolean("cancelAlphabetOnInput",true).apply();
+    }
+    @Test public void disabledButtonKeepsKanaAndCanBeReenabled(){
+        var preferences=InputPreferences.get(RuntimeEnvironment.getApplication());
+        preferences.edit().putBoolean("alphabetButtonEnabled",false).apply();
+        session.text("shi",true);session.action("alphabet");assertEquals("し",visible);
+        session.text("ka",true);assertEquals("しか",visible);assertTrue(committed.isEmpty());
+        preferences.edit().putBoolean("alphabetButtonEnabled",true).apply();
+        session.action("alphabet");assertEquals("shika",visible);
+    }
+    @Test public void enabledModeRestoresKanaInEveryAlphabetCaseAndContinuesComposition(){
+        cancelOnInput();
+        for(int taps=1;taps<=3;taps++){
+            start(InputType.TYPE_CLASS_TEXT);
+            session.text("shi",true);for(int i=0;i<taps;i++)session.action("alphabet");
+            session.text("ka",true);assertEquals("しか",visible);assertTrue(committed.isEmpty());
+            session.action("alphabet");assertEquals("shika",visible);
+        }
+        session.text("ku",true);session.action("enter");assertEquals(List.of("しかく"),committed);
+    }
+    @Test public void resumedInputPreservesConfirmedNAndRespectsAlphabetDeletes(){
+        cancelOnInput();
+        session.text("n",true);session.text("n",true);session.text("a",true);
+        session.action("alphabet");session.text("ka",true);assertEquals("んあか",visible);
+        start(InputType.TYPE_CLASS_TEXT);
+        session.text("shika",true);session.action("alphabet");session.action("delete");assertEquals("shik",visible);
+        session.text("u",true);assertEquals("しく",visible);assertTrue(committed.isEmpty());
+    }
+    @Test public void enabledModeStillCommitsAlphabetOnExplicitConfirmationOrLatinInput(){
+        cancelOnInput();
+        session.text("shi",true);session.action("alphabet");session.action("enter");
+        session.text("ka",true);session.action("alphabet");session.text("x",false);
+        assertEquals(List.of("shi","ka","x"),committed);
     }
     @Test public void deleteAndSpaceOperateOnTheAlphabetWithoutRevertingToKana(){
         session.text("tesuto",true);session.action("alphabet");session.action("alphabet");

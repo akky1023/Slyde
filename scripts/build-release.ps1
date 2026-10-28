@@ -67,7 +67,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "ビルドが失敗しました: $LASTEXITCODE" }
     $metadata = Get-Content -Raw -LiteralPath (Join-Path $workspace 'prototype/build/outputs/apk/release/output-metadata.json') | ConvertFrom-Json
     if ($ExpectedVersion -and $metadata.elements[0].versionName -ne $ExpectedVersion) { throw 'APKとリリースのバージョンが一致しません。' }
-    $apkName = 'Glide-' + $metadata.elements[0].versionName + '.apk'
+    $apkName = 'Slyde-' + $metadata.elements[0].versionName + '.apk'
     $apk = Join-Path $workspace ('dist/' + $apkName)
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $apk) | Out-Null
     Copy-Item -LiteralPath (Join-Path $workspace 'prototype/build/outputs/apk/release/prototype-release.apk') -Destination $apk

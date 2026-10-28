@@ -23,7 +23,9 @@ public final class Romanizer {
             TABLE.put(prefix+"wa","ゎ");
         }
         for(int i=0;i<5;i++) { TABLE.put("f"+"aiueo".charAt(i),"ふ"+"ぁぃぅぇぉ".substring(i,i+1)); TABLE.put("v"+"aiueo".charAt(i),"ゔ"+"ぁぃぅぇぉ".substring(i,i+1)); }
-        TABLE.put("fu","ふ"); TABLE.put("vu","ゔ"); TABLE.put("wi","うぃ"); TABLE.put("we","うぇ");
+        TABLE.put("fu","ふ"); TABLE.put("vu","ゔ"); TABLE.put("wi","うぃ"); TABLE.put("wu","う"); TABLE.put("we","うぇ");
+        String[] whKana={"うぁ","うぃ","う","うぇ","うぉ"};
+        for(int i=0;i<5;i++)TABLE.put("wh"+"aiueo".charAt(i),whKana[i]);
         TABLE.put("thi","てぃ"); TABLE.put("dhi","でぃ"); TABLE.put("twu","とぅ"); TABLE.put("dwu","どぅ");
         // YI uses the I-row kana; YE adds a small e to that kana.
         for(String consonant:new String[]{"k","s","t","n","h","m","r","g","z","d","b","p","j","c","q","v","w"}) {

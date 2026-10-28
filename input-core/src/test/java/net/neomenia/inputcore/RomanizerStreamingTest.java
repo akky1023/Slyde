@@ -15,4 +15,23 @@ public class RomanizerStreamingTest {
         assertEquals("こんにちは",Romanizer.convert("konnichiha",false));assertEquals("こんにちは",input("ko","n","ni","chi","ha"));
         assertEquals("てんき",input("ten'","ki"));assertEquals("がっこう",input("ga","ltu","kou"));
     }
+    @Test public void wuSupportsStreamingAndBatchInput(){
+        assertTrue(Romanizer.isSyllable("wu"));
+        assertEquals("う",input("w","u"));
+        assertEquals("う",Romanizer.convert("wu",false));
+        assertEquals("う",Romanizer.convert("WU",true));
+    }
+    @Test public void whSyllablesSupportStreamingAndBatchInput(){
+        String[] kana={"うぁ","うぃ","う","うぇ","うぉ"};
+        assertEquals("wh",input("w","h"));
+        assertTrue(Romanizer.isSyllablePrefix("wh"));
+        for(int i=0;i<5;i++){
+            String vowel="aiueo".substring(i,i+1),syllable="wh"+vowel;
+            assertTrue(Romanizer.isSyllable(syllable));
+            assertEquals(kana[i],input("w","h",vowel));
+            assertEquals(kana[i],Romanizer.convert(syllable,false));
+            assertEquals(kana[i],Romanizer.convert(syllable.toUpperCase(java.util.Locale.ROOT),true));
+        }
+        assertEquals("うぁうぃううぇうぉ",input("wha","whi","whu","whe","who"));
+    }
 }

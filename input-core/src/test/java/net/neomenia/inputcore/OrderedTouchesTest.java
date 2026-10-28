@@ -5,6 +5,19 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 public class OrderedTouchesTest {
+    @Test public void earlyCommitRetainsPointerSlotsButDoesNotRepeatOnRelease(){
+        OrderedTouches<String> touches=new OrderedTouches<>();touches.start(7,"k");touches.start(12,"a");
+        assertTrue(touches.commitHeldPair(7,12));assertFalse(touches.commitHeldPair(7,12));
+        assertFalse(touches.start(3,"i"));assertEquals("k",touches.get(7));
+        assertTrue(touches.finish(12).isEmpty());assertTrue(touches.start(12,"i"));
+        assertEquals(List.of("i"),touches.finish(12));assertTrue(touches.finish(7).isEmpty());
+    }
+    @Test public void earlyPairCannotDiscardOlderPendingInput(){
+        OrderedTouches<String> touches=new OrderedTouches<>();touches.start(7,"k");touches.start(12,"h");
+        assertTrue(touches.finish(12).isEmpty());touches.start(12,"a");
+        assertFalse(touches.commitHeldPair(7,12));
+        assertEquals(List.of("k","h"),touches.finish(7));assertEquals(List.of("a"),touches.finish(12));
+    }
     @Test public void overlappingTaProducesKanaInEitherReleaseOrder(){
         for(boolean reverse:new boolean[]{false,true}){
             OrderedTouches<String> touches=new OrderedTouches<>();

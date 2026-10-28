@@ -74,8 +74,18 @@ public final class SettingsActivity extends AppCompatActivity {
         slider.addOnChangeListener((view,value,user)->{label.setText(name+"（"+Math.round(value)+suffix+"）");if(user)save.accept(Math.round(value));});body.addView(slider,new LinearLayout.LayoutParams(-1,dp(48)));
     }
     private void input(){
-        heading("グライド入力");slider("NA／NYAの判定",0,100,preferences.getInt("naNyaBias",50),"",value->preferences.edit().putInt("naNyaBias",value).apply());
-        description("左はNA寄り、右はNYA寄りです。");toggle("XEUをグライド入力","enableEu",false);toggle("XIUをグライド入力","enableIu",false);
+        heading("入力モード");
+        MaterialSwitch remember=toggle("日本語・アルファベットの入力モードを記憶する","rememberInputMode",false);
+        MaterialSwitch reset=toggle("3分経過で日本語入力に戻す","resetInputModeAfterThreeMinutes",false);
+        reset.setEnabled(remember.isChecked());
+        remember.setOnCheckedChangeListener((button,checked)->{
+            SharedPreferences.Editor editor=preferences.edit().putBoolean("rememberInputMode",checked);
+            if(!checked)editor.remove("savedJapaneseInputMode").remove("inputModeHiddenAt");
+            editor.apply();reset.setEnabled(checked);
+        });
+        // Saved bias increases toward NYA; reverse the UI so increasing it favors NA, preserving existing choices.
+        heading("グライド入力");slider("NAの判定を出しやすくする",0,100,100-preferences.getInt("naNyaBias",50),"",value->preferences.edit().putInt("naNyaBias",100-value).apply());
+        description("グライドの軌道がNYA側に曲がってもある程度NA判定が出るようにします．");toggle("XEUをグライド入力","enableEu",false);toggle("XIUをグライド入力","enableIu",false);
         description("子音から始まる -EU/-IU の形の連母音をグライド入力するかを設定します．基本的に日本語では低頻度で -U の誤入力が増えやすくなるためオフを推奨しています．");
         heading("句読点・括弧");punctuationDropdown();
         toggle("丸括弧を半角にする","halfWidthParentheses",InputPreferences.halfWidthParentheses(preferences));
@@ -92,6 +102,16 @@ public final class SettingsActivity extends AppCompatActivity {
         box.addView(dropdown,new LinearLayout.LayoutParams(-1,-2));body.addView(box,new LinearLayout.LayoutParams(-1,-2));
     }
     private void conversion(){
+        heading("変換");
+        MaterialSwitch cycle=toggle("空白キーで変換","spaceCyclesCandidates",false);
+        MaterialSwitch cancelConversion=toggle("入力再開時に変換を取り消す","cancelConversionOnInput",false);
+        cancelConversion.setEnabled(cycle.isChecked());
+        cycle.setOnCheckedChangeListener((button,checked)->{preferences.edit().putBoolean("spaceCyclesCandidates",checked).apply();cancelConversion.setEnabled(checked);});
+        heading("無変換");
+        MaterialSwitch alphabet=toggle("無変換を有効にする","alphabetButtonEnabled",true);
+        MaterialSwitch cancelAlphabet=toggle("入力再開時に無変換を取り消す","cancelAlphabetOnInput",false);
+        cancelAlphabet.setEnabled(alphabet.isChecked());
+        alphabet.setOnCheckedChangeListener((button,checked)->{preferences.edit().putBoolean("alphabetButtonEnabled",checked).apply();cancelAlphabet.setEnabled(checked);});
         heading("変換候補");slider("候補欄の行数",1,3,preferences.getInt("candidateRows",1),"行",value->preferences.edit().putInt("candidateRows",value).apply());
         toggle("zenzのオフラインAI変換を有効にする","zenzEnabled",true);
         MaterialSwitch wait=toggle("AI変換を待って候補を表示する","waitForZenz",false);

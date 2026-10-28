@@ -48,6 +48,44 @@ public class SettingsActivityTest {
             assertFalse(((MaterialSwitch)find(root,"AI候補の「AI」を表示")).isChecked());
         }
     }
+    @Test public void cancelAlphabetOnInputDefaultsOffAndPersists(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();
+            View root=activity.getWindow().getDecorView();click(root,"変換");
+            assertNotNull(find(root,"無変換"));assertNull(find(root,"英字に戻すボタン"));
+            MaterialSwitch enabled=(MaterialSwitch)find(root,"無変換を有効にする");
+            assertTrue(enabled.isChecked());
+            MaterialSwitch toggle=(MaterialSwitch)find(root,"入力再開時に無変換を取り消す");
+            assertNotNull(toggle);assertFalse(toggle.isChecked());toggle.setChecked(true);
+            assertTrue(InputPreferences.get(activity).getBoolean("cancelAlphabetOnInput",false));
+            activity.onBackPressed();click(root,"変換");
+            toggle=(MaterialSwitch)find(root,"入力再開時に無変換を取り消す");assertTrue(toggle.isChecked());
+            enabled=(MaterialSwitch)find(root,"無変換を有効にする");enabled.setChecked(false);
+            assertFalse(toggle.isEnabled());assertTrue(toggle.isChecked());
+            assertFalse(InputPreferences.get(activity).getBoolean("alphabetButtonEnabled",true));
+            activity.onBackPressed();click(root,"変換");
+            toggle=(MaterialSwitch)find(root,"入力再開時に無変換を取り消す");assertFalse(toggle.isEnabled());
+            enabled=(MaterialSwitch)find(root,"無変換を有効にする");assertFalse(enabled.isChecked());
+            enabled.setChecked(true);assertTrue(toggle.isEnabled());assertTrue(toggle.isChecked());
+        }
+    }
+    @Test public void spaceConversionSettingsDefaultOffAndPersist(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();
+            View root=activity.getWindow().getDecorView();click(root,"変換");
+            MaterialSwitch cycle=(MaterialSwitch)find(root,"空白キーで変換");
+            MaterialSwitch cancel=(MaterialSwitch)find(root,"入力再開時に変換を取り消す");
+            assertFalse(cycle.isChecked());assertFalse(cancel.isChecked());assertFalse(cancel.isEnabled());
+            cycle.setChecked(true);assertTrue(cancel.isEnabled());cancel.setChecked(true);
+            activity.onBackPressed();click(root,"変換");
+            cycle=(MaterialSwitch)find(root,"空白キーで変換");
+            cancel=(MaterialSwitch)find(root,"入力再開時に変換を取り消す");
+            assertTrue(cycle.isChecked());assertTrue(cancel.isChecked());assertTrue(cancel.isEnabled());
+            cycle.setChecked(false);assertFalse(cancel.isEnabled());
+            assertFalse(InputPreferences.get(activity).getBoolean("spaceCyclesCandidates",true));
+            assertTrue(InputPreferences.get(activity).getBoolean("cancelConversionOnInput",false));
+        }
+    }
     @Test public void inputDefaultsAndSavedVowelChoicesAgree(){
         try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
             SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();
@@ -57,6 +95,24 @@ public class SettingsActivityTest {
             activity.onBackPressed();click(root,"入力");
             assertTrue(((MaterialSwitch)find(root,"XEUをグライド入力")).isChecked());
             assertFalse(((MaterialSwitch)find(root,"XIUをグライド入力")).isChecked());
+        }
+    }
+    @Test public void inputModeSettingsSaveAndResetDependsOnMemory(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();
+            View root=activity.getWindow().getDecorView();click(root,"入力");
+            MaterialSwitch remember=(MaterialSwitch)find(root,"日本語・アルファベットの入力モードを記憶する");
+            MaterialSwitch reset=(MaterialSwitch)find(root,"3分経過で日本語入力に戻す");
+            assertFalse(remember.isChecked());assertFalse(reset.isChecked());assertFalse(reset.isEnabled());
+            remember.setChecked(true);assertTrue(reset.isEnabled());reset.setChecked(true);
+            activity.onBackPressed();click(root,"入力");
+            remember=(MaterialSwitch)find(root,"日本語・アルファベットの入力モードを記憶する");
+            reset=(MaterialSwitch)find(root,"3分経過で日本語入力に戻す");
+            assertTrue(remember.isChecked());assertTrue(reset.isChecked());assertTrue(reset.isEnabled());
+            InputPreferences.get(activity).edit().putBoolean("savedJapaneseInputMode",false).apply();
+            remember.setChecked(false);assertFalse(reset.isEnabled());
+            assertFalse(InputPreferences.get(activity).contains("savedJapaneseInputMode"));
+            capture(root,"settings-input-mode");
         }
     }
     @Test public void punctuationDropdownSavesAllFourPairsAndRestoresLegacyChoices(){
