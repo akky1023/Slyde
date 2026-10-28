@@ -72,8 +72,8 @@ jobs:
         with:
           name: Slyde-release-apk
           path: |
-            dist/Glide-*.apk
-            dist/Glide-*.apk.sha256
+            dist/Slyde-*.apk
+            dist/Slyde-*.apk.sha256
           if-no-files-found: error
           retention-days: 14
       - name: Attach APK and checksum to GitHub Release
@@ -83,6 +83,6 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ needs.release.outputs.tag_name || inputs.release-tag }}
         run: |
-          $assets = Get-ChildItem -LiteralPath dist -File | Where-Object Name -Match '^Glide-.*\.apk(\.sha256)?$'
+          $assets = Get-ChildItem -LiteralPath dist -File | Where-Object Name -Match '^Slyde-.*\.apk(\.sha256)?$'
           & gh release upload $env:RELEASE_TAG @($assets.FullName)
           if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed' }

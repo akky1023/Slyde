@@ -52,7 +52,7 @@
 
 導入時点の `1.1.11` とコミット `a9f5434` を起点とし、それ以前の変更は次回の変更履歴に含めません。バージョンは `version.txt`、`.release-please-manifest.json`、`prototype/build.gradle` に反映されます。Androidの `versionCode` はバージョンから自動計算します。1.1.11は既存と同じ30、1.1.12は31、1.2.0は1019になります。minorとpatchはそれぞれ999以下とし、Androidの上限を超える値はビルド時に拒否します。
 
-リリースPRをマージすると、同じワークフロー内でWindows 2025／JDK 17／SDK 35を使い、タグ対象のコミットから正式版APKをビルドします。ユニットテスト・lint・アプリID・バージョン・署名証明書・debuggableフラグ・16KB alignmentを検証し、`Glide-<version>.apk` とSHA-256ファイルをGitHub Releaseに添付します。いずれかに失敗した場合は添付せず、リリース自体はAPK未添付の状態で残ります。成功したAPKはActionsの成果物としても14日間保存します。端末での操作確認は別途必要です。
+リリースPRをマージすると、同じワークフロー内でWindows 2025／JDK 17／SDK 35を使い、タグ対象のコミットから正式版APKをビルドします。ユニットテスト・lint・アプリID・バージョン・署名証明書・debuggableフラグ・16KB alignmentを検証し、`Slyde-<version>.apk` とSHA-256ファイルをGitHub Releaseに添付します。いずれかに失敗した場合は添付せず、リリース自体はAPK未添付の状態で残ります。成功したAPKはActionsの成果物としても14日間保存します。端末での操作確認は別途必要です。
 
 署名には既存の正式版と同じ鍵を使います。リポジトリのActions Secretsに `GLIDE_KEYSTORE_BASE64`（既存PKCS12鍵のBase64）と `GLIDE_STORE_PASSWORD` を登録します。鍵はビルド中だけ一時ファイルに復元し、終了時に削除します。鍵が未登録・不完全ならビルドを停止し、CIで新しい署名鍵は生成しません。外部ActionはコミットSHAに固定しています。
 
