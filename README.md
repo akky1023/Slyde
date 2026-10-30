@@ -12,6 +12,8 @@ Android 8.0以降のarm64-v8a／x86_64端末に対応．[Releases](https://githu
 
 追記予定．
 
+[カスタム辞書](docs/USER_DICTIONARY.md)は設定の「変換」から管理できます．Mozc／Google日本語入力のテキスト辞書を取り込めます．
+
 ## 使用している技術・ライセンス
 
 Slyde本体は[MIT License](LICENSE)で公開しています．同梱の辞書・モデル・フォントなどには，それぞれのライセンスが適用されます．

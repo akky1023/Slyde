@@ -70,7 +70,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         settings.setVisibility(View.GONE);view.addView(settings,new LinearLayout.LayoutParams(-1,0));
         zenz=ZenzRuntime.get(this);if(getPreferences(0).getBoolean("zenzEnabled",true))warmupZenz();
         worker.execute(()->{
-            try {SumireAdapter loaded=SumireAdapter.get(this);engine=loaded;main.post(()->{if(!destroyed){status.setText(inputStatus());scheduleCandidates();}});}
+            try {UserDictionaryStore.get(this).load();SumireAdapter loaded=SumireAdapter.get(this);engine=loaded;main.post(()->{if(!destroyed){status.setText(inputStatus());scheduleCandidates();}});}
             catch(Exception|OutOfMemoryError e){main.post(()->{if(!destroyed)status.setText("変換の準備に失敗しました："+e.getClass().getSimpleName()+" / "+e.getMessage());});}
         });
     }
@@ -287,10 +287,12 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(settingsShowing||alphabetCase>=0||conversionIndex>=0||connection==null||privateField||composing.length()==0)return;
         invalidateCandidates();
         String input=reading();SumireAdapter loaded=engine;
+        var userDictionary=UserDictionaryStore.get(this).peek();if(userDictionary==null)return;
         final int request=++generation;candidateRequest=0;if(!automatic)status.setText("変換中…");
         final JapaneseTypography style=typography;
         List<String> cached=loaded==null?null:loaded.cachedCandidates(input);
         final CandidateResults results=new CandidateResults(formatChoices(cached==null?List.of():cached,input,style),cached!=null&&!cached.isEmpty());
+        results.policy(userDictionary.policy(input,style::format));
         final boolean useZenz=getPreferences(0).getBoolean("zenzEnabled",true)&&input.length()<=2048&&input.codePoints().anyMatch(cp->cp>='ぁ'&&cp<='ゖ');
         final int waitMillis=CandidateDisplayGate.waitMillis(useZenz&&getPreferences(0).getBoolean("waitForZenz",false),getPreferences(0).getBoolean("variableZenzWait",false),input);
         final boolean[] firstDisplay={true};

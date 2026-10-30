@@ -68,9 +68,17 @@ class KanaKanjiEngine(
 
     /** Include every whole-reading dictionary word even when sentence paths fill the N-best list. */
     fun candidates(input: String,n: Int,cancelled: BooleanSupplier): List<String> {
+        return candidates(input,n,cancelled,null)
+    }
+
+    fun candidates(input: String,n: Int,cancelled: BooleanSupplier,excluded: java.util.function.BiPredicate<String,String>?): List<String> {
         if(input.isEmpty()||cancelled.asBoolean)return emptyList()
         return try {
             val graph=graphBuilder.constructGraph(input,yomiTrie,tangoTrie,tokenArray,cancelled)
+            if(excluded!=null)for(end in 1..input.length){
+                if(cancelled.asBoolean)return emptyList()
+                for(group in graph[end])group.removeAll { node -> excluded.test(input.substring(node.sPos,node.sPos+node.len),node.tango) }
+            }
             val ranked=findPath.backwardAStar(graph,input.length,connectionMatrix,n,input,cancelled,4096,40_000_000L)
             if(cancelled.asBoolean)return emptyList()
             val exact=graph[input.length].flatten().filter { it.sPos==0 && it.len.toInt()==input.length }
