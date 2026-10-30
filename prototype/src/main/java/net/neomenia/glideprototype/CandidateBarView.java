@@ -124,10 +124,8 @@ final class CandidateBarView extends FrameLayout {
         FrameLayout.LayoutParams stripParams=(FrameLayout.LayoutParams)strip.getLayoutParams();
         stripParams.rightMargin=!flow.wrap&&expandButton.getVisibility()==VISIBLE?dp(44):0;
         int controlHeight=rowHeight();
-        for(ImageButton button:new ImageButton[]{expandButton}){
-            button.getLayoutParams().height=controlHeight;
-            int padding=Math.min(dp(12),Math.max(0,(controlHeight-dp(20))/2));button.setPadding(dp(12),padding,dp(12),padding);
-        }
+        expandButton.getLayoutParams().height=controlHeight;
+        int padding=Math.min(dp(12),Math.max(0,(controlHeight-dp(20))/2));expandButton.setPadding(dp(12),padding,dp(12),padding);
         super.onMeasure(widthSpec,MeasureSpec.makeMeasureSpec(rows*rowHeight()+(expanded?keyboardHeight:0),MeasureSpec.EXACTLY));
     }
 

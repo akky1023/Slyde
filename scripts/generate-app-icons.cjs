@@ -29,11 +29,8 @@ async function main() {
   fs.writeFileSync(path.join(artwork, 'notification-icon.svg'),
     `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="80 80 340 340" fill="none" role="img" aria-labelledby="title"><title id="title">Glide notification icon</title>${whiteStroke}</svg>\n`);
   for (const [density, scale] of Object.entries({ mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 })) {
-    const legacy = path.join(res, `mipmap-${density}`, 'ic_launcher.png');
     const layer = path.join(res, `drawable-${density}`, 'ic_launcher_foreground.png');
-    fs.mkdirSync(path.dirname(legacy), { recursive: true });
     fs.mkdirSync(path.dirname(layer), { recursive: true });
-    await sharp(Buffer.from(source)).resize(48 * scale, 48 * scale).png().toFile(legacy);
     await sharp(Buffer.from(foreground)).resize(108 * scale, 108 * scale).png().toFile(layer);
   }
   write('values/icon_colors.xml', `<resources><color name="ic_launcher_background">${match[1]}</color></resources>`);
@@ -42,7 +39,7 @@ async function main() {
     <background android:drawable="@color/ic_launcher_background"/>
     <foreground android:drawable="@drawable/ic_launcher_foreground"/>${monochrome ? '\n    <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>' : ''}
 </adaptive-icon>`;
-  write('mipmap-anydpi-v26/ic_launcher.xml', adaptive(false));
+  write('mipmap-anydpi/ic_launcher.xml', adaptive(false));
   write('mipmap-anydpi-v33/ic_launcher.xml', adaptive(true));
   const vectorPath = `<path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="54" android:strokeLineCap="round" android:pathData="${stroke}"/>`;
   write('drawable/ic_launcher_monochrome.xml', `<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512"><group android:pivotX="256" android:pivotY="256" android:scaleX="0.8" android:scaleY="0.8">${vectorPath}</group></vector>`);
