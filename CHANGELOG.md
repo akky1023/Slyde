@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1](https://github.com/akky1023/Slyde/compare/v1.3.0...v1.3.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* wwwwを打てるようにした ([06bdb6f](https://github.com/akky1023/Slyde/commit/06bdb6ffdde1770b8ee1378fa6627030da317d87))
+* キーボードの記号が違うのを修正 ([17fc3f6](https://github.com/akky1023/Slyde/commit/17fc3f654d048798a97288512517274b773b1651))
+* 伸ばし棒も無変換キーでハイフンに戻す ([2c8e6eb](https://github.com/akky1023/Slyde/commit/2c8e6ebd1903f5f5ad1c402d3e57ebabdaa6dbe9))
+* 入力中アルファベットの全角設定を追加 ([d0e7903](https://github.com/akky1023/Slyde/commit/d0e7903f4fe1639e29e12345c3f208920ebd9386))
+* 全角数字と半角カナが変換にでない問題の修正 ([ec96de4](https://github.com/akky1023/Slyde/commit/ec96de44a516dd303e5d814832bdf48c104f902e))
+* 変体仮名の順位を下げた ([c8aff23](https://github.com/akky1023/Slyde/commit/c8aff23db48d07450f4acf8e0c2a37c2e7052fe8))
+
 ## [1.3.0](https://github.com/akky1023/Slyde/compare/v1.2.0...v1.3.0) (2026-10-28)
 
 
