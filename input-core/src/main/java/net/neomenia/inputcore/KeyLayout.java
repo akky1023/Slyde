@@ -30,7 +30,17 @@ public final class KeyLayout {
     public static String variant(String base,int direction,boolean english){
         if(english&&base.equals("u")&&direction==3)return "'";
         if(english&&direction==2){if(base.equals("a"))return "@";if(base.equals("y"))return "_";}
-        return variant(base,direction);
+        String value=variant(base,direction);
+        return english?switch(value){
+            case "、" -> ",";
+            case "。" -> ".";
+            case "！" -> "!";
+            case "？" -> "?";
+            case "ー" -> "-";
+            case "（" -> "(";
+            case "）" -> ")";
+            default -> value;
+        }:value;
     }
     public static boolean vowel(String key) { return key.length() == 1 && "aiueo".contains(key); }
 }

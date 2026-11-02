@@ -48,6 +48,18 @@ public class SettingsActivityTest {
             assertFalse(((MaterialSwitch)find(root,"AI候補の「AI」を表示")).isChecked());
         }
     }
+    @Test public void fullWidthComposingAlphabetDefaultsOffAndPersists(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();
+            View root=activity.getWindow().getDecorView();click(root,"入力");
+            MaterialSwitch toggle=(MaterialSwitch)find(root,"日本語入力モードでは全角英字を使う");
+            assertNotNull(toggle);assertFalse(toggle.isChecked());toggle.setChecked(true);
+            assertTrue(InputPreferences.get(activity).getBoolean("fullWidthComposingAlphabet",false));
+            activity.onBackPressed();click(root,"入力");
+            toggle=(MaterialSwitch)find(root,"日本語入力モードでは全角英字を使う");assertTrue(toggle.isChecked());
+            toggle.setChecked(false);assertFalse(InputPreferences.get(activity).getBoolean("fullWidthComposingAlphabet",true));
+        }
+    }
     @Test public void cancelAlphabetOnInputDefaultsOffAndPersists(){
         try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
             SettingsActivity activity=controller.get();InputPreferences.get(activity).edit().clear().apply();

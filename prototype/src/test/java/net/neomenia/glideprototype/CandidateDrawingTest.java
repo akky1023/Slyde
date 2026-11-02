@@ -15,6 +15,14 @@ import static org.junit.Assert.*;
 @Config(sdk=28,qualifiers="w360dp-h800dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class CandidateDrawingTest {
+    @Test public void conversionIncludesFullWidthNumbersAndHalfWidthKana(){
+        var style=new net.neomenia.inputcore.JapaneseTypography(false,false,false,false);
+        assertEquals(List.of("123","１２３"),KeyboardSession.formatChoices(List.of("123"),"123",style));
+        assertEquals(List.of("123","１２３","いちにさん","イチニサン","ｲﾁﾆｻﾝ"),KeyboardSession.formatChoices(List.of("123"),"いちにさん",style));
+        assertEquals(List.of("頑張る","がんばる","ガンバル","ｶﾞﾝﾊﾞﾙ"),KeyboardSession.formatChoices(List.of("頑張る"),"がんばる",style));
+        assertEquals(List.of("がっつぽーず","ガッツポーズ","ｶﾞｯﾂﾎﾟｰｽﾞ"),KeyboardSession.formatChoices(List.of(),"がっつぽーず",style));
+        assertEquals(List.of("1️⃣"),KeyboardSession.formatChoices(List.of("1️⃣"),"1️⃣",style));
+    }
     @Test public void wrappedRowsUseFullWidthExceptBesideTheExpandButton(){
         android.content.Context context=new ContextThemeWrapper(RuntimeEnvironment.getApplication(),android.R.style.Theme_Material_Light_NoActionBar);
         for(boolean expanded:new boolean[]{false,true}){

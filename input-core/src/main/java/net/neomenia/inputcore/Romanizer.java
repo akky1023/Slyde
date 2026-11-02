@@ -73,7 +73,8 @@ public final class Romanizer {
                 if(next=='n') {out.append('ん');i+=(i+2<text.length()&&"aiueoy".indexOf(text.charAt(i+2))>=0)?1:2;continue;}
                 if("aiueoy".indexOf(next)<0) {out.append('ん');i++;continue;}
             }
-            if(i+1<text.length() && c==text.charAt(i+1) && "bcdfghjklmpqrstvwxyz".indexOf(c)>=0) {out.append('っ');i++;continue;}
+            if(c=='w'&&i+2<text.length()&&text.charAt(i+1)=='w'&&"aiueo".indexOf(text.charAt(i+2))>=0){out.append('っ');i++;continue;}
+            if(i+1<text.length() && c==text.charAt(i+1) && "bcdfghjklmpqrstvxyz".indexOf(c)>=0) {out.append('っ');i++;continue;}
             boolean matched=false;
             for(int size=Math.min(4,text.length()-i);size>=1;size--) {
                 String kana=TABLE.get(text.substring(i,i+size));

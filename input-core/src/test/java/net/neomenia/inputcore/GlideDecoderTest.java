@@ -7,6 +7,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class GlideDecoderTest {
+    @Test public void punctuationLabelsMatchFlickInputInBothModes(){
+        String[] bases={"e","u","e","o","o","e","o"};
+        int[] directions={2,2,0,0,2,3,3};
+        String[] japanese={"、","。","！","？","ー","（","）"};
+        String[] english={",",".","!","?","-","(",")"};
+        for(int i=0;i<bases.length;i++){
+            int index=Arrays.asList(KeyLayout.KEYS).indexOf(bases[i]),direction=directions[i];
+            float x=index%3+.5f,y=index/3+.5f;
+            var flick=List.of(p(x,y),p(x+(direction==0?-.35f:direction==2?.35f:0),y+(direction==3?.35f:0)));
+            assertEquals(english[i],KeyLayout.variant(bases[i],direction,true));
+            assertEquals(english[i],GlideDecoder.decode(flick,true).raw());
+            assertEquals(japanese[i],KeyLayout.variant(bases[i],direction,false));
+            for(int flags=0;flags<16;flags++){
+                var style=new JapaneseTypography((flags&1)!=0,(flags&2)!=0,(flags&4)!=0,(flags&8)!=0);
+                String label=style.format(KeyLayout.variant(bases[i],direction,false));
+                assertEquals(style.format(japanese[i]),label);
+                assertEquals(label,style.format(GlideDecoder.decode(flick,false).raw()));
+            }
+        }
+    }
     @Test public void euAndIuCanBeDisabledIndependently(){
         var eu=List.of(p(1.5f,3.5f),p(.5f,3.5f));
         var vowelOnlyEu=List.of(p(1.5f,3.5f),p(1.5f,2.5f),p(.5f,3.5f));
