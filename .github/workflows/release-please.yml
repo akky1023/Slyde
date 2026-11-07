@@ -23,6 +23,10 @@ concurrency:
   group: release-please-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  GRADLE_USER_HOME: ${{ github.workspace }}/.tools/gradle-home
+  ANDROID_USER_HOME: ${{ github.workspace }}/.tools/android
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -41,11 +45,73 @@ jobs:
           skip-github-release: ${{ inputs.build-apk || inputs.release-tag != '' }}
           skip-github-pull-request: ${{ inputs.build-apk || inputs.release-tag != '' }}
 
-  build-apk:
+  test:
     needs: release
     if: needs.release.outputs.release_created == 'true' || inputs.build-apk == true || inputs.release-tag != ''
     runs-on: windows-2025
-    timeout-minutes: 60
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6 (Node.js 24)
+        with:
+          ref: ${{ needs.release.outputs.sha || inputs.release-tag || github.sha }}
+          persist-credentials: false
+      - name: Select JDK and SDK
+        id: paths
+        shell: pwsh
+        run: |
+          "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          "sdk=$env:ANDROID_HOME" >> $env:GITHUB_OUTPUT
+      - name: Cache Android native tools
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ${{ steps.paths.outputs.sdk }}/ndk/28.2.13676358
+            ${{ steps.paths.outputs.sdk }}/cmake/3.22.1
+          key: android-native-${{ runner.os }}-28.2.13676358-3.22.1
+      - name: Install Android build tools
+        shell: pwsh
+        run: |
+          $env:JAVA_HOME = $env:JAVA_HOME_17_X64
+          & "$env:ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.bat" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
+          if ($LASTEXITCODE -ne 0) { throw 'Android SDK setup failed' }
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          cache-read-only: false
+          # Disposable runners do not need a second Gradle invocation for cleanup.
+          cache-cleanup: never
+      - name: Cache zenz source and model
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            .tools/zenz-source
+            prototype/src/main/assets/zenz/*.gguf
+          key: zenz-inputs-${{ hashFiles('scripts/prepare-zenz.ps1') }}
+      - name: Verify zenz inputs
+        shell: pwsh
+        run: ./scripts/prepare-zenz.ps1
+      - name: Run all unit tests
+        shell: pwsh
+        run: |
+          ./gradlew.bat :input-core:test --rerun :sumire-engine:test --rerun :prototype:testDebugUnitTest --rerun --no-daemon --console=plain
+          if ($LASTEXITCODE -ne 0) { throw 'Unit tests failed' }
+      - name: Save test reports
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: unit-test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 14
+
+  build-apk:
+    needs: [release, test]
+    if: needs.release.outputs.release_created == 'true' || inputs.build-apk == true || inputs.release-tag != ''
+    runs-on: windows-2025
+    timeout-minutes: 10
     permissions:
       contents: write
     defaults:
@@ -56,17 +122,57 @@ jobs:
         with:
           ref: ${{ needs.release.outputs.sha || inputs.release-tag || github.sha }}
           persist-credentials: false
+      - name: Select JDK and SDK
+        id: paths
+        shell: pwsh
+        run: |
+          "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          "sdk=$env:ANDROID_HOME" >> $env:GITHUB_OUTPUT
+      - name: Cache Android native tools
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ${{ steps.paths.outputs.sdk }}/ndk/28.2.13676358
+            ${{ steps.paths.outputs.sdk }}/cmake/3.22.1
+          key: android-native-${{ runner.os }}-28.2.13676358-3.22.1
       - name: Install Android build tools
+        shell: pwsh
         run: |
           $env:JAVA_HOME = $env:JAVA_HOME_17_X64
           & "$env:ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.bat" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
           if ($LASTEXITCODE -ne 0) { throw 'Android SDK setup failed' }
-      - name: Build, test and verify signed APK
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          cache-read-only: false
+          cache-cleanup: never
+      - name: Cache zenz source and model
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            .tools/zenz-source
+            prototype/src/main/assets/zenz/*.gguf
+          key: zenz-inputs-${{ hashFiles('scripts/prepare-zenz.ps1') }}
+      - name: Verify zenz inputs
+        shell: pwsh
+        run: ./scripts/prepare-zenz.ps1
+      - name: Cache native compilation
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            zenz/.cxx
+            zenz/build/intermediates/cxx
+          key: zenz-native-${{ runner.os }}-${{ hashFiles('**/*.gradle', 'gradle.properties', 'gradle/wrapper/gradle-wrapper.properties', 'scripts/prepare-zenz.ps1', 'zenz/src/main/cpp/**') }}
+      - name: Build and verify signed APK
         env:
           GLIDE_KEYSTORE_BASE64: ${{ secrets.GLIDE_KEYSTORE_BASE64 }}
           GLIDE_STORE_PASSWORD: ${{ secrets.GLIDE_STORE_PASSWORD }}
           RELEASE_TAG: ${{ needs.release.outputs.tag_name || inputs.release-tag }}
-        run: ./scripts/build-ci-release.ps1 -ExpectedVersion ($env:RELEASE_TAG -replace '^v', '')
+        run: |
+          $buildArgs = @{ ExpectedVersion = ($env:RELEASE_TAG -replace '^v', '') }
+          # Existing tags may predate the separate test job.
+          if ((Get-Command ./scripts/build-ci-release.ps1).Parameters.ContainsKey('SkipTests')) { $buildArgs.SkipTests = $true }
+          ./scripts/build-ci-release.ps1 @buildArgs
       - name: Save verified APK and checksum
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:

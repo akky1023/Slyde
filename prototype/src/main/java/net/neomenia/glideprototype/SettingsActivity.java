@@ -104,6 +104,7 @@ public final class SettingsActivity extends AppCompatActivity {
         box.addView(dropdown,new LinearLayout.LayoutParams(-1,-2));body.addView(box,new LinearLayout.LayoutParams(-1,-2));
     }
     private void conversion(){
+        link("カスタム辞書",()->startActivity(new Intent(this,UserDictionaryActivity.class)));
         heading("変換");
         MaterialSwitch cycle=toggle("空白キーで変換","spaceCyclesCandidates",false);
         MaterialSwitch cancelConversion=toggle("入力再開時に変換を取り消す","cancelConversionOnInput",false);

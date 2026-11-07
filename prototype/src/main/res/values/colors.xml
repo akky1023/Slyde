@@ -24,8 +24,6 @@
     <color name="settings_on_surface_variant">#42474E</color>
     <color name="settings_outline">#73777F</color>
     <color name="settings_outline_variant">#C2C7CF</color>
-    <color name="settings_shadow">#000000</color>
-    <color name="settings_scrim">#000000</color>
     <color name="settings_inverse_surface">#2F3033</color>
     <color name="settings_inverse_on_surface">#F1F0F4</color>
     <color name="settings_inverse_primary">#9BCBFF</color>

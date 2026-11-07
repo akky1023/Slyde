@@ -5,6 +5,14 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 public class CandidateResultsTest {
+    @Test public void exclusionAndDemotionApplyToAiInEitherArrivalOrder()throws Exception {
+        UserDictionary dictionary=UserDictionary.read(new java.io.StringReader("はし\t橋\t抑制単語\nはし\t箸\t抑制\n"));
+        for(boolean aiFirst:new boolean[]{true,false})for(String ai:List.of("橋","箸")){
+            CandidateResults results=new CandidateResults(List.of("はし"));results.policy(dictionary.policy("はし",value->value));
+            if(aiFirst)results.ai(ai);results.dictionary(List.of("橋","箸","端","はし"));if(!aiFirst)results.ai(ai);
+            assertEquals(List.of("端","はし","箸"),results.values());assertEquals(ai.equals("橋")?null:"箸",results.ai());
+        }
+    }
     @Test public void historicalKanaFollowAllRegularCandidatesWithoutChangingTheirRelativeOrder(){
         String first=new String(Character.toChars(0x1b002)),last=new String(Character.toChars(0x1b11e));
         List<String> original=List.of(first,"亜","文"+last,"あ","ア","ｱ",last);
