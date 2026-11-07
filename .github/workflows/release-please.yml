@@ -23,6 +23,10 @@ concurrency:
   group: release-please-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  GRADLE_USER_HOME: ${{ github.workspace }}/.tools/gradle-home
+  ANDROID_USER_HOME: ${{ github.workspace }}/.tools/android
+
 jobs:
   release:
     runs-on: ubuntu-latest
