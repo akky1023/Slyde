@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.2](https://github.com/akky1023/Slyde/compare/v1.3.1...v1.3.2) (2026-11-07)
+
+
+### Bug Fixes
+
+* Termuxで削除キーが効かない問題を修正 ([7981cee](https://github.com/akky1023/Slyde/commit/7981cee06e43f9650ef6f98fbcd85c8b7ba62f79))
+
+
+### Performance Improvements
+
+* Gradleキャッシュを有効化 ([aebe926](https://github.com/akky1023/Slyde/commit/aebe926c3a331cbcee192db0f34df39948e8dc9f))
+
 ## [1.3.1](https://github.com/akky1023/Slyde/compare/v1.3.0...v1.3.1) (2026-11-02)
 
 
