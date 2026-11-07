@@ -123,6 +123,21 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         }
     }
     private void sendKey(int code){connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,code));connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,code));}
+    static void delete(InputConnection connection,EditorInfo editorInfo){
+        if(editorInfo==null||editorInfo.inputType!=InputType.TYPE_NULL){
+            CharSequence selected=connection.getSelectedText(0);
+            if(selected!=null&&selected.length()>0){connection.commitText("",1);return;}
+            // Some editors only implement UTF-16 deletion. Read enough for a surrogate pair.
+            CharSequence before=connection.getTextBeforeCursor(2,0);
+            if(before!=null){
+                int count=before.length()==0?1:Character.charCount(Character.codePointBefore(before,before.length()));
+                if(connection.deleteSurroundingText(count,0))return;
+            }
+            if(connection.deleteSurroundingTextInCodePoints(1,0))return;
+        }
+        connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_DEL));
+        connection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,KeyEvent.KEYCODE_DEL));
+    }
     static void enter(InputConnection connection,EditorInfo editorInfo){
         // The editor's newline request also takes precedence over custom actions.
         if(editorInfo!=null&&(editorInfo.imeOptions&EditorInfo.IME_FLAG_NO_ENTER_ACTION)==0){
@@ -267,7 +282,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
                         connection.setComposingText(alphabetCase>=0?reading():"",1);
                     }else{composing.delete();connection.setComposingText(composingDisplay(),1);}
                 }
-                else if(connection.getSelectedText(0)!=null)connection.commitText("",1);else if(!connection.deleteSurroundingTextInCodePoints(1,0))sendKey(KeyEvent.KEYCODE_DEL);
+                else delete(connection,editorInfo);
                 if(composing.length()>0)scheduleCandidates();else clearCandidates();
             }
             case "space" -> {if(keyboard.isJapanese()&&alphabetCase<0&&composing.length()>0)spaceConversion();else{commit();connection.commitText(" ",1);}}
