@@ -6,7 +6,8 @@ param(
     [string]$NativeSdk = '',
     [string]$ExpectedVersion = '',
     [string]$ExpectedSigningFingerprint = '',
-    [switch]$Offline
+    [switch]$Offline,
+    [switch]$SkipTests
 )
 $ErrorActionPreference = 'Stop'
 $workspace = Split-Path -Parent $PSScriptRoot
@@ -14,7 +15,7 @@ if (-not $JavaHome -or -not $AndroidSdk) { throw 'JDK 17とAndroid SDKのパス�
 $env:JAVA_HOME = $JavaHome
 $env:ANDROID_HOME = $AndroidSdk
 $env:ANDROID_USER_HOME = Join-Path $workspace '.tools/android'
-$env:GRADLE_USER_HOME = Join-Path $workspace '.tools/gradle-home'
+if (-not $env:GRADLE_USER_HOME) { $env:GRADLE_USER_HOME = Join-Path $workspace '.tools/gradle-home' }
 if ($ReadOnlyCache) { $env:GRADLE_RO_DEP_CACHE = $ReadOnlyCache }
 if (-not $GradleExecutable) { $GradleExecutable = Join-Path $workspace 'gradlew.bat' }
 $signingDir = Join-Path $workspace '.tools/signing'
@@ -54,7 +55,8 @@ try {
         }
     }
     & (Join-Path $PSScriptRoot 'prepare-zenz.ps1') -Offline:$Offline
-    $gradleArgs = @(':input-core:test', ':sumire-engine:test', ':prototype:testDebugUnitTest', ':prototype:assembleRelease', ':prototype:lintRelease', ':zenz:lintRelease', '--no-daemon', '--console=plain')
+    $gradleArgs = @(':prototype:assembleRelease', ':prototype:lintRelease', ':zenz:lintRelease', '--no-daemon', '--console=plain')
+    if (-not $SkipTests) { $gradleArgs = @(':input-core:test', ':sumire-engine:test', ':prototype:testDebugUnitTest') + $gradleArgs }
     if (-not $NativeSdk) {
         $NativeSdk = $AndroidSdk
         $siblingSdk = Join-Path $workspace '../timetable-app/.tools/android-sdk'
