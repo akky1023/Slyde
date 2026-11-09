@@ -135,9 +135,20 @@ final class KeyboardDockView extends ViewGroup {
     }
     @Override protected void onLayout(boolean changed,int l,int t,int r,int b){
         int top=editing?toolbarHeight()+Math.round(bounds.top()):floating?moveHeight()+Math.round(bounds.top()):0,left=Math.round(bounds.left());
+        boolean moved=keyboard.getLeft()!=left||keyboard.getTop()!=top||keyboard.getWidth()!=Math.round(bounds.width())||keyboard.getHeight()!=candidateHeight+Math.round(bounds.height());
         keyboard.layout(left,top,left+Math.round(bounds.width()),top+candidateHeight+Math.round(bounds.height()));
         moveHandle.layout(left,top-moveHeight(),left+Math.round(bounds.width()),top);
         toolbar.layout(0,0,getWidth(),toolbarHeight());handles.layout(0,toolbarHeight()+candidateHeight,getWidth(),toolbarHeight()+candidateHeight+areaHeight);if(editing)handles.invalidate();
+        if(floating&&moved)invalidate();
+    }
+    @Override protected void dispatchDraw(Canvas canvas){
+        if(floating){
+            // Drawing a transparent ColorDrawable uses SRC_OVER and cannot erase
+            // pixels left by the previous position on a retained window buffer.
+            int save=canvas.save();canvas.clipRect(0,0,getWidth(),getHeight());
+            canvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.CLEAR);canvas.restoreToCount(save);
+        }
+        super.dispatchDraw(canvas);
     }
     @Override protected LayoutParams generateDefaultLayoutParams(){return new LayoutParams(-1,-2);}
     private final class Handles extends View {

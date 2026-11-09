@@ -7,7 +7,11 @@ import android.view.inputmethod.EditorInfo;
 
 public final class GlideInputMethodService extends InputMethodService {
     private KeyboardSession session;
-    @Override public void onCreate(){setTheme(android.R.style.Theme_Material_Light_NoActionBar);super.onCreate();}
+    @Override public void onCreate(){
+        setTheme(android.R.style.Theme_Material_Light_NoActionBar);super.onCreate();
+        // A transparent background alone must not leave an opaque backing surface.
+        getWindow().getWindow().setFormat(android.graphics.PixelFormat.TRANSLUCENT);
+    }
     @Override public View onCreateInputView(){
         if(session!=null)session.destroy();
         getWindow().getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
