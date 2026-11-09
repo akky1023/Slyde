@@ -29,15 +29,18 @@ final class KeyboardDockView extends ViewGroup {
     private Rect bounds;
     private boolean editing;
     private int candidateHeight,areaHeight,lastWidth;
+    private boolean floating;
+    private final TextView moveHandle;
     private final float density;
-    private String key(){return getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE?"dockLandscape.":"dockPortrait.";}
+    private String key(){return (floating?"floating":"dock")+(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE?"Landscape.":"Portrait.");}
     private int dp(float value){return Math.round(value*density);}
     KeyboardDockView(Context context,View keyboard,SharedPreferences preferences,int candidateHeight,IntConsumer resized){
         this(context,keyboard,preferences,candidateHeight,resized,(left,right)->{});
     }
     KeyboardDockView(Context context,View keyboard,SharedPreferences preferences,int candidateHeight,IntConsumer resized,BiConsumer<Integer,Integer> sideWidths){
         super(context);this.keyboard=keyboard;this.preferences=preferences;this.candidateHeight=candidateHeight;this.resized=resized;this.sideWidths=sideWidths;density=getResources().getDisplayMetrics().density;
-        setBackgroundColor(Color.rgb(18,26,34));addView(keyboard);
+        floating=preferences.getBoolean("floatingKeyboard",false);
+        setBackgroundColor(floating?Color.TRANSPARENT:Color.rgb(18,26,34));addView(keyboard);
         handles=new Handles(context);addView(handles);
         Context settingsContext=SettingsUi.themed(context);
         toolbar=new LinearLayout(settingsContext);toolbar.setOrientation(LinearLayout.VERTICAL);toolbar.setBackgroundColor(SettingsUi.surface(settingsContext));
@@ -47,8 +50,24 @@ final class KeyboardDockView extends ViewGroup {
         control(actions,"取消",()->endEdit(false));control(actions,"初期位置",()->{bounds=defaults(lastWidth);setSideWidthPercents(15,15);requestLayout();});
         control(actions,"中央寄せ",()->{if(bounds!=null){bounds=new Rect((lastWidth-bounds.width())/2,bounds.top(),bounds.width(),bounds.height());requestLayout();}});control(actions,"保存",()->endEdit(true));
         addView(toolbar);toolbar.setVisibility(GONE);handles.setVisibility(GONE);
+        moveHandle=new TextView(context);moveHandle.setText("━━　移動");moveHandle.setTextSize(12);moveHandle.setTextColor(Color.rgb(192,218,222));moveHandle.setGravity(Gravity.CENTER);moveHandle.setBackgroundColor(Color.rgb(34,47,59));moveHandle.setContentDescription("キーボードを移動。ドラッグして位置を変更");
+        moveHandle.setOnTouchListener(new OnTouchListener(){
+            private float x,y;private Rect initial;private int pointer=-1;
+            @Override public boolean onTouch(View view,MotionEvent event){
+                int action=event.getActionMasked();
+                if(action==MotionEvent.ACTION_DOWN){pointer=event.getPointerId(0);x=event.getRawX();y=event.getRawY();initial=bounds;getParent().requestDisallowInterceptTouchEvent(true);}
+                if(action==MotionEvent.ACTION_MOVE&&event.getPointerId(0)==pointer&&initial!=null){bounds=KeyboardGeometry.drag(initial,0,event.getRawX()-x,event.getRawY()-y,lastWidth,areaHeight,minWidth(),minHeight(),dp(12));requestLayout();}
+                if(action==MotionEvent.ACTION_CANCEL&&initial!=null){bounds=initial;requestLayout();pointer=-1;}
+                if(action==MotionEvent.ACTION_UP){saveBounds();pointer=-1;view.performClick();}
+                return true;
+            }
+        });addView(moveHandle);moveHandle.setVisibility(floating?VISIBLE:GONE);
         loadSideWidths();
     }
+    boolean isFloating(){return floating;}
+    void setFloating(boolean value){if(floating==value)return;cancelEdit();floating=value;preferences.edit().putBoolean("floatingKeyboard",value).apply();bounds=null;lastWidth=0;setBackgroundColor(value?Color.TRANSPARENT:Color.rgb(18,26,34));moveHandle.setVisibility(value?VISIBLE:GONE);loadSideWidths();requestLayout();}
+    android.graphics.Rect touchBounds(){return editing?new android.graphics.Rect(0,0,getWidth(),getHeight()):new android.graphics.Rect(keyboard.getLeft(),floating?moveHandle.getTop():keyboard.getTop(),keyboard.getRight(),keyboard.getBottom());}
+    private int moveHeight(){return floating&&!editing?dp(28):0;}
     int toolbarHeight(){return dp(128);}
     void setEditFinishedListener(Runnable action){editFinished=action;}
     void setSideWidthPercents(int left,int right){leftPercent=Math.max(8,Math.min(25,left));rightPercent=Math.max(8,Math.min(25,right));updateSideControls();sideWidths.accept(leftPercent,rightPercent);}
@@ -58,42 +77,45 @@ final class KeyboardDockView extends ViewGroup {
         com.google.android.material.button.MaterialButton button=SettingsUi.button(row.getContext(),label,action);button.setTextSize(14);button.setMinWidth(0);button.setMinimumWidth(0);button.setPadding(dp(4),0,dp(4),0);row.addView(button,new LinearLayout.LayoutParams(0,-1,1));
     }
     void setCandidateHeight(int value){if(candidateHeight!=value){candidateHeight=value;requestLayout();}}
-    void reloadPreferences(){if(editing)return;loadSideWidths();bounds=null;requestLayout();}
+    void reloadPreferences(){if(editing)return;setFloating(preferences.getBoolean("floatingKeyboard",false));loadSideWidths();bounds=null;requestLayout();}
     boolean isEditing(){return editing;}
-    void edit(){if(editing)return;adjustingSides=false;loadSideWidths();editing=true;bounds=null;toolbar.setVisibility(VISIBLE);handles.setVisibility(VISIBLE);requestLayout();announceForAccessibility("キーボードの大きさと位置を調整。枠をドラッグ、または2本指で拡大縮小できます。");}
+    void edit(){if(editing)return;adjustingSides=false;loadSideWidths();editing=true;bounds=null;moveHandle.setVisibility(GONE);toolbar.setVisibility(VISIBLE);handles.setVisibility(VISIBLE);requestLayout();announceForAccessibility("キーボードの大きさと位置を調整。枠をドラッグ、または2本指で拡大縮小できます。");}
     void cancelEdit(){if(editing)endEdit(false);}
     private void endEdit(boolean save){
-        if(save&&bounds!=null){
+        if(save)saveBounds();
+        loadSideWidths();
+        editing=false;bounds=null;toolbar.setVisibility(GONE);handles.setVisibility(GONE);moveHandle.setVisibility(floating?VISIBLE:GONE);requestLayout();
+        editFinished.run();
+    }
+    private void saveBounds(){
+        if(bounds!=null){
             preferences.edit().putFloat(key()+"width",bounds.width()/Math.max(1,lastWidth))
                 .putFloat(key()+"left",lastWidth>bounds.width()?bounds.left()/(lastWidth-bounds.width()):.5f)
                 .putFloat(key()+"keyHeight",bounds.height()/density).putFloat(key()+"bottom",(areaHeight-bounds.bottom())/density)
                 .putInt(key()+"leftSidePercent",leftPercent).putInt(key()+"rightSidePercent",rightPercent).apply();
         }
-        loadSideWidths();
-        editing=false;bounds=null;toolbar.setVisibility(GONE);handles.setVisibility(GONE);requestLayout();
-        editFinished.run();
     }
     private float minHeight(){return dp(4*32);}
     private float minWidth(){return Math.min(dp(240),lastWidth*.7f);}
-    private Rect defaults(int width){return fit(new Rect(0,areaHeight-dp(232+24),width,dp(232)),width);}
+    private Rect defaults(int width){float w=floating?Math.min(dp(360),width*.8f):width;return fit(new Rect((width-w)/2,areaHeight-dp(232+24),w,dp(232)),width);}
     private Rect fit(Rect r,int width){return KeyboardGeometry.fit(r,width,areaHeight,minWidth(),minHeight(),dp(12));}
     private Rect load(int width){
         // Older saved heights included the candidate strip.
         float legacyHeight=preferences.getFloat(key()+"height",candidateHeight/density+232)-candidateHeight/density;
         if(!preferences.contains(key()+"keyHeight")&&preferences.contains(key()+"height"))
             preferences.edit().putFloat(key()+"keyHeight",legacyHeight).apply();
-        float w=width*preferences.getFloat(key()+"width",1),h=dp(preferences.getFloat(key()+"keyHeight",legacyHeight));
+        float w=width*preferences.getFloat(key()+"width",floating?Math.min(dp(360)/(float)Math.max(1,width),.8f):1),h=dp(preferences.getFloat(key()+"keyHeight",legacyHeight));
         float gap=dp(preferences.getFloat(key()+"bottom",24));
         return fit(new Rect((width-w)*preferences.getFloat(key()+"left",.5f),areaHeight-gap-h,w,h),width);
     }
     @Override protected void onMeasure(int widthSpec,int heightSpec){
         if(!key().equals(sideKey))loadSideWidths();
         int width=MeasureSpec.getSize(widthSpec);int controls=toolbarHeight();
-        int available=dp(getResources().getConfiguration().screenHeightDp*.64f);
+        int available=dp(getResources().getConfiguration().screenHeightDp*(floating?1f:.64f));
         if(MeasureSpec.getMode(heightSpec)!=MeasureSpec.UNSPECIFIED)available=Math.min(available,MeasureSpec.getSize(heightSpec));
         // The IME can measure WRAP_CONTENT again using the height from its first pass.
         // A hidden toolbar must not be deducted from that already allocated keyboard height.
-        int nextHeight=KeyboardSizing.canvasHeight(available,dp(12)+candidateHeight+dp(96),controls,editing)-candidateHeight;
+        int nextHeight=KeyboardSizing.canvasHeight(available,dp(12)+candidateHeight+dp(96),controls,editing)-candidateHeight-moveHeight();
         if(lastWidth!=width||areaHeight!=nextHeight){
             if(bounds!=null&&lastWidth>0){
                 float fraction=bounds.width()/lastWidth,anchor=lastWidth>bounds.width()?bounds.left()/(lastWidth-bounds.width()):.5f,gap=areaHeight-bounds.bottom();
@@ -102,17 +124,19 @@ final class KeyboardDockView extends ViewGroup {
             lastWidth=width;areaHeight=nextHeight;
         }
         if(bounds==null)bounds=load(width);else bounds=fit(bounds,width);
-        int height=candidateHeight+(editing?areaHeight+controls:Math.round(areaHeight-bounds.top()));
+        int height=candidateHeight+moveHeight()+(editing?areaHeight+controls:floating?areaHeight:Math.round(areaHeight-bounds.top()));
         int contentHeight=Math.round(bounds.height())+candidateHeight;
         resized.accept(contentHeight);
         keyboard.measure(MeasureSpec.makeMeasureSpec(Math.round(bounds.width()),MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(contentHeight,MeasureSpec.EXACTLY));
         toolbar.measure(MeasureSpec.makeMeasureSpec(width,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(controls,MeasureSpec.EXACTLY));
         handles.measure(MeasureSpec.makeMeasureSpec(width,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(areaHeight,MeasureSpec.EXACTLY));
+        moveHandle.measure(MeasureSpec.makeMeasureSpec(Math.round(bounds.width()),MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(moveHeight(),MeasureSpec.EXACTLY));
         setMeasuredDimension(width,height);
     }
     @Override protected void onLayout(boolean changed,int l,int t,int r,int b){
-        int top=editing?toolbarHeight()+Math.round(bounds.top()):0,left=Math.round(bounds.left());
+        int top=editing?toolbarHeight()+Math.round(bounds.top()):floating?moveHeight()+Math.round(bounds.top()):0,left=Math.round(bounds.left());
         keyboard.layout(left,top,left+Math.round(bounds.width()),top+candidateHeight+Math.round(bounds.height()));
+        moveHandle.layout(left,top-moveHeight(),left+Math.round(bounds.width()),top);
         toolbar.layout(0,0,getWidth(),toolbarHeight());handles.layout(0,toolbarHeight()+candidateHeight,getWidth(),toolbarHeight()+candidateHeight+areaHeight);if(editing)handles.invalidate();
     }
     @Override protected LayoutParams generateDefaultLayoutParams(){return new LayoutParams(-1,-2);}

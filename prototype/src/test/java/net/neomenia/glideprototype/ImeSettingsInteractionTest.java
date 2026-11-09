@@ -108,6 +108,22 @@ public class ImeSettingsInteractionTest {
             assertTrue(keyboard.isJapanese());
         }finally{session.destroy();}
     }
+    @Test public void floatingSwitchChangesLiveSessionAndRestoresDockedLayout(){
+        Context context=RuntimeEnvironment.getApplication();
+        InputPreferences.get(context).edit().clear().putBoolean("zenzEnabled",false).apply();
+        KeyboardSession session=new KeyboardSession(context,null,null);
+        try{
+            View root=session.view();layout(root);int height=root.getHeight();
+            session.action("settings");
+            ImeSettingsMenu menu=find(root,ImeSettingsMenu.class);
+            androidx.appcompat.widget.SwitchCompat toggle=find(menu,androidx.appcompat.widget.SwitchCompat.class);
+            toggle.setChecked(true);layout(root);
+            assertTrue(session.isFloating());assertEquals(View.GONE,menu.getVisibility());
+            assertTrue(root.getHeight()>height);assertTrue(InputPreferences.get(context).getBoolean("floatingKeyboard",false));
+            session.action("settings");toggle.setChecked(false);layout(root);
+            assertFalse(session.isFloating());assertEquals(height,root.getHeight());
+        }finally{session.destroy();}
+    }
     @Test public void settingsReplaceEntireKeyboardAndBackRestoresItsSize(){
         Context context=RuntimeEnvironment.getApplication();
         InputPreferences.get(context).edit().putBoolean("zenzEnabled",false).apply();

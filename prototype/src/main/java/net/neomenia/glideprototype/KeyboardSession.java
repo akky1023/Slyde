@@ -66,7 +66,7 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         dock=new KeyboardDockView(this,view,getPreferences(0),candidateHeight(),this::applyDockHeight,keyboard::setSideWidths);
         settings=new ImeSettingsMenu(this,this::closeSettings,()->{closeSettings();editLayout();},()->{
             closeSettings();startActivity(new Intent(this,SettingsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-        });
+        },()->{closeSettings();keyboard.cancelTouches();dock.reloadPreferences();});
         settings.setVisibility(View.GONE);view.addView(settings,new LinearLayout.LayoutParams(-1,0));
         zenz=ZenzRuntime.get(this);if(getPreferences(0).getBoolean("zenzEnabled",true))warmupZenz();
         worker.execute(()->{
@@ -75,6 +75,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         });
     }
     View view(){return dock;}
+    boolean isFloating(){return dock.isFloating();}
+    android.graphics.Rect touchBounds(){return dock.touchBounds();}
     private void applyDockHeight(int height){
         if(settings!=null)settings.getLayoutParams().height=height;
         dockHeight=height;int keys=Math.max(dp(96),height-candidateHeight());

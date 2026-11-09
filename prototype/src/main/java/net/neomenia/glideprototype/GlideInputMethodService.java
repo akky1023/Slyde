@@ -10,9 +10,22 @@ public final class GlideInputMethodService extends InputMethodService {
     @Override public void onCreate(){setTheme(android.R.style.Theme_Material_Light_NoActionBar);super.onCreate();}
     @Override public View onCreateInputView(){
         if(session!=null)session.destroy();
+        getWindow().getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
         session=new KeyboardSession(this,null,null);return session.view();
     }
     @Override public boolean onEvaluateFullscreenMode(){return false;}
+    @Override public void onComputeInsets(Insets insets){
+        super.onComputeInsets(insets);
+        if(session==null||!session.isFloating()||!isInputViewShown())return;
+        View view=session.view();int[] location=new int[2];view.getLocationInWindow(location);
+        // Reserve no editor space. Only presses beginning on the floating surface belong
+        // to the IME; Android keeps delivering that gesture when it leaves this region.
+        int bottom=getWindow().getWindow().getDecorView().getHeight();
+        insets.contentTopInsets=bottom;insets.visibleTopInsets=bottom;
+        insets.touchableInsets=Insets.TOUCHABLE_INSETS_REGION;
+        android.graphics.Rect region=session.touchBounds();region.offset(location[0],location[1]);
+        insets.touchableRegion.set(region);
+    }
     @Override public boolean onKeyDown(int keyCode,KeyEvent event){
         if(keyCode==KeyEvent.KEYCODE_BACK&&session!=null&&session.cancelLayoutEdit())return true;
         return super.onKeyDown(keyCode,event);
