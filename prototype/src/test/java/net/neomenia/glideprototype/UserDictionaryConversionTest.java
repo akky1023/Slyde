@@ -11,6 +11,18 @@ import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class) @Config(sdk=28)
 public class UserDictionaryConversionTest {
+    @Test public void inflectedCustomCandidatesLeadAndRefreshAfterEditing()throws Exception {
+        var store=UserDictionaryStore.get(RuntimeEnvironment.getApplication());
+        try{
+            store.save(UserDictionary.read(new StringReader("ぐぐる\t独自ググる\t動詞ラ行五段\n")));
+            SumireAdapter adapter=new SumireAdapter(RuntimeEnvironment.getApplication());
+            assertEquals("独自ググった",adapter.candidates("ぐぐった",()->false).get(0));
+            assertEquals("独自ググりませんでした",adapter.candidates("ぐぐりませんでした",()->false).get(0));
+            assertTrue(adapter.candidates("ぐぐったけっか",()->false).get(0).startsWith("独自ググった"));
+            store.save(UserDictionary.read(new StringReader("ぐぐる\t変更ググる\t動詞ラ行五段\n")));
+            assertNull(adapter.cachedCandidates("ぐぐった"));assertEquals("変更ググった",adapter.candidates("ぐぐった",()->false).get(0));
+        }finally{store.save(new UserDictionary(List.of()));}
+    }
     @Test public void customCandidatesLeadAndEditsInvalidateCachedReadings()throws Exception {
         var context=RuntimeEnvironment.getApplication();var store=UserDictionaryStore.get(context);
         store.save(UserDictionary.read(new StringReader("すらいど\tSlydeCustom\t名詞\n")));

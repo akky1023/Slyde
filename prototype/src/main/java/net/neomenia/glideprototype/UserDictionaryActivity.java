@@ -73,13 +73,17 @@ public final class UserDictionaryActivity extends AppCompatActivity {
     }
     private void edit(UserDictionary.Entry original){
         LinearLayout form=new LinearLayout(this);form.setOrientation(LinearLayout.VERTICAL);int padding=SettingsUi.dp(this,20);form.setPadding(padding,0,padding,0);
-        TextInputEditText reading=field(form,"よみ",original==null?"":original.reading()),word=field(form,"単語",original==null?"":original.word()),pos=field(form,"品詞",original==null?"名詞":original.partOfSpeech()),comment=field(form,"コメント",original==null?"":original.comment());
+        TextInputEditText reading=field(form,"よみ",original==null?"":original.reading()),word=field(form,"単語",original==null?"":original.word());
+        TextInputLayout posBox=new TextInputLayout(this,null,com.google.android.material.R.attr.textInputOutlinedExposedDropdownMenuStyle);posBox.setHint("品詞");
+        com.google.android.material.textfield.MaterialAutoCompleteTextView pos=new com.google.android.material.textfield.MaterialAutoCompleteTextView(posBox.getContext());pos.setSingleLine(true);pos.setInputType(android.text.InputType.TYPE_CLASS_TEXT);pos.setThreshold(0);pos.setSimpleItems(UserDictionary.partsOfSpeech().toArray(new String[0]));pos.setText(original==null?"名詞":original.partOfSpeech(),false);posBox.addView(pos);form.addView(posBox);
+        posBox.setHelperText("動詞・形容詞は終止形で登録（例：ぐぐる／ググる、動詞ラ行五段）");
+        TextInputEditText comment=field(form,"コメント",original==null?"":original.comment());
         String[] kinds={"通常","除外（出さない）","抑制（優先度を下げる）"};
         int initial=pos.getText().toString().equals("抑制単語")?1:pos.getText().toString().equals("抑制")?2:0;
-        String ordinaryPos=initial==0?pos.getText().toString():"名詞";
+        String[] ordinaryPos={initial==0?pos.getText().toString():"名詞"};
         TextInputLayout kindBox=new TextInputLayout(this,null,com.google.android.material.R.attr.textInputOutlinedExposedDropdownMenuStyle);kindBox.setHint("候補の扱い");
         com.google.android.material.textfield.MaterialAutoCompleteTextView kind=new com.google.android.material.textfield.MaterialAutoCompleteTextView(kindBox.getContext());kind.setInputType(android.text.InputType.TYPE_NULL);kind.setSimpleItems(kinds);kind.setText(kinds[initial],false);kindBox.addView(kind);form.addView(kindBox,0);pos.setEnabled(initial==0);
-        kind.setOnItemClickListener((parent,view,index,id)->{pos.setText(index==1?"抑制単語":index==2?"抑制":ordinaryPos);pos.setEnabled(index==0);});
+        kind.setOnItemClickListener((parent,view,index,id)->{if(pos.isEnabled())ordinaryPos[0]=pos.getText().toString();pos.setText(index==1?"抑制単語":index==2?"抑制":ordinaryPos[0],false);pos.setEnabled(index==0);});
         ScrollView editor=new ScrollView(this);editor.addView(form);
         MaterialAlertDialogBuilder builder=new MaterialAlertDialogBuilder(this).setTitle(original==null?"単語を追加":"単語を編集").setView(editor).setNegativeButton("取消",null).setPositiveButton("保存",null);
         if(original!=null)builder.setNeutralButton("削除",(dialog,which)->new MaterialAlertDialogBuilder(this).setTitle("「"+original.word()+"」を削除しますか？").setNegativeButton("取消",null).setPositiveButton("削除",(confirm,id)->saveEdit(original,null)).show());
