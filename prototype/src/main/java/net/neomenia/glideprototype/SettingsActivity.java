@@ -163,7 +163,7 @@ public final class SettingsActivity extends AppCompatActivity {
         switch(group){
             case "Slyde本体"->{
                 summary="Slyde本体はMIT Licenseで公開しています。\n画面表示・フォント・記号名に使用する素材とライブラリの通知も掲載しています。";
-                notices=new String[][]{{"Slyde本体 — MIT License","slyde-MIT.txt"},{"Material Components for Android / AndroidX — Apache License 2.0","zenz-model-Apache-2.0.txt"},{"GitHub Octicons — MIT License","github-octicons-MIT.txt"},{"Unicode","unicode.txt"},{"CLDR","cldr.txt"},{"Noto Sans JP — SIL Open Font License","NotoSansJP-OFL.txt"},{"Noto Sans JP — Notices","NotoSansJP-Notices.txt"},{"Bizin Gothic Discord — SIL Open Font License","BizinGothicDiscord-OFL.txt"},{"Bizin Gothic Discord — Notices","BizinGothicDiscord-Regular-Notices.txt"},{"Noto Sans Symbols — SIL Open Font License","NotoSymbols-OFL.txt"}};
+                notices=new String[][]{{"Slyde本体 — MIT License","slyde-MIT.txt"},{"Material Components for Android / AndroidX — Apache License 2.0","zenz-model-Apache-2.0.txt"},{"GitHub Octicons — MIT License","github-octicons-MIT.txt"},{"Microsoft Fluent UI System Icons — MIT License","fluentui-system-icons-MIT.txt"},{"Unicode","unicode.txt"},{"CLDR","cldr.txt"},{"Noto Sans JP — SIL Open Font License","NotoSansJP-OFL.txt"},{"Noto Sans JP — Notices","NotoSansJP-Notices.txt"},{"Bizin Gothic Discord — SIL Open Font License","BizinGothicDiscord-OFL.txt"},{"Bizin Gothic Discord — Notices","BizinGothicDiscord-Regular-Notices.txt"},{"Noto Sans Symbols — SIL Open Font License","NotoSymbols-OFL.txt"}};
             }
             case "Mozc"->{
                 summary="読み付きの記号・絵文字辞書を使用しています。\nMozcのライセンスと第三者の通知を掲載しています。";
