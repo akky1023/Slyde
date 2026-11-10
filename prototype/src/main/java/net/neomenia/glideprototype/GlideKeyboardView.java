@@ -6,10 +6,11 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.*;
+import android.widget.FrameLayout;
 import net.neomenia.inputcore.*;
 import java.util.*;
 
-public final class GlideKeyboardView extends View {
+public final class GlideKeyboardView extends FrameLayout {
     public interface Listener {
         void text(String raw, boolean japanese);
         void action(String action);
@@ -18,6 +19,7 @@ public final class GlideKeyboardView extends View {
     }
     private final Listener listener;
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Rect modeBounds=new Rect();
     private final OrderedTouches<Stroke> touches=new OrderedTouches<>();
     private final Handler handler=new Handler(Looper.getMainLooper());
     private final Drawable cursorLeftIcon,settingsIcon;
@@ -34,6 +36,7 @@ public final class GlideKeyboardView extends View {
         Stroke(int id,int side,int row,float x,float y){pointerId=id;startSide=side;startRow=row;downX=x;downY=y;}
     }
     private int rowDp=58;
+    private boolean scaleTextToFit;
     private int naNyaBias=50;
     private boolean enableEu=false,enableIu=false;
     private int leftSidePercent=15,rightSidePercent=15;
@@ -41,9 +44,47 @@ public final class GlideKeyboardView extends View {
     private static final String[] NUM={"1","2","3","4","5","6","7","8","9","記号1","0","記号2"};
     private final String[][] symbols={SymbolBoards.defaults(0),SymbolBoards.defaults(1)};
     private final boolean[] returnToNumbers={true,true};
+    private ComposeKeyboardView composeSurface;
+    private boolean composeRendering;
+
+    record KeyVisual(String label,List<String> hints,boolean active,boolean compact) {}
+    record VisualState(List<KeyVisual> keys,List<List<GlideDecoder.Point>> paths,int page,boolean japanese,
+                       boolean upper,boolean caps,int leftPercent,int rightPercent,boolean scaleTextToFit,Typeface typeface) {}
+
+    VisualState visualState(){
+        List<KeyVisual> keys=new ArrayList<>();
+        for(int index=0;index<12;index++){
+            List<String> hints=new ArrayList<>();
+            for(int dir=0;dir<4;dir++){
+                String alt=page==0?KeyLayout.variant(KeyLayout.KEYS[index],dir,!japanese):"";
+                if(japanese)alt=typography.format(alt);
+                hints.add(japanese?alt.toUpperCase(Locale.ROOT):caseText(alt));
+            }
+            keys.add(new KeyVisual(label(index),List.copyOf(hints),isActive(index),
+                (page==1&&(index==9||index==11))||(page>=2&&symbols[page-2][index].isEmpty())));
+        }
+        List<List<GlideDecoder.Point>> paths=new ArrayList<>();
+        for(Stroke stroke:touches.active())if(stroke.points.size()>1)paths.add(List.copyOf(stroke.points));
+        return new VisualState(List.copyOf(keys),List.copyOf(paths),page,japanese,shift.upper(),shift.locked(),
+            leftSidePercent,rightSidePercent,scaleTextToFit,paint.getTypeface()==null?Typeface.DEFAULT:paint.getTypeface());
+    }
+    public void setComposeRendering(boolean enabled){
+        if(composeRendering==enabled)return;
+        cancelTouches();composeRendering=enabled;
+        if(enabled&&composeSurface==null){
+            composeSurface=new ComposeKeyboardView(getContext(),this);
+            addView(composeSurface,new FrameLayout.LayoutParams(-1,-1));
+        }
+        if(!enabled&&composeSurface!=null){
+            composeSurface.disposeComposition();removeView(composeSurface);composeSurface=null;
+        }
+        redraw();
+    }
+    private void redraw(){if(composeSurface!=null&&composeRendering)composeSurface.refresh();invalidate();}
+    @Override public boolean onInterceptTouchEvent(MotionEvent event){return true;}
 
     public void setSymbolBoard(int board,String[] values,boolean returnAfterInput){
-        symbols[board]=values.clone();returnToNumbers[board]=returnAfterInput;invalidate();
+        symbols[board]=values.clone();returnToNumbers[board]=returnAfterInput;redraw();
     }
 
     public GlideKeyboardView(Context context,Listener listener){super(context);this.listener=listener;
@@ -51,32 +92,59 @@ public final class GlideKeyboardView extends View {
         cursorLeftIcon=UiIcons.drawable(context,R.drawable.ic_cursor_left);
         rightIcons=new Drawable[]{UiIcons.drawable(context,R.drawable.ic_delete),UiIcons.drawable(context,R.drawable.ic_cursor_right),UiIcons.drawable(context,R.drawable.ic_space),UiIcons.drawable(context,R.drawable.ic_enter)};
         shiftIcon=UiIcons.drawable(context,R.drawable.ic_shift);shiftOnIcon=UiIcons.drawable(context,R.drawable.ic_shift_on);capsIcon=UiIcons.drawable(context,R.drawable.ic_caps_lock_on);
-        setFocusable(true);setContentDescription("アルテ配列のグライドキーボード");}
+        setWillNotDraw(false);setFocusable(true);setContentDescription("アルテ配列のグライドキーボード");}
     public boolean isJapanese(){return japanese&&page==0;}
     public void setRowDp(int value){rowDp=value;requestLayout();}
+    public void setScaleTextToFit(boolean enabled){if(scaleTextToFit!=enabled){scaleTextToFit=enabled;redraw();}}
     public void setNaNyaBias(int value){naNyaBias=Math.max(0,Math.min(100,value));}
     public void setVowelPairs(boolean eu,boolean iu){cancelTouches();enableEu=eu;enableIu=iu;}
-    public void setTypography(JapaneseTypography value){typography=value;invalidate();}
-    public void setTypeface(Typeface value){paint.setTypeface(value);invalidate();}
-    public void setSideWidths(int leftPercent,int rightPercent){cancelTouches();leftSidePercent=Math.max(8,Math.min(25,leftPercent));rightSidePercent=Math.max(8,Math.min(25,rightPercent));invalidate();}
+    public void setTypography(JapaneseTypography value){typography=value;redraw();}
+    public void setTypeface(Typeface value){paint.setTypeface(value);redraw();}
+    public void setSideWidths(int leftPercent,int rightPercent){cancelTouches();leftSidePercent=Math.max(8,Math.min(25,leftPercent));rightSidePercent=Math.max(8,Math.min(25,rightPercent));redraw();}
     private float density(){return getResources().getDisplayMetrics().density;}
     private float left(){return getWidth()*leftSidePercent/100f;}
     private float right(){return getWidth()*(100-rightSidePercent)/100f;}
     private float cw(){return (right()-left())/3;}
     private float rh(){return getHeight()/4f;}
     private String label(int index){String s=page==1?NUM[index]:page>=2?symbols[page-2][index]:KeyLayout.KEYS[index];return page==0?(japanese?s.toUpperCase(Locale.ROOT):caseText(s)):page>=2&&s.isEmpty()?"戻る":s;}
-    public void resetMode(boolean latin){cancelTouches();page=0;japanese=!latin;shift.reset();invalidate();}
-    public void showNumbers(){cancelTouches();page=1;invalidate();}
-    public void showLetters(){cancelTouches();page=0;invalidate();}
-    @Override protected void onMeasure(int width,int height){setMeasuredDimension(MeasureSpec.getSize(width),MeasureSpec.getMode(height)==MeasureSpec.EXACTLY?MeasureSpec.getSize(height):Math.round(rowDp*4*density()));}
-    private void text(Canvas canvas,String value,float x,float y,float size,int color){paint.setColor(color);paint.setTextSize(size*density());paint.setTextAlign(Paint.Align.CENTER);ImeFonts.drawText(getContext(),canvas,value,x,y-(paint.ascent()+paint.descent())/2,paint);}
+    public void resetMode(boolean latin){cancelTouches();page=0;japanese=!latin;shift.reset();redraw();}
+    public void showNumbers(){cancelTouches();page=1;redraw();}
+    public void showLetters(){cancelTouches();page=0;redraw();}
+    @Override protected void onMeasure(int width,int height){
+        int resolvedHeight=MeasureSpec.getMode(height)==MeasureSpec.EXACTLY?MeasureSpec.getSize(height):Math.round(rowDp*4*density());
+        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(width),MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(resolvedHeight,MeasureSpec.EXACTLY));
+    }
+    private void text(Canvas canvas,String value,float x,float y,float size,int color){
+        float scale=scaleTextToFit?Math.max(.65f,Math.min(1,Math.min(cw()/(80*density()),rh()/(58*density())))):1;
+        // Keep the smaller hint labels legible as the main key labels shrink.
+        if(size<18)scale=Math.max(.85f,scale);
+        paint.setColor(color);paint.setTextSize(size*scale*density());paint.setTextAlign(Paint.Align.CENTER);ImeFonts.drawText(getContext(),canvas,value,x,y-(paint.ascent()+paint.descent())/2,paint);
+    }
     private void icon(Canvas canvas,Drawable drawable,float x,float y,int color){
         float sideWidth=x<left()?left():getWidth()-right();
         float half=Math.min(13*density(),Math.min(sideWidth,rh())*.3f);drawable.setTint(color);
         drawable.setBounds(Math.round(x-half),Math.round(y-half),Math.round(x+half),Math.round(y+half));drawable.draw(canvas);
     }
+    private void modeLabel(Canvas canvas){
+        ImeFonts.ModeLabelMetrics metrics=ImeFonts.modeLabelMetrics(getContext(),paint.getTypeface());
+        float kanaSize=japanese?26:14,latinSize=(japanese?14:26)*metrics.latinScale();
+        float kanaWidth=kanaSize*density()*metrics.kanaWidth(),latinWidth=latinSize*density()*metrics.latinWidth();
+        float gap=density(),width=kanaWidth+gap+latinWidth;
+        float scale=Math.min(1,Math.max(1,left()-4*density())/width);
+        float start=(left()-width*scale)/2;
+        float bottom=3*rh()+26*metrics.kanaHeight()*scale*density()/2;
+        modeText(canvas,"あ",start+kanaWidth*scale/2,bottom,kanaSize*scale,japanese?Color.WHITE:0x61ffffff);
+        modeText(canvas,"a",start+(kanaWidth+gap+latinWidth/2)*scale,bottom,latinSize*scale,japanese?0x61ffffff:Color.WHITE);
+    }
+    private void modeText(Canvas canvas,String value,float x,float bottom,float size,int color){
+        Typeface original=paint.getTypeface();
+        paint.setTypeface(ImeFonts.forSymbol(getContext(),original,value));paint.setTextSize(size*density());
+        paint.getTextBounds(value,0,value.length(),modeBounds);paint.setColor(color);paint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(value,x,bottom-modeBounds.bottom,paint);
+        paint.setTypeface(original);
+    }
     @Override protected void onDraw(Canvas canvas){
-        super.onDraw(canvas);canvas.drawColor(Color.rgb(21,30,39));
+        super.onDraw(canvas);if(composeRendering)return;canvas.drawColor(Color.rgb(21,30,39));
         for(int index=0;index<12;index++){
             int row=index/3,col=index%3;float x=left()+col*cw(),y=row*rh();
             paint.setColor(isActive(index)?Color.rgb(43,106,112):Color.rgb(34,47,59));
@@ -93,16 +161,14 @@ public final class GlideKeyboardView extends View {
             }
         }
         for(int row=0;row<4;row++){
-            int sideColor=page==0&&!japanese?Color.rgb(104,181,255):Color.rgb(192,218,222);
+            int sideColor=Color.WHITE;
             if(row==0&&page==0&&!japanese){
                 icon(canvas,shift.locked()?capsIcon:shift.upper()?shiftOnIcon:shiftIcon,left()/2,(row+.5f)*rh(),sideColor);
             }
             else if(row==0)icon(canvas,settingsIcon,left()/2,(row+.5f)*rh(),sideColor);
             else if(row==1)icon(canvas,cursorLeftIcon,left()/2,(row+.5f)*rh(),sideColor);
             else if(row==2){
-                float size=22;paint.setTextSize(size*density());float width=paint.measureText("あa");
-                if(width>0)size*=Math.min(1,Math.max(1,left()-4*density())/width);
-                text(canvas,"あa",left()/2,3*rh(),size,sideColor);
+                modeLabel(canvas);
             }
             icon(canvas,rightIcons[row],(right()+getWidth())/2,(row+.5f)*rh(),sideColor);
             if(row==2&&isJapanese())text(canvas,"全角",(right()+getWidth())/2,(row+.15f)*rh(),9,sideColor);
@@ -123,7 +189,7 @@ public final class GlideKeyboardView extends View {
         if(page!=0)return;
         GlideDecoder.Result r=GlideDecoder.decode(stroke.points,!japanese,naNyaBias,enableEu,enableIu);listener.preview(r.route(),japanese?typography.format(Romanizer.convert(r.raw(),r.raw().length()>1)):caseText(r.raw()));
     }
-    void cancelTouches(){handler.removeCallbacksAndMessages(null);touches.clear();invalidate();}
+    void cancelTouches(){handler.removeCallbacksAndMessages(null);touches.clear();redraw();}
     private void samplePointers(MotionEvent event){
         for(int index=0;index<event.getPointerCount();index++){
             Stroke stroke=touches.get(event.getPointerId(index));if(stroke==null||stroke.committed)continue;
@@ -177,10 +243,10 @@ public final class GlideKeyboardView extends View {
                 updatePreview(stroke);
                 commitConsonantVowel();
             }
-            invalidate();return true;
+            redraw();return true;
         }
         if(action==MotionEvent.ACTION_MOVE){
-            samplePointers(event);for(Stroke stroke:touches.active())updatePreview(stroke);invalidate();return true;
+            samplePointers(event);for(Stroke stroke:touches.active())updatePreview(stroke);redraw();return true;
         }
         if(action==MotionEvent.ACTION_UP||action==MotionEvent.ACTION_POINTER_UP){
             samplePointers(event);
@@ -191,7 +257,7 @@ public final class GlideKeyboardView extends View {
                 // A mode change ends any older touches on the previous layout.
                 if(page!=previousPage||japanese!=previousJapanese||(ready.startSide==-1&&ready.startRow==0&&(shift.upper()!=previousUpper||shift.locked()!=previousCaps))){cancelTouches();break;}
             }
-            invalidate();return true;
+            redraw();return true;
         }
         return true;
     }

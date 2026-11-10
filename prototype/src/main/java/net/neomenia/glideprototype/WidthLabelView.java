@@ -38,6 +38,7 @@ final class WidthLabelView extends TextView {
     void useCandidateTypography(){candidateTypography=true;setIncludeFontPadding(false);setHorizontallyScrolling(false);}
     void useSymbolTypography(){symbolTypography=true;setSingleLine(true);setIncludeFontPadding(false);}
     void setEmojiTypography(boolean value){emojiTypography=value;invalidate();}
+    void setAnnotationColor(int color){badgePaint.setColor(color);invalidate();}
     // TextView otherwise scrolls its oversized font line box into view during layout.
     @Override public void scrollTo(int x,int y){if(symbolTypography)super.scrollTo(0,0);else super.scrollTo(x,y);}
     private void drawSymbol(Canvas canvas){

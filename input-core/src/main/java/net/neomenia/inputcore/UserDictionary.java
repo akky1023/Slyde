@@ -24,7 +24,10 @@ public final class UserDictionary {
     private static final class Node {
         final Map<Character,Node> children=new HashMap<>();
         final LinkedHashSet<String> words=new LinkedHashSet<>();
+        final List<UserDictionaryInflections.Word> inflected=new ArrayList<>();
     }
+    private record Match(int end,LinkedHashSet<String> words) {}
+    public static List<String> partsOfSpeech(){return UserDictionaryInflections.partsOfSpeech();}
     private final List<Entry> entries;
     private final Node root=new Node();
     private final Map<String,Set<String>> excluded=new HashMap<>(),demoted=new HashMap<>();
@@ -39,9 +42,46 @@ public final class UserDictionary {
         }
         for(Entry entry:entries){
             if(entry.partOfSpeech().equals("抑制単語")||entry.partOfSpeech().equals("抑制")||isExcluded(entry.reading(),entry.word()))continue;
-            Node node=root;for(char ch:entry.reading().toCharArray())node=node.children.computeIfAbsent(ch,key->new Node());
-            node.words.add(entry.word());
+            node(entry.reading()).words.add(entry.word());
+            var rule=UserDictionaryInflections.rule(entry.partOfSpeech());
+            if(rule==null)continue;
+            String reading=entry.reading(),word=entry.word();
+            if(entry.partOfSpeech().equals("動詞カ変")&&!word.endsWith("来る")){
+                List<UserDictionaryInflections.Form> forms=new ArrayList<>();
+                for(var form:rule.forms())forms.add(new UserDictionaryInflections.Form(form.reading(),form.reading()));
+                rule=new UserDictionaryInflections.Rule("くる","くる",forms);
+            }
+            if(entry.partOfSpeech().equals("動詞カ行五段")&&(reading.endsWith("いく")||reading.endsWith("ゆく"))){
+                List<UserDictionaryInflections.Form> forms=new ArrayList<>();
+                for(var form:rule.forms())forms.add(new UserDictionaryInflections.Form(form.reading().replace("いて","って").replace("いた","った"),form.word().replace("いて","って").replace("いた","った")));
+                rule=new UserDictionaryInflections.Rule("く","く",forms);
+            }
+            // Mozc accepts both dictionary forms and stems in imported text.
+            if(reading.endsWith(rule.readingEnding())&&word.endsWith(rule.wordEnding())){
+                reading=reading.substring(0,reading.length()-rule.readingEnding().length());
+                word=word.substring(0,word.length()-rule.wordEnding().length());
+            }
+            node(reading).inflected.add(new UserDictionaryInflections.Word(word,rule));
         }
+    }
+    private Node node(String reading){Node node=root;for(char ch:reading.toCharArray())node=node.children.computeIfAbsent(ch,key->new Node());return node;}
+    private Match match(String input,int start){
+        Node node=root;Match best=new Match(start,new LinkedHashSet<>());
+        for(int at=start;;at++){
+            if(at>start)for(String word:node.words)best=include(best,at,word,input.substring(start,at));
+            for(var inflected:node.inflected)for(var form:inflected.rule().forms()){
+                int end=at+form.reading().length();
+                if(end>start&&end>=best.end()&&input.startsWith(form.reading(),at))best=include(best,end,inflected.stem()+form.word(),input.substring(start,end));
+            }
+            if(at==input.length())break;
+            node=node.children.get(input.charAt(at));if(node==null)break;
+        }
+        return best;
+    }
+    private Match include(Match best,int end,String word,String reading){
+        if(end<best.end()||isExcluded(reading,word))return best;
+        if(end>best.end())best=new Match(end,new LinkedHashSet<>());
+        best.words().add(word);return best;
     }
     public List<Entry> entries(){return entries;}
     public boolean hasExclusions(){return !excluded.isEmpty();}
@@ -98,8 +138,8 @@ public final class UserDictionary {
     }
     public UserDictionary merge(UserDictionary other){List<Entry> all=new ArrayList<>(entries);all.addAll(other.entries);return new UserDictionary(all);}
     public List<String> exact(String reading){
-        Node node=root;for(char ch:normalize(reading).toCharArray()){node=node.children.get(ch);if(node==null)return List.of();}
-        return List.copyOf(node.words);
+        String input=normalize(reading);Match match=match(input,0);
+        return match.end()==input.length()?List.copyOf(match.words()):List.of();
     }
     /** Prefer whole-reading entries; also offer a sentence using longest registered readings. */
     public List<String> candidates(String reading,BiFunction<String,Integer,List<String>> converter,BooleanSupplier cancelled){
@@ -107,16 +147,12 @@ public final class UserDictionary {
         List<String> sentences=new ArrayList<>(List.of(""));int plainStart=0;boolean matched=false;
         for(int start=0;start<input.length();){
             if(cancelled.getAsBoolean())return List.of();
-            Node node=root,best=null;int end=start;
-            for(int at=start;at<input.length();at++){
-                node=node.children.get(input.charAt(at));if(node==null)break;
-                if(!node.words.isEmpty()){best=node;end=at+1;}
-            }
-            if(best==null){start+=Character.charCount(input.codePointAt(start));continue;}
+            Match best=match(input,start);
+            if(best.words().isEmpty()){start+=Character.charCount(input.codePointAt(start));continue;}
             if(start>plainStart)append(sentences,firstOrReading(converter,input.substring(plainStart,start)));
             List<String> expanded=new ArrayList<>();
-            outer:for(String prefix:sentences)for(String word:best.words){expanded.add(prefix+word);if(expanded.size()>=32)break outer;}
-            sentences=expanded;matched=true;start=end;plainStart=end;
+            outer:for(String prefix:sentences)for(String word:best.words()){expanded.add(prefix+word);if(expanded.size()>=32)break outer;}
+            sentences=expanded;matched=true;start=best.end();plainStart=start;
         }
         if(matched){
             if(plainStart<input.length())append(sentences,firstOrReading(converter,input.substring(plainStart)));

@@ -76,6 +76,11 @@ public class ImeSettingsInteractionTest {
         }
         return null;
     }
+    private View described(View root,String description){
+        if(description.contentEquals(root.getContentDescription()==null?"":root.getContentDescription()))return root;
+        if(root instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++){View found=described(group.getChildAt(i),description);if(found!=null)return found;}
+        return null;
+    }
     private void layout(View root){
         root.measure(View.MeasureSpec.makeMeasureSpec(400,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(600,View.MeasureSpec.AT_MOST));
         root.layout(0,0,root.getMeasuredWidth(),root.getMeasuredHeight());
@@ -108,6 +113,26 @@ public class ImeSettingsInteractionTest {
             assertTrue(keyboard.isJapanese());
         }finally{session.destroy();}
     }
+    @Test public void floatingIconChangesLiveSessionAndRestoresDockedLayout(){
+        Context context=RuntimeEnvironment.getApplication();
+        InputPreferences.get(context).edit().clear().putBoolean("zenzEnabled",false).apply();
+        KeyboardSession session=new KeyboardSession(context,null,null);
+        try{
+            View root=session.view();layout(root);int height=root.getHeight();
+            session.action("settings");
+            ImeSettingsMenu menu=find(root,ImeSettingsMenu.class);
+            android.widget.ImageButton toggle=(android.widget.ImageButton)described(menu,"フローティングキーボード");
+            assertNull(find(menu,androidx.appcompat.widget.SwitchCompat.class));assertFalse(toggle.isSelected());
+            assertEquals(ImeColors.from(context).neutralText(),shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
+            toggle.performClick();layout(root);
+            assertTrue(toggle.isSelected());assertEquals(android.graphics.Color.rgb(104,181,255),shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
+            assertTrue(session.isFloating());assertEquals(View.GONE,menu.getVisibility());
+            assertTrue(root.getHeight()>height);assertTrue(InputPreferences.get(context).getBoolean("floatingKeyboard",false));
+            session.action("settings");toggle.performClick();layout(root);
+            assertFalse(toggle.isSelected());assertEquals(ImeColors.from(context).neutralText(),shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
+            assertFalse(session.isFloating());assertEquals(height,root.getHeight());
+        }finally{session.destroy();}
+    }
     @Test public void settingsReplaceEntireKeyboardAndBackRestoresItsSize(){
         Context context=RuntimeEnvironment.getApplication();
         InputPreferences.get(context).edit().putBoolean("zenzEnabled",false).apply();
@@ -121,7 +146,7 @@ public class ImeSettingsInteractionTest {
             touch(keyboard,MotionEvent.ACTION_DOWN,20,20);hold();layout(root);
             assertEquals(View.VISIBLE,menu.getVisibility());assertEquals(View.GONE,((View)keyboard.getParent()).getVisibility());assertEquals(View.GONE,candidates.getVisibility());
             assertEquals(keysHeight+candidateHeight,menu.getHeight());assertEquals(height,root.getHeight());
-            menu.getChildAt(0).performClick();layout(root);
+            described(menu,"戻る").performClick();layout(root);
             assertEquals(View.GONE,menu.getVisibility());assertEquals(View.VISIBLE,((View)keyboard.getParent()).getVisibility());assertEquals(View.VISIBLE,candidates.getVisibility());
             assertEquals(keysHeight,keyboard.getHeight());assertEquals(height,root.getHeight());
             session.action("settings");assertTrue(session.cancelLayoutEdit());layout(root);
@@ -131,6 +156,9 @@ public class ImeSettingsInteractionTest {
             ViewGroup items=(ViewGroup)scroll.getChildAt(0);items.getChildAt(0).performClick();
             assertEquals(View.GONE,menu.getVisibility());assertTrue(((KeyboardDockView)root).isEditing());
             session.cancelLayoutEdit();session.action("settings");items.getChildAt(1).performClick();
+            android.content.Intent dictionaryIntent=shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity();
+            assertEquals(UserDictionaryActivity.class.getName(),dictionaryIntent.getComponent().getClassName());assertEquals(View.GONE,menu.getVisibility());
+            session.action("settings");items.getChildAt(2).performClick();
             android.content.Intent intent=shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity();
             assertEquals(SettingsActivity.class.getName(),intent.getComponent().getClassName());
         }finally{session.destroy();}

@@ -1,7 +1,6 @@
 package net.neomenia.glideprototype;
 
 import android.content.*;
-import android.graphics.Color;
 import android.os.*;
 import android.text.InputType;
 import android.view.*;
@@ -56,17 +55,20 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private int dockHeight;
     KeyboardSession(Context context,TextView routeLabel,TextView statusLabel){
         super(context);this.route=routeLabel==null?new TextView(this):routeLabel;this.status=statusLabel==null?new TextView(this):statusLabel;
-        view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setBackgroundColor(Color.rgb(21,30,39));
+        view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setBackgroundColor(ImeColors.from(this).surface());
         candidates=new CandidateBarView(this,this::chooseCandidate,this::setCandidateExpanded);view.addView(candidates,new LinearLayout.LayoutParams(-1,candidateHeight()));renderCandidates();
         keyboardArea=new FrameLayout(this);view.addView(keyboardArea);
         keyboard=new GlideKeyboardView(this,this);keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));keyboardArea.addView(keyboard);
+        keyboard.setComposeRendering(getPreferences(0).getBoolean("composeKeyboard",false));
         keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",false),getPreferences(0).getBoolean("enableIu",false));
         loadTypography();applyImeFont();
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
         dock=new KeyboardDockView(this,view,getPreferences(0),candidateHeight(),this::applyDockHeight,keyboard::setSideWidths);
         settings=new ImeSettingsMenu(this,this::closeSettings,()->{closeSettings();editLayout();},()->{
             closeSettings();startActivity(new Intent(this,SettingsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-        });
+        },()->{
+            closeSettings();startActivity(new Intent(this,UserDictionaryActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        },()->{closeSettings();keyboard.cancelTouches();dock.reloadPreferences();});
         settings.setVisibility(View.GONE);view.addView(settings,new LinearLayout.LayoutParams(-1,0));
         zenz=ZenzRuntime.get(this);if(getPreferences(0).getBoolean("zenzEnabled",true))warmupZenz();
         worker.execute(()->{
@@ -75,7 +77,10 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         });
     }
     View view(){return dock;}
+    boolean isFloating(){return dock.isFloating();}
+    android.graphics.Region touchRegion(){return dock.touchRegion();}
     private void applyDockHeight(int height){
+        keyboard.setScaleTextToFit(dock.isFloating());
         if(settings!=null)settings.getLayoutParams().height=height;
         dockHeight=height;int keys=Math.max(dp(96),height-candidateHeight());
         candidates.setKeyboardHeight(keys);
@@ -105,6 +110,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(net.neomenia.inputcore.EditorPolicy.prefersNumbers(info.inputType))keyboard.showNumbers();
     }
     void reloadSettings(){
+        view.setBackgroundColor(ImeColors.from(this).surface());candidates.refreshColors();settings.refreshColors();
+        keyboard.setComposeRendering(getPreferences(0).getBoolean("composeKeyboard",false));
         keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));
         keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",false),getPreferences(0).getBoolean("enableIu",false));
         loadTypography();applyImeFont();renderCandidates();

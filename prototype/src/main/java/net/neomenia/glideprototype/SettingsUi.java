@@ -10,7 +10,7 @@ import com.google.android.material.textview.MaterialTextView;
 
 final class SettingsUi {
     static int dp(Context context,float value){return Math.round(value*context.getResources().getDisplayMetrics().density);}
-    static Context themed(Context context){return new ContextThemeWrapper(context,R.style.Theme_Glide_Settings);}
+    static Context themed(Context context){return new ContextThemeWrapper(ThemeMode.colors(context),R.style.Theme_Glide_Settings);}
     static int surface(Context context){return MaterialColors.getColor(context,com.google.android.material.R.attr.colorSurface,0xfffafdfb);}
     static MaterialTextView text(Context context,String value,int size){
         MaterialTextView view=new MaterialTextView(context);view.setText(value);

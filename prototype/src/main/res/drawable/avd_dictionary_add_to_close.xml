@@ -1,0 +1,3 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android" android:drawable="@drawable/ic_dictionary_add">
+    <target android:name="icon" android:animation="@animator/dictionary_add_to_close" />
+</animated-vector>
