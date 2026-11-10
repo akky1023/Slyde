@@ -27,7 +27,7 @@ public final class GlideInputMethodService extends InputMethodService {
         int bottom=getWindow().getWindow().getDecorView().getHeight();
         insets.contentTopInsets=bottom;insets.visibleTopInsets=bottom;
         insets.touchableInsets=Insets.TOUCHABLE_INSETS_REGION;
-        android.graphics.Rect region=session.touchBounds();region.offset(location[0],location[1]);
+        android.graphics.Region region=session.touchRegion();region.translate(location[0],location[1]);
         insets.touchableRegion.set(region);
     }
     @Override public boolean onKeyDown(int keyCode,KeyEvent event){

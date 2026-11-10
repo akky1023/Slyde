@@ -34,6 +34,7 @@ public final class GlideKeyboardView extends View {
         Stroke(int id,int side,int row,float x,float y){pointerId=id;startSide=side;startRow=row;downX=x;downY=y;}
     }
     private int rowDp=58;
+    private boolean scaleTextToFit;
     private int naNyaBias=50;
     private boolean enableEu=false,enableIu=false;
     private int leftSidePercent=15,rightSidePercent=15;
@@ -54,6 +55,7 @@ public final class GlideKeyboardView extends View {
         setFocusable(true);setContentDescription("アルテ配列のグライドキーボード");}
     public boolean isJapanese(){return japanese&&page==0;}
     public void setRowDp(int value){rowDp=value;requestLayout();}
+    public void setScaleTextToFit(boolean enabled){if(scaleTextToFit!=enabled){scaleTextToFit=enabled;invalidate();}}
     public void setNaNyaBias(int value){naNyaBias=Math.max(0,Math.min(100,value));}
     public void setVowelPairs(boolean eu,boolean iu){cancelTouches();enableEu=eu;enableIu=iu;}
     public void setTypography(JapaneseTypography value){typography=value;invalidate();}
@@ -69,7 +71,12 @@ public final class GlideKeyboardView extends View {
     public void showNumbers(){cancelTouches();page=1;invalidate();}
     public void showLetters(){cancelTouches();page=0;invalidate();}
     @Override protected void onMeasure(int width,int height){setMeasuredDimension(MeasureSpec.getSize(width),MeasureSpec.getMode(height)==MeasureSpec.EXACTLY?MeasureSpec.getSize(height):Math.round(rowDp*4*density()));}
-    private void text(Canvas canvas,String value,float x,float y,float size,int color){paint.setColor(color);paint.setTextSize(size*density());paint.setTextAlign(Paint.Align.CENTER);ImeFonts.drawText(getContext(),canvas,value,x,y-(paint.ascent()+paint.descent())/2,paint);}
+    private void text(Canvas canvas,String value,float x,float y,float size,int color){
+        float scale=scaleTextToFit?Math.max(.65f,Math.min(1,Math.min(cw()/(80*density()),rh()/(58*density())))):1;
+        // Keep the smaller hint labels legible as the main key labels shrink.
+        if(size<18)scale=Math.max(.85f,scale);
+        paint.setColor(color);paint.setTextSize(size*scale*density());paint.setTextAlign(Paint.Align.CENTER);ImeFonts.drawText(getContext(),canvas,value,x,y-(paint.ascent()+paint.descent())/2,paint);
+    }
     private void icon(Canvas canvas,Drawable drawable,float x,float y,int color){
         float sideWidth=x<left()?left():getWidth()-right();
         float half=Math.min(13*density(),Math.min(sideWidth,rh())*.3f);drawable.setTint(color);

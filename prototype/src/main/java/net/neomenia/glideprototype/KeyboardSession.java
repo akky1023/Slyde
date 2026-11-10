@@ -78,8 +78,9 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     }
     View view(){return dock;}
     boolean isFloating(){return dock.isFloating();}
-    android.graphics.Rect touchBounds(){return dock.touchBounds();}
+    android.graphics.Region touchRegion(){return dock.touchRegion();}
     private void applyDockHeight(int height){
+        keyboard.setScaleTextToFit(dock.isFloating());
         if(settings!=null)settings.getLayoutParams().height=height;
         dockHeight=height;int keys=Math.max(dp(96),height-candidateHeight());
         candidates.setKeyboardHeight(keys);

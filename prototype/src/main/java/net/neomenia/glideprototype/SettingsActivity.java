@@ -131,6 +131,7 @@ public final class SettingsActivity extends AppCompatActivity {
     }
     private void display(){
         heading("キーボード");link("大きさ・位置",()->startActivity(new Intent(this,LayoutSettingsActivity.class)));
+        link("フローティングの大きさ・位置",()->startActivity(new Intent(this,LayoutSettingsActivity.class).putExtra(LayoutSettingsActivity.EXTRA_FLOATING,true)));
         heading("フォント");String[] names=ImeFonts.NAMES;int current=Math.max(0,Math.min(2,preferences.getInt("imeFont",0)));
         TextView selected=SettingsUi.text(this,"現在のフォント："+names[current],14);body.addView(selected);
         link("フォントを選ぶ",()->new MaterialAlertDialogBuilder(this).setTitle("IMEのフォント").setSingleChoiceItems(names,Math.max(0,Math.min(2,preferences.getInt("imeFont",0))),(dialog,index)->{preferences.edit().putInt("imeFont",index).apply();selected.setText("現在のフォント："+names[index]);dialog.dismiss();}).setNegativeButton("取消",null).show());

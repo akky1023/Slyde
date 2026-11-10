@@ -266,6 +266,46 @@ public class SettingsActivityTest {
             assertEquals(25,InputPreferences.get(activity).getInt("dockPortrait.leftSidePercent",0));assertEquals(8,InputPreferences.get(activity).getInt("dockPortrait.rightSidePercent",0));
         }
     }
+    @Test public void displayOffersSeparateLayoutSettings(){
+        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
+            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();click(root,"表示");
+            click(root,"大きさ・位置");
+            android.content.Intent normal=org.robolectric.Shadows.shadowOf(activity).getNextStartedActivity();
+            assertEquals(LayoutSettingsActivity.class.getName(),normal.getComponent().getClassName());
+            assertFalse(normal.getBooleanExtra(LayoutSettingsActivity.EXTRA_FLOATING,false));
+            click(root,"フローティングの大きさ・位置");
+            android.content.Intent floating=org.robolectric.Shadows.shadowOf(activity).getNextStartedActivity();
+            assertEquals(LayoutSettingsActivity.class.getName(),floating.getComponent().getClassName());
+            assertTrue(floating.getBooleanExtra(LayoutSettingsActivity.EXTRA_FLOATING,false));
+        }
+    }
+    @Test public void floatingSizeSettingsDoNotChangeNormalLayoutOrEnableFloating(){verifyIndependentSizeSettings(true);}
+    @Test public void normalSizeSettingsDoNotChangeFloatingLayoutOrDisableFloating(){verifyIndependentSizeSettings(false);}
+    private void verifyIndependentSizeSettings(boolean floating){
+        android.content.Context context=org.robolectric.RuntimeEnvironment.getApplication();
+        android.content.SharedPreferences prefs=InputPreferences.get(context);
+        prefs.edit().clear().putBoolean("floatingKeyboard",!floating)
+            .putFloat("dockPortrait.width",.9f).putFloat("dockPortrait.keyHeight",210)
+            .putFloat("floatingPortrait.width",.75f).putFloat("floatingPortrait.keyHeight",170).apply();
+        java.util.Map<String,?> before=prefs.getAll();
+        android.content.Intent intent=new android.content.Intent(context,LayoutSettingsActivity.class).putExtra(LayoutSettingsActivity.EXTRA_FLOATING,floating);
+        try(ActivityController<LayoutSettingsActivity> controller=Robolectric.buildActivity(LayoutSettingsActivity.class,intent).setup().visible()){
+            LayoutSettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();layout(root);
+            KeyboardDockView dock=(KeyboardDockView)findType(root,KeyboardDockView.class);
+            assertEquals(floating,dock.isFloating());assertTrue(dock.isEditing());
+            View keyboard=dock.getChildAt(0),overlay=dock.getChildAt(1);
+            int width=keyboard.getWidth();
+            float x=keyboard.getRight(),y=keyboard.getTop()+keyboard.getHeight()/2f-overlay.getTop();
+            drag(overlay,x,y,x-30);layout(root);assertTrue(keyboard.getWidth()<width);
+            click(root,"保存");
+            String edited=floating?"floatingPortrait.":"dockPortrait.",other=floating?"dockPortrait.":"floatingPortrait.";
+            assertTrue(prefs.getFloat(edited+"width",0)<(Float)before.get(edited+"width"));
+            assertEquals(before.get(other+"width"),prefs.getAll().get(other+"width"));
+            assertEquals(before.get(other+"keyHeight"),prefs.getAll().get(other+"keyHeight"));
+            assertEquals(!floating,prefs.getBoolean("floatingKeyboard",floating));
+        }
+    }
     @Test public void settingsMenuOffersInPlaceAdjustmentAndSeparateSettings(){
         try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup().visible()){
             SettingsActivity activity=controller.get();int[] invoked={0,0,0};

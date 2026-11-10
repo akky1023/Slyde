@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk=28,qualifiers="w400dp-h900dp-mdpi")
+@org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
 public class FloatingKeyboardTest {
     private Context context;
     private SharedPreferences preferences;
@@ -48,14 +49,87 @@ public class FloatingKeyboardTest {
         MotionEvent event=MotionEvent.obtain(0,10,action,x,y,0);
         try{return target.dispatchTouchEvent(event);}finally{event.recycle();}
     }
+    private void showResizeHandles(){
+        View bar=dock.getChildAt(3);float x=(bar.getLeft()+bar.getRight())/2f,y=(bar.getTop()+bar.getBottom())/2f;
+        touch(dock,MotionEvent.ACTION_DOWN,x,y);assertEquals(View.VISIBLE,dock.getChildAt(4).getVisibility());
+        touch(dock,MotionEvent.ACTION_UP,x,y);
+    }
+    @Test public void tappingBottomBarShowsHandlesAndTheyExpireThreeSecondsAfterRelease(){
+        showResizeHandles();
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(2999));
+        assertEquals(View.VISIBLE,dock.getChildAt(4).getVisibility());
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1));
+        assertEquals(View.GONE,dock.getChildAt(4).getVisibility());
+    }
+    @Test public void everyCornerResizesImmediatelyAndSavesOnlyFloatingSize(){
+        preferences.edit().putFloat("dockPortrait.width",.9f).putFloat("dockPortrait.keyHeight",210).apply();
+        for(int corner=0;corner<4;corner++){
+            preferences.edit().putFloat("floatingPortrait.width",.8f).putFloat("floatingPortrait.keyHeight",232).putFloat("floatingPortrait.bottom",24).putFloat("floatingPortrait.left",.5f).apply();
+            dock.reloadPreferences();layout();showResizeHandles();
+            boolean left=corner%2==0,top=corner<2;
+            int fixedX=left?content.getRight():content.getLeft(),fixedY=top?dock.getChildAt(3).getBottom():content.getTop();
+            float x=left?content.getLeft()-8:content.getRight()+8,y=top?content.getTop()-8:dock.getChildAt(3).getBottom()+8;
+            assertFalse(dock.touchBounds().contains((int)x,(int)y));assertTrue(dock.touchRegion().contains((int)x,(int)y));
+            touch(dock,MotionEvent.ACTION_DOWN,x,y);
+            touch(dock,MotionEvent.ACTION_MOVE,x+(left?40:-40),y+(top?40:-40));layout();
+            assertEquals(280,content.getWidth());assertEquals(232,content.getHeight());
+            assertEquals(fixedX,left?content.getRight():content.getLeft());assertEquals(fixedY,top?dock.getChildAt(3).getBottom():content.getTop());
+            // A held handle must not disappear even when the finger pauses.
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(4));
+            assertEquals(View.VISIBLE,dock.getChildAt(4).getVisibility());
+            touch(dock,MotionEvent.ACTION_UP,x+(left?40:-40),y+(top?40:-40));
+            assertEquals(.7f,preferences.getFloat("floatingPortrait.width",0),.001f);
+            assertEquals(192,preferences.getFloat("floatingPortrait.keyHeight",0),0);
+            assertEquals(.9f,preferences.getFloat("dockPortrait.width",0),0);
+            assertEquals(210,preferences.getFloat("dockPortrait.keyHeight",0),0);
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(2999));
+            assertEquals(View.VISIBLE,dock.getChildAt(4).getVisibility());
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1));
+            assertEquals(View.GONE,dock.getChildAt(4).getVisibility());
+        }
+    }
+    @Test public void cancelledResizeRestoresBoundsAndVisibleHandlesDoNotBlockGliding(){
+        showResizeHandles();int width=content.getWidth(),height=content.getHeight();
+        float x=content.getLeft()+8,y=content.getTop()+8;
+        touch(dock,MotionEvent.ACTION_DOWN,x,y);touch(dock,MotionEvent.ACTION_MOVE,x+40,y+40);layout();
+        touch(dock,MotionEvent.ACTION_CANCEL,x+40,y+40);layout();
+        assertEquals(width,content.getWidth());assertEquals(height,content.getHeight());
+        glideCanLeaveSurfaceAndReleaseOutside();
+        dock.setFloating(false);layout();assertEquals(View.GONE,dock.getChildAt(4).getVisibility());
+    }
+    @Test public void outsideHandleTouchRegionsExpireWithoutBlockingBackgroundAlongEdges(){
+        int x=content.getLeft()-8,y=content.getTop()-8;
+        assertFalse(dock.touchRegion().contains(x,y));showResizeHandles();
+        assertTrue(dock.touchRegion().contains(x,y));
+        assertFalse(dock.touchRegion().contains(content.getLeft()-8,(content.getTop()+content.getBottom())/2));
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(3));
+        assertFalse(dock.touchRegion().contains(x,y));
+    }
+    @Test public void beginningInputImmediatelyHidesHandlesWithoutInterruptingTheGlide(){
+        showResizeHandles();float x=content.getLeft()+content.getWidth()/2f,y=content.getTop()+69;
+        assertTrue(touch(dock,MotionEvent.ACTION_DOWN,x,y));
+        assertEquals(View.GONE,dock.getChildAt(4).getVisibility());assertTrue(output.isEmpty());
+        assertFalse(dock.touchRegion().contains(content.getLeft()-8,content.getTop()-8));
+        touch(dock,MotionEvent.ACTION_MOVE,200,10);touch(dock,MotionEvent.ACTION_MOVE,x,y);touch(dock,MotionEvent.ACTION_UP,x,y);
+        assertEquals(1,output.size());assertFalse(output.get(0).isEmpty());
+        showResizeHandles();assertEquals(View.VISIBLE,dock.getChildAt(4).getVisibility());
+    }
+    @Test public void outerHandlesRemainInsideCanvasWhenMovedToScreenEdges(){
+        showResizeHandles();View bar=dock.getChildAt(3);
+        touch(bar,MotionEvent.ACTION_DOWN,160,14);touch(bar,MotionEvent.ACTION_MOVE,-1000,-1000);touch(bar,MotionEvent.ACTION_UP,-1000,-1000);layout();
+        assertTrue(content.getLeft()>=12);assertTrue(content.getTop()>=12);
+        touch(bar,MotionEvent.ACTION_DOWN,160,14);touch(bar,MotionEvent.ACTION_MOVE,2000,2000);touch(bar,MotionEvent.ACTION_UP,2000,2000);layout();
+        assertTrue(content.getRight()+10<=dock.getWidth());assertTrue(bar.getBottom()+10<=dock.getHeight());
+    }
     @Test public void transparentCanvasOnlyAcceptsNewTouchesOnSurface(){
         assertTrue(dock.isFloating());assertEquals(900,dock.getHeight());
         assertEquals(320,content.getWidth());
         assertEquals(Color.TRANSPARENT,((ColorDrawable)dock.getBackground()).getColor());
         assertFalse(dock.touchBounds().contains(10,10));
         assertFalse(touch(dock,MotionEvent.ACTION_DOWN,10,10));
-        assertEquals(content.getTop()-28,dock.touchBounds().top);
-        assertEquals(content.getBottom(),dock.touchBounds().bottom);
+        assertEquals(content.getTop(),dock.touchBounds().top);
+        assertEquals(content.getBottom()+28,dock.touchBounds().bottom);
+        View bar=dock.getChildAt(3);assertEquals(content.getBottom(),bar.getTop());assertFalse(bar instanceof android.widget.TextView);
     }
     @Test public void glideCanLeaveSurfaceAndReleaseOutside(){
         float x=content.getLeft()+content.getWidth()/2f,y=content.getTop()+40+29;
