@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.0](https://github.com/akky1023/Slyde/compare/v1.3.2...v1.4.0) (2026-11-10)
+
+
+### Features
+
+* フローティングキーボードを追加 ([6986ae3](https://github.com/akky1023/Slyde/commit/6986ae31e50b463327fa149b89f1f66a3f2b889b))
+* ユーザー辞書 Mk2 ([9c94a87](https://github.com/akky1023/Slyde/commit/9c94a87712b73f450454db38fc84c82cdc0462b7))
+* 複数辞書に対応 ([87c800f](https://github.com/akky1023/Slyde/commit/87c800fd8c59b90cae7433264dfb7dac8a7ecd90))
+
+
+### Bug Fixes
+
+* UIを調整 ([026ea00](https://github.com/akky1023/Slyde/commit/026ea001cb70cc97fb4742aa0fcc1ced23d28ee8))
+* フローティングキーボードのUI調整 ([eb44e7d](https://github.com/akky1023/Slyde/commit/eb44e7db28782de3e636909bc227ded540a71592))
+* 残像が出る問題 ([a5458d8](https://github.com/akky1023/Slyde/commit/a5458d825ac4b869f5deda50bf2d00ad1a0e38a0))
+
+
+### Performance Improvements
+
+* Composeに移行 ([f49f4a3](https://github.com/akky1023/Slyde/commit/f49f4a3f03a5d502b82d42d44bde99126d8a2529))
+
 ## [1.3.2](https://github.com/akky1023/Slyde/compare/v1.3.1...v1.3.2) (2026-11-07)
 
 
