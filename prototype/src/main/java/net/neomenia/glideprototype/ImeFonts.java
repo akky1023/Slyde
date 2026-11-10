@@ -17,6 +17,21 @@ final class ImeFonts {
     private static final Map<String,BitSet> COVERAGE=new HashMap<>();
     private record ResolutionKey(Typeface selected,String text) {}
     private static final LruCache<ResolutionKey,Typeface> RESOLVED=new LruCache<>(512);
+    record ModeLabelMetrics(float latinScale,float kanaWidth,float latinWidth,float kanaHeight) {}
+    private static final LruCache<Typeface,ModeLabelMetrics> MODE_LABELS=new LruCache<>(8);
+    /** Normalize visible glyph height before applying the active/inactive size ratio. */
+    static ModeLabelMetrics modeLabelMetrics(Context context,Typeface selected){
+        if(selected==null)selected=Typeface.DEFAULT;
+        ModeLabelMetrics cached=MODE_LABELS.get(selected);if(cached!=null)return cached;
+        Paint probe=new Paint(Paint.ANTI_ALIAS_FLAG);probe.setTextSize(100);
+        Rect kana=new Rect(),latin=new Rect();
+        probe.setTypeface(forSymbol(context,selected,"あ"));probe.getTextBounds("あ",0,1,kana);
+        float kanaWidth=probe.measureText("あ")/100;
+        probe.setTypeface(forSymbol(context,selected,"a"));probe.getTextBounds("a",0,1,latin);
+        float latinWidth=probe.measureText("a")/100;
+        ModeLabelMetrics result=new ModeLabelMetrics(Math.max(1,kana.height())/(float)Math.max(1,latin.height()),kanaWidth,latinWidth,kana.height()/100f);
+        MODE_LABELS.put(selected,result);return result;
+    }
     static Typeface load(Context context,int selected){
         return selected==1?file(context,JP):selected==2?file(context,BIZIN):Typeface.DEFAULT;
     }

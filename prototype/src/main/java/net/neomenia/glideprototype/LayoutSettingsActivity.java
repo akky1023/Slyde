@@ -1,6 +1,7 @@
 package net.neomenia.glideprototype;
 
 import android.os.Bundle;
+import android.content.Context;
 import android.view.*;
 import android.widget.LinearLayout;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,6 +9,8 @@ import com.google.android.material.appbar.MaterialToolbar;
 
 /** Layout preview only; there is no text editor or practice input session. */
 public final class LayoutSettingsActivity extends AppCompatActivity {
+    @Override protected void attachBaseContext(Context base){getDelegate().setLocalNightMode(ThemeMode.nightMode(base));super.attachBaseContext(base);}
+    @Override protected void onResume(){super.onResume();ThemeMode.apply(this);}
     static final String EXTRA_FLOATING="floatingLayout";
     private KeyboardDockView dock;
     @Override public void onCreate(Bundle saved){
@@ -25,6 +28,7 @@ public final class LayoutSettingsActivity extends AppCompatActivity {
         int candidateHeight=Math.max(1,Math.min(3,preferences.getInt("candidateRows",1)))*candidates.rowHeight();preview.addView(candidates,new LinearLayout.LayoutParams(-1,candidateHeight));
         GlideKeyboardView keyboard=new GlideKeyboardView(keyboardContext,new GlideKeyboardView.Listener(){public void text(String text,boolean japanese){}public void action(String action){}public void preview(String route,String value){}});
         keyboard.setTypeface(ImeFonts.load(this,preferences.getInt("imeFont",0)));keyboard.setScaleTextToFit(floating);preview.addView(keyboard,new LinearLayout.LayoutParams(-1,SettingsUi.dp(this,232)));
+        keyboard.setComposeRendering(preferences.getBoolean("composeKeyboard",false));
         dock=new KeyboardDockView(this,preview,preferences,candidateHeight,height->{keyboard.getLayoutParams().height=Math.max(SettingsUi.dp(this,96),height-candidateHeight);},keyboard::setSideWidths,floating);
         dock.setEditFinishedListener(this::finish);root.addView(dock,new LinearLayout.LayoutParams(-1,-2));dock.post(dock::edit);
     }

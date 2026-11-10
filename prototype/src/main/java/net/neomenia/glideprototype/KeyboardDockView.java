@@ -36,6 +36,7 @@ final class KeyboardDockView extends ViewGroup {
     private final android.os.Handler quickHandler=new android.os.Handler(android.os.Looper.getMainLooper());
     private final Runnable hideQuickHandles=this::hideQuickHandles;
     private final float density;
+    private ImeColors colors;
     private String key(){return (floating?"floating":"dock")+(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE?"Landscape.":"Portrait.");}
     private int dp(float value){return Math.round(value*density);}
     KeyboardDockView(Context context,View keyboard,SharedPreferences preferences,int candidateHeight,IntConsumer resized){
@@ -48,7 +49,8 @@ final class KeyboardDockView extends ViewGroup {
     KeyboardDockView(Context context,View keyboard,SharedPreferences preferences,int candidateHeight,IntConsumer resized,BiConsumer<Integer,Integer> sideWidths,Boolean layoutMode){
         super(context);this.keyboard=keyboard;this.preferences=preferences;this.candidateHeight=candidateHeight;this.resized=resized;this.sideWidths=sideWidths;density=getResources().getDisplayMetrics().density;
         this.layoutMode=layoutMode;floating=layoutMode!=null?layoutMode:preferences.getBoolean("floatingKeyboard",false);
-        setBackgroundColor(floating?Color.TRANSPARENT:Color.rgb(18,26,34));addView(keyboard);
+        colors=ImeColors.from(context);
+        setBackgroundColor(floating?Color.TRANSPARENT:colors.surface());addView(keyboard);
         handles=new Handles(context);addView(handles);
         Context settingsContext=SettingsUi.themed(context);
         toolbar=new LinearLayout(settingsContext);toolbar.setOrientation(LinearLayout.VERTICAL);toolbar.setBackgroundColor(SettingsUi.surface(settingsContext));
@@ -60,8 +62,8 @@ final class KeyboardDockView extends ViewGroup {
         addView(toolbar);toolbar.setVisibility(GONE);handles.setVisibility(GONE);
         moveHandle=new View(context){
             private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
-            @Override protected void onDraw(Canvas canvas){paint.setColor(Color.rgb(192,218,222));float half=Math.min(dp(24),getWidth()/4f),y=getHeight()/2f;canvas.drawRoundRect(getWidth()/2f-half,y-dp(2),getWidth()/2f+half,y+dp(2),dp(2),dp(2),paint);}
-        };moveHandle.setBackgroundColor(Color.rgb(34,47,59));moveHandle.setContentDescription("キーボードを移動。押すと四隅でサイズ変更");
+            @Override protected void onDraw(Canvas canvas){paint.setColor(colors.text());float half=Math.min(dp(24),getWidth()/4f),y=getHeight()/2f;canvas.drawRoundRect(getWidth()/2f-half,y-dp(2),getWidth()/2f+half,y+dp(2),dp(2),dp(2),paint);}
+        };moveHandle.setBackgroundColor(colors.key());moveHandle.setContentDescription("キーボードを移動。押すと四隅でサイズ変更");
         moveHandle.setOnTouchListener(new OnTouchListener(){
             private float x,y;private Rect initial;private int pointer=-1;
             @Override public boolean onTouch(View view,MotionEvent event){
@@ -77,7 +79,7 @@ final class KeyboardDockView extends ViewGroup {
         loadSideWidths();
     }
     boolean isFloating(){return floating;}
-    void setFloating(boolean value){if(floating==value)return;cancelEdit();hideQuickHandles();floating=value;preferences.edit().putBoolean("floatingKeyboard",value).apply();bounds=null;lastWidth=0;setBackgroundColor(value?Color.TRANSPARENT:Color.rgb(18,26,34));moveHandle.setVisibility(value?VISIBLE:GONE);loadSideWidths();requestLayout();}
+    void setFloating(boolean value){if(floating==value)return;cancelEdit();hideQuickHandles();floating=value;preferences.edit().putBoolean("floatingKeyboard",value).apply();bounds=null;lastWidth=0;refreshColors();moveHandle.setVisibility(value?VISIBLE:GONE);loadSideWidths();requestLayout();}
     android.graphics.Rect touchBounds(){return editing?new android.graphics.Rect(0,0,getWidth(),getHeight()):new android.graphics.Rect(keyboard.getLeft(),keyboard.getTop(),keyboard.getRight(),floating?moveHandle.getBottom():keyboard.getBottom());}
     Region touchRegion(){
         Region region=new Region(touchBounds());
@@ -107,7 +109,8 @@ final class KeyboardDockView extends ViewGroup {
         com.google.android.material.button.MaterialButton button=SettingsUi.button(row.getContext(),label,action);button.setTextSize(14);button.setMinWidth(0);button.setMinimumWidth(0);button.setPadding(dp(4),0,dp(4),0);row.addView(button,new LinearLayout.LayoutParams(0,-1,1));
     }
     void setCandidateHeight(int value){if(candidateHeight!=value){candidateHeight=value;requestLayout();}}
-    void reloadPreferences(){if(editing)return;if(layoutMode==null)setFloating(preferences.getBoolean("floatingKeyboard",false));loadSideWidths();bounds=null;requestLayout();}
+    private void refreshColors(){colors=ImeColors.from(getContext());setBackgroundColor(floating?Color.TRANSPARENT:colors.surface());moveHandle.setBackgroundColor(colors.key());moveHandle.invalidate();}
+    void reloadPreferences(){refreshColors();if(editing)return;if(layoutMode==null)setFloating(preferences.getBoolean("floatingKeyboard",false));loadSideWidths();bounds=null;requestLayout();}
     boolean isEditing(){return editing;}
     void edit(){if(editing)return;hideQuickHandles();adjustingSides=false;loadSideWidths();editing=true;bounds=null;moveHandle.setVisibility(GONE);toolbar.setVisibility(VISIBLE);handles.setVisibility(VISIBLE);requestLayout();announceForAccessibility("キーボードの大きさと位置を調整。枠をドラッグ、または2本指で拡大縮小できます。");}
     void cancelEdit(){if(editing)endEdit(false);}

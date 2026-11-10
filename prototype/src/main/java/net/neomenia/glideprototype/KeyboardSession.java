@@ -1,7 +1,6 @@
 package net.neomenia.glideprototype;
 
 import android.content.*;
-import android.graphics.Color;
 import android.os.*;
 import android.text.InputType;
 import android.view.*;
@@ -56,10 +55,11 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
     private int dockHeight;
     KeyboardSession(Context context,TextView routeLabel,TextView statusLabel){
         super(context);this.route=routeLabel==null?new TextView(this):routeLabel;this.status=statusLabel==null?new TextView(this):statusLabel;
-        view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setBackgroundColor(Color.rgb(21,30,39));
+        view=new LinearLayout(this);view.setOrientation(LinearLayout.VERTICAL);view.setBackgroundColor(ImeColors.from(this).surface());
         candidates=new CandidateBarView(this,this::chooseCandidate,this::setCandidateExpanded);view.addView(candidates,new LinearLayout.LayoutParams(-1,candidateHeight()));renderCandidates();
         keyboardArea=new FrameLayout(this);view.addView(keyboardArea);
         keyboard=new GlideKeyboardView(this,this);keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));keyboardArea.addView(keyboard);
+        keyboard.setComposeRendering(getPreferences(0).getBoolean("composeKeyboard",false));
         keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",false),getPreferences(0).getBoolean("enableIu",false));
         loadTypography();applyImeFont();
         for(int board=0;board<2;board++)keyboard.setSymbolBoard(board,SymbolBoards.load(getPreferences(0),board),SymbolBoards.returns(getPreferences(0),board));
@@ -110,6 +110,8 @@ final class KeyboardSession extends ContextWrapper implements GlideKeyboardView.
         if(net.neomenia.inputcore.EditorPolicy.prefersNumbers(info.inputType))keyboard.showNumbers();
     }
     void reloadSettings(){
+        view.setBackgroundColor(ImeColors.from(this).surface());candidates.refreshColors();settings.refreshColors();
+        keyboard.setComposeRendering(getPreferences(0).getBoolean("composeKeyboard",false));
         keyboard.setNaNyaBias(getPreferences(0).getInt("naNyaBias",50));
         keyboard.setVowelPairs(getPreferences(0).getBoolean("enableEu",false),getPreferences(0).getBoolean("enableIu",false));
         loadTypography();applyImeFont();renderCandidates();

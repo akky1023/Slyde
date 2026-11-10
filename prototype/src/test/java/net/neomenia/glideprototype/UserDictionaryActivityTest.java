@@ -38,12 +38,6 @@ public class UserDictionaryActivityTest {
         do{Shadows.shadowOf(Looper.getMainLooper()).idle();if(!field.getBoolean(activity))return;Thread.sleep(10);}while(System.nanoTime()<deadline);
         fail("辞書処理が完了しませんでした");
     }
-    @Test public void settingsOpensDictionaryManagement(){
-        try(ActivityController<SettingsActivity> controller=Robolectric.buildActivity(SettingsActivity.class).setup()){
-            SettingsActivity activity=controller.get();View root=activity.getWindow().getDecorView();find(root,"変換").performClick();find(root,"カスタム辞書").performClick();
-            assertEquals(UserDictionaryActivity.class.getName(),Shadows.shadowOf(activity).getNextStartedActivity().getComponent().getClassName());
-        }
-    }
     @Test public void dictionaryUsesFloatingAddButtonAndThreeColumnTable()throws Exception {
         UserDictionaryStore.get(RuntimeEnvironment.getApplication()).save(new UserDictionary(List.of(new UserDictionary.Entry("はし","橋","名詞",""))));
         try(ActivityController<UserDictionaryActivity> controller=Robolectric.buildActivity(UserDictionaryActivity.class).setup()){

@@ -1,6 +1,7 @@
 package net.neomenia.glideprototype;
 
 import android.os.Bundle;
+import android.content.Context;
 import android.view.View;
 import android.view.Gravity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -20,6 +21,8 @@ import net.neomenia.inputcore.UserDictionary;
 
 /** User dictionary management never initializes the conversion engines. */
 public final class UserDictionaryActivity extends AppCompatActivity {
+    @Override protected void attachBaseContext(Context base){getDelegate().setLocalNightMode(ThemeMode.nightMode(base));super.attachBaseContext(base);}
+    @Override protected void onResume(){super.onResume();ThemeMode.apply(this);}
     private LinearLayout body;
     private UserDictionary dictionary=new UserDictionary(List.of());
     private List<UserDictionaryStore.Group> dictionaries=List.of();

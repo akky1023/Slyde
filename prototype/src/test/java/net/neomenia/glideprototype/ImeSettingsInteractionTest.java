@@ -123,13 +123,13 @@ public class ImeSettingsInteractionTest {
             ImeSettingsMenu menu=find(root,ImeSettingsMenu.class);
             android.widget.ImageButton toggle=(android.widget.ImageButton)described(menu,"フローティングキーボード");
             assertNull(find(menu,androidx.appcompat.widget.SwitchCompat.class));assertFalse(toggle.isSelected());
-            assertEquals(android.graphics.Color.WHITE,shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
+            assertEquals(ImeColors.from(context).neutralText(),shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
             toggle.performClick();layout(root);
             assertTrue(toggle.isSelected());assertEquals(android.graphics.Color.rgb(104,181,255),shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
             assertTrue(session.isFloating());assertEquals(View.GONE,menu.getVisibility());
             assertTrue(root.getHeight()>height);assertTrue(InputPreferences.get(context).getBoolean("floatingKeyboard",false));
             session.action("settings");toggle.performClick();layout(root);
-            assertFalse(toggle.isSelected());assertEquals(android.graphics.Color.WHITE,shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
+            assertFalse(toggle.isSelected());assertEquals(ImeColors.from(context).neutralText(),shadowOf((android.graphics.PorterDuffColorFilter)toggle.getColorFilter()).getColor());
             assertFalse(session.isFloating());assertEquals(height,root.getHeight());
         }finally{session.destroy();}
     }

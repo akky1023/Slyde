@@ -32,16 +32,32 @@ final class CandidateBarView extends FrameLayout {
     private Typeface typeface=Typeface.DEFAULT;
     private int textSp=18;
     private boolean showBadges=true,showAi=true;
+    private ImeColors colors;
 
     CandidateBarView(Context context,Consumer<String> select,Consumer<Boolean> expand){
-        super(context);this.select=select;this.expand=expand;setBackgroundColor(Color.rgb(28,40,51));
+        super(context);this.select=select;this.expand=expand;colors=ImeColors.from(context);setBackgroundColor(colors.surface());
         setContentDescription("変換候補");
         strip=new FrameLayout(context);addView(strip,new LayoutParams(-1,-1));
         expandButton=UiIcons.button(context,R.drawable.ic_expand,"変換候補をすべて表示",()->expand.accept(!expanded));
         expandButton.setVisibility(INVISIBLE);
         addView(expandButton,new LayoutParams(dp(44),-1,Gravity.TOP|Gravity.RIGHT));
         flow=new Flow(context);
+        styleExpandButton();
         setRows(1);setCandidates(List.of());
+    }
+    void refreshColors(){
+        ImeColors next=ImeColors.from(getContext());if(next.equals(colors))return;colors=next;
+        setBackgroundColor(colors.surface());styleExpandButton();flow.divider.setColor(colors.divider());
+        for(int i=0;i<flow.getChildCount();i++)styleCandidate((WidthLabelView)flow.getChildAt(i));
+        flow.invalidate();
+    }
+    private void styleExpandButton(){expandButton.setBackgroundColor(colors.key());expandButton.setColorFilter(colors.text());}
+    private void styleCandidate(WidthLabelView text){
+        text.setTextColor(colors.text());text.setAnnotationColor(colors.secondary());
+        android.graphics.drawable.StateListDrawable background=new android.graphics.drawable.StateListDrawable();
+        background.addState(new int[]{android.R.attr.state_selected},new ColorDrawable(colors.selection()));
+        background.addState(new int[]{},new ColorDrawable(Color.TRANSPARENT));
+        text.setBackground(new RippleDrawable(ColorStateList.valueOf(colors.selection()),background,new ColorDrawable(Color.WHITE)));
     }
     void setAnnotationVisibility(boolean characters,boolean ai){showBadges=characters;showAi=ai;populate(flow);}
     void setSelectedCandidate(int index){
@@ -104,12 +120,8 @@ final class CandidateBarView extends FrameLayout {
             WidthLabelView text;
             if(index<flow.getChildCount())text=(WidthLabelView)flow.getChildAt(index);
             else{
-                text=new WidthLabelView(getContext());text.setTextColor(Color.rgb(235,242,246));
+                text=new WidthLabelView(getContext());styleCandidate(text);
                 text.setGravity(Gravity.CENTER);text.setSingleLine(true);text.useCandidateTypography();text.setEllipsize(TextUtils.TruncateAt.END);text.setMinWidth(dp(56));
-                android.graphics.drawable.StateListDrawable background=new android.graphics.drawable.StateListDrawable();
-                background.addState(new int[]{android.R.attr.state_selected},new ColorDrawable(Color.rgb(69,104,118)));
-                background.addState(new int[]{},new ColorDrawable(Color.TRANSPARENT));
-                text.setBackground(new RippleDrawable(ColorStateList.valueOf(Color.rgb(69,104,118)),background,new ColorDrawable(Color.WHITE)));
                 text.setOnClickListener(view->select.accept(((WidthLabelView)view).valueForClick()));
                 text.setOnLongClickListener(view->{Toast.makeText(getContext(),((TextView)view).getText(),Toast.LENGTH_SHORT).show();return true;});flow.addView(text);
             }
@@ -133,7 +145,7 @@ final class CandidateBarView extends FrameLayout {
         private boolean wrap;
         private final Paint divider=new Paint();
         private CandidateLayout.Result placement=new CandidateLayout.Result(List.of(),0,0);
-        Flow(Context context){super(context);setWillNotDraw(false);divider.setColor(Color.rgb(61,76,88));}
+        Flow(Context context){super(context);setWillNotDraw(false);divider.setColor(colors.divider());}
         @Override protected void onMeasure(int widthSpec,int heightSpec){
             int inset=expandButton.getVisibility()==VISIBLE?dp(44):0;
             int viewport=MeasureSpec.getMode(widthSpec)==MeasureSpec.UNSPECIFIED?Math.max(dp(48),CandidateBarView.this.getWidth()-(wrap?0:inset)):MeasureSpec.getSize(widthSpec);
